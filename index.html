@@ -10,11 +10,20 @@
   <title>Fortune Digital Equity · guide demonstration</title>
   <link rel="preconnect" href="https://guide-api-production-a1a1.up.railway.app" crossorigin>
   <link rel="dns-prefetch" href="//guide-api-production-a1a1.up.railway.app">
-  <link rel="stylesheet" href="styles.css?v=20260726-readable-panel">
+  <link rel="stylesheet" href="styles.css?v=20260726-view-filter">
 </head>
 <body>
   <a class="skip-link" href="#page-content">Skip to page information</a>
-  <div class="demo-notice" role="note">Demonstration of a proposed Digital Equity guide · Public website information only</div>
+  <div class="demo-notice" role="note">
+    <span>Demonstration of a proposed Digital Equity guide · Public website information only</span>
+    <label class="viewer-filter" id="viewer-filter" for="viewer-mode" hidden>
+      <span>Preview as</span>
+      <select id="viewer-mode" name="viewer-mode">
+        <option value="admin">Admin view</option>
+        <option value="public">Public view</option>
+      </select>
+    </label>
+  </div>
 
   <div class="site-utility">
     <nav class="site-member-access" aria-label="Member access">

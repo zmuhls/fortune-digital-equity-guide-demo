@@ -61,6 +61,11 @@ a:hover { text-decoration-thickness: 2px; }
 .skip-link:focus { transform: translateY(0); }
 
 .demo-notice {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
   padding: 8px 24px;
   border-bottom: 1px solid #bcc7cf;
   color: #344c5e;
@@ -69,6 +74,24 @@ a:hover { text-decoration-thickness: 2px; }
   font-weight: 700;
   letter-spacing: .01em;
   text-align: center;
+}
+.viewer-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-left: 14px;
+  border-left: 1px solid #afbdc7;
+  white-space: nowrap;
+}
+.viewer-filter select {
+  min-height: 28px;
+  padding: 3px 25px 3px 8px;
+  border: 1px solid #8497a5;
+  border-radius: var(--radius-sm);
+  color: #263f51;
+  background: white;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .site-utility {
@@ -454,7 +477,7 @@ a:hover { text-decoration-thickness: 2px; }
 
 @media (max-width: 800px) {
   body { font-size: 17px; }
-  .demo-notice { padding-inline: 16px; text-align: left; }
+  .demo-notice { justify-content: flex-start; flex-wrap: wrap; padding-inline: 16px; text-align: left; }
   .site-utility { padding-inline: 18px; }
   .site-header { min-height: 0; align-items: flex-start; flex-direction: column; gap: 16px; padding-block: 17px 14px; }
   .site-nav {

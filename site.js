@@ -14,6 +14,8 @@
   const ASSET_BASE = String(window.FORTUNE_ASSET_BASE || "");
   const STATIC_ROUTES = Boolean(window.FORTUNE_STATIC_ROUTES);
   const BOT_MESSAGE_WORD_LIMIT = 48;
+  const REQUESTED_VIEWER_MODE = String(new URLSearchParams(window.location.search).get("view") || "").toLowerCase();
+  const VIEWER_OVERRIDE = ["admin", "public"].includes(REQUESTED_VIEWER_MODE) ? REQUESTED_VIEWER_MODE : "";
 
   const state = {
     index: null,
@@ -264,11 +266,15 @@
   }
 
   function hrefFor(value) {
-    return Core.hrefFor(value, {
+    const href = Core.hrefFor(value, {
       staticRoutes: STATIC_ROUTES,
       assetBase: ASSET_BASE,
       knownUrls: state.byUrl,
     });
+    if (!VIEWER_OVERRIDE) return href;
+    const url = new URL(href, window.location.href);
+    url.searchParams.set("view", VIEWER_OVERRIDE);
+    return `${url.pathname}${url.search}${url.hash}`;
   }
 
   function renderPage(page) {

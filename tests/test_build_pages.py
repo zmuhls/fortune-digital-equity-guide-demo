@@ -81,7 +81,7 @@ class RouteShellTests(unittest.TestCase):
         shell = build_pages.render_shell(self.template, route)
 
         self.assertNotIn(build_pages.ROUTE_MARKER, shell)
-        self.assertIn('href="../../styles.css?v=20260726-readable-panel"', shell)
+        self.assertIn('href="../../styles.css?v=20260726-view-filter"', shell)
         self.assertIn('src="../../config.js"', shell)
         self.assertIn('src="../../site.js"', shell)
         self.assertIn('src="../../app.js"', shell)
@@ -106,7 +106,7 @@ class RouteShellTests(unittest.TestCase):
         }
         shell = build_pages.render_shell(self.template, route)
 
-        self.assertIn('href="styles.css?v=20260726-readable-panel"', shell)
+        self.assertIn('href="styles.css?v=20260726-view-filter"', shell)
         self.assertIn('src="site.js"', shell)
         self.assertIn('window.FORTUNE_ASSET_BASE = ""', shell)
         self.assertNotIn('href="../styles.css"', shell)

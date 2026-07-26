@@ -230,6 +230,18 @@
     return `${assetBase}${path.replace(/^\//, "")}/`;
   }
 
+  function viewerMode(hostname, requested = "") {
+    const override = String(requested || "").trim().toLowerCase();
+    if (override === "admin" || override === "public") return override;
+    const host = String(hostname || "").trim().toLowerCase().replace(/^\[|\]$/g, "");
+    const local = host === "localhost"
+      || host === "127.0.0.1"
+      || host === "::1"
+      || host === "0.0.0.0"
+      || host.endsWith(".localhost");
+    return local ? "admin" : "public";
+  }
+
   function destinationLabel(value) {
     const label = cleanTitle(value);
     return /^(?:go to|contact|confirm|ask|view|review|register|browse|open|find|see|check)\b/i.test(label)
@@ -254,5 +266,6 @@
     personalInformationDetected,
     redactSixDigitValues,
     starterFor,
+    viewerMode,
   };
 });

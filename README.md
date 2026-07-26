@@ -51,7 +51,7 @@ Run the key-free tests and check that the index can produce all route shells:
 python3 scripts/build_pages.py --check-index
 ```
 
-The test launcher runs 76 Python unit tests across retrieval, API contracts, privacy, source authority, grounding, the crawler, the Pages builder, production limits, warm-up behavior, responsive answer expansion, member access, styling safeguards, and Wix secret handling. It then runs 11 browser-core unit tests for page families, prompts, staged evidence, route generation, and client-side redaction.
+The test launcher runs 78 Python unit tests across retrieval, API contracts, privacy, source authority, grounding, the crawler, the Pages builder, production limits, warm-up behavior, responsive answer expansion, member access, styling safeguards, view modes, and Wix secret handling. It then runs 12 browser-core unit tests for page families, prompts, staged evidence, route generation, view modes, and client-side redaction.
 
 Build the static GitHub Pages output:
 
@@ -70,6 +70,8 @@ export OLLAMA_API_KEY="your Ollama Cloud key"
 ```
 
 The launcher uses `http://127.0.0.1:8790`, leaves an occupied port untouched, and keeps the credential in the server process.
+
+Local development defaults to **Admin view**. Its **Preview as** filter opens a true Public view of the page. Deployed hosts default to **Public view**, which keeps model names and readiness diagnostics out of the participant interface. Add `?view=admin` or `?view=public` to override the default; explicit view modes persist across mock-site navigation.
 
 Refresh the public Wix index manually when a source review is planned:
 

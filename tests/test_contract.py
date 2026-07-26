@@ -604,6 +604,22 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn("OLLAMA_API_KEY", app)
         self.assertNotIn("OLLAMA_API_KEY", wix)
 
+    def test_public_view_masks_model_status_and_local_dev_defaults_to_admin(self):
+        html = (DEMO / "index.html").read_text(encoding="utf-8")
+        app = (DEMO / "app.js").read_text(encoding="utf-8")
+        site = (DEMO / "site.js").read_text(encoding="utf-8")
+        core = (DEMO / "guide-core.js").read_text(encoding="utf-8")
+        self.assertIn('id="viewer-filter"', html)
+        self.assertIn('value="public">Public view', html)
+        self.assertIn('const viewerMode = Core.viewerMode(window.location.hostname', app)
+        self.assertIn('viewerFilter.hidden = !isAdminView', app)
+        self.assertIn('if (!isAdminView)', app)
+        self.assertIn('modelStatus.textContent = `${activeModelName} · ready`', app)
+        self.assertNotIn("Live ${data.model", app)
+        self.assertIn('host === "127.0.0.1"', core)
+        self.assertIn('return local ? "admin" : "public"', core)
+        self.assertIn('url.searchParams.set("view", VIEWER_OVERRIDE)', site)
+
     def test_static_fallback_is_staged_and_never_ends_without_a_route(self):
         app = (DEMO / "app.js").read_text(encoding="utf-8")
         site = (DEMO / "site.js").read_text(encoding="utf-8")

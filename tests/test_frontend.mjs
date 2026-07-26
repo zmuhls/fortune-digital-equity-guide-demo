@@ -124,3 +124,12 @@ test("public text cleanup removes duplicated sentences and source-title suffixes
   assert.equal(Core.cleanText("Great , start here.  Great , start here."), "Great, start here.");
   assert.equal(Core.cleanTitle("Devices | FS Digital Equity"), "Devices");
 });
+
+test("viewer mode defaults to admin locally and public on deployed hosts", () => {
+  assert.equal(Core.viewerMode("127.0.0.1"), "admin");
+  assert.equal(Core.viewerMode("localhost"), "admin");
+  assert.equal(Core.viewerMode("zmuhls.github.io"), "public");
+  assert.equal(Core.viewerMode("www.fortunedigitalequity.org"), "public");
+  assert.equal(Core.viewerMode("zmuhls.github.io", "admin"), "admin");
+  assert.equal(Core.viewerMode("127.0.0.1", "public"), "public");
+});

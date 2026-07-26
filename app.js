@@ -14,15 +14,26 @@
   const questionField = document.querySelector("#question");
   const submitButton = form.querySelector('button[type="submit"]');
   const modelStatus = document.querySelector("#model-status");
+  const viewerFilter = document.querySelector("#viewer-filter");
+  const viewerModeField = document.querySelector("#viewer-mode");
   const API_BASE = String(window.FORTUNE_GUIDE_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
   const TRAININGS_URL = "https://www.fortunedigitalequity.org/trainings";
+  const requestedViewerMode = new URLSearchParams(window.location.search).get("view");
+  const viewerMode = Core.viewerMode(window.location.hostname, requestedViewerMode);
+  const isAdminView = viewerMode === "admin";
 
   let history = [];
   let modelReady = false;
   let answering = false;
   let activePageId = "";
   let warmupPromise = null;
+  let activeModelName = "glm-5.2";
+  let indexedPages = 184;
+
+  document.documentElement.dataset.viewerMode = viewerMode;
+  viewerModeField.value = viewerMode;
+  viewerFilter.hidden = !isAdminView;
 
   function apiUrl(path) {
     return `${API_BASE}${path}`;
@@ -204,6 +215,21 @@
     submitButton.textContent = value ? "Checking…" : "Ask";
   }
 
+  function renderModelStatus(phase, options = {}) {
+    activeModelName = cleanText(options.model || activeModelName) || "glm-5.2";
+    indexedPages = Number(options.pages) || indexedPages;
+    modelStatus.classList.toggle("model-ready", isAdminView && phase === "ready");
+    if (!isAdminView) {
+      modelStatus.textContent = `Source guide · ${indexedPages} public pages`;
+      return;
+    }
+    if (phase === "ready") modelStatus.textContent = `${activeModelName} · ready`;
+    else if (phase === "preparing") modelStatus.textContent = `Preparing ${activeModelName}…`;
+    else if (phase === "page-first") modelStatus.textContent = `${activeModelName} · page-first`;
+    else if (phase === "unavailable") modelStatus.textContent = "Source guide · model unavailable";
+    else modelStatus.textContent = `Source guide · ${indexedPages} public pages`;
+  }
+
   function privacyHold() {
     suggestions.replaceChildren();
     appendMessage("user", "[Personal information removed]");
@@ -247,13 +273,10 @@
       if (!response.ok) throw new Error("Model warm-up failed");
       const data = await response.json();
       if (data.status !== "ready") throw new Error("Model warm-up unavailable");
-      modelStatus.textContent = `Live ${data.model || modelName || "model"} · ready`;
-      modelStatus.classList.add("model-ready");
+      renderModelStatus("ready", { model: data.model || modelName, pages });
       return data;
     } catch {
-      modelStatus.textContent = modelReady
-        ? `Live ${modelName || "model"} · page-first`
-        : `Source guide · ${pages} public pages`;
+      renderModelStatus(modelReady ? "page-first" : "source", { model: modelName, pages });
       return null;
     }
   }
@@ -291,7 +314,7 @@
           data = await remoteAnswer(safeQuestion);
         } catch {
           data = window.FortuneMockSite.staticAnswer(safeQuestion, currentPage());
-          modelStatus.textContent = "Source guide · live model unavailable";
+          renderModelStatus("unavailable");
           modelReady = false;
         }
       } else {
@@ -312,17 +335,20 @@
       const data = await response.json();
       modelReady = Boolean(data.model_enabled);
       const pages = Number(data.indexed_pages) || Number(window.FortuneMockSite.getIndex()?.unique_urls) || 184;
-      modelStatus.textContent = modelReady ? `Preparing ${data.model || "live model"}…` : `Source guide · ${pages} public pages`;
-      modelStatus.classList.toggle("model-ready", modelReady);
+      renderModelStatus(modelReady ? "preparing" : "source", { model: data.model, pages });
       if (modelReady) warmupPromise = warmModel(data.model, pages);
     } catch {
       const pages = Number(window.FortuneMockSite.getIndex()?.unique_urls) || 184;
       modelReady = false;
-      modelStatus.textContent = `Source guide · ${pages} public pages`;
-      modelStatus.classList.remove("model-ready");
+      renderModelStatus("source", { pages });
     }
   }
 
+  viewerModeField.addEventListener("change", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", viewerModeField.value);
+    window.location.assign(url.href);
+  });
   toggle.addEventListener("click", openGuide);
   closeButton.addEventListener("click", closeGuide);
   form.addEventListener("submit", event => {
@@ -356,6 +382,6 @@
     open: openGuide,
     close: closeGuide,
     privacyDetected: personalInformationDetected,
-    state: () => ({ modelReady, activePageId, answering, historyLength: history.length }),
+    state: () => ({ modelReady, viewerMode, activePageId, answering, historyLength: history.length }),
   });
 })();
