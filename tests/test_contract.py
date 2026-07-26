@@ -595,6 +595,20 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("data.related", app)
         self.assertIn("page_context: pageContext()", app)
 
+    def test_frontend_formats_answers_and_gives_the_prompt_room(self):
+        app = (DEMO / "app.js").read_text(encoding="utf-8")
+        core = (DEMO / "guide-core.js").read_text(encoding="utf-8")
+        styles = (DEMO / "styles.css").read_text(encoding="utf-8")
+        self.assertIn("Core.answerPresentation(safeMessage)", app)
+        self.assertIn('document.createElement("ul")', app)
+        self.assertIn('document.createElement("strong")', app)
+        self.assertNotIn("innerHTML", app)
+        self.assertIn("DISPLAY_MESSAGE_WORD_LIMIT = 48", core)
+        self.assertIn("Who do you need to reach?", core)
+        self.assertIn(".answer-list", styles)
+        self.assertIn(".answer-note", styles)
+        self.assertIn("padding: 10px 12px 14px", styles)
+
     def test_pages_and_wix_preload_the_model_without_a_provider_key(self):
         app = (DEMO / "app.js").read_text(encoding="utf-8")
         wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
@@ -639,14 +653,14 @@ class FrontendAndDeploymentTests(unittest.TestCase):
     def test_page_families_supply_specific_chat_prompts(self):
         core = (DEMO / "guide-core.js").read_text(encoding="utf-8")
         for prompt in (
-            "What would you like to know about this class?",
-            "Do you need a device or help using one?",
-            "What kind of individual help do you need?",
-            "What current class information are you trying to find?",
-            "What would you like to know about registration?",
-            "What kind of help are you trying to reach?",
-            "What event information do you need?",
-            "What current information are you looking for?",
+            "What about this class?",
+            "Device or computer help?",
+            "What help do you need?",
+            "Which class or date?",
+            "How can we help you register?",
+            "Who do you need to reach?",
+            "What about this event?",
+            "What current information do you need?",
         ):
             self.assertIn(prompt, core)
         self.assertIn("title.textContent = starter.heading", (DEMO / "app.js").read_text(encoding="utf-8"))

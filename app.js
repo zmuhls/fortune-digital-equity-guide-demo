@@ -99,9 +99,56 @@
     const label = document.createElement("p");
     label.className = "chat-speaker";
     label.textContent = role === "user" ? "You" : "Digital Equity guide";
-    const body = document.createElement("p");
-    body.className = "chat-copy";
-    body.textContent = redactSixDigitValues(cleanText(message));
+    const safeMessage = redactSixDigitValues(cleanText(message));
+    let body;
+    if (role === "assistant") {
+      const presentation = Core.answerPresentation(safeMessage);
+      body = document.createElement("div");
+      body.className = "chat-copy chat-answer";
+      const presentationWords = presentation.text.split(/\s+/).filter(Boolean).length;
+      const structured = Boolean(
+        presentation.lead
+        || presentation.notice
+        || presentation.points[0]?.label
+        || (presentation.points.length > 1 && presentationWords > 32)
+      );
+      if (presentation.lead) {
+        const lead = document.createElement("p");
+        lead.className = "answer-lead";
+        lead.textContent = presentation.lead;
+        body.append(lead);
+      }
+      if (structured) {
+        const list = document.createElement("ul");
+        list.className = "answer-list";
+        presentation.points.forEach(point => {
+          const item = document.createElement("li");
+          if (point.label) {
+            const strong = document.createElement("strong");
+            strong.textContent = `${point.label}:`;
+            item.append(strong, document.createTextNode(` ${point.text}`));
+          } else {
+            item.textContent = point.text;
+          }
+          list.append(item);
+        });
+        if (presentation.points.length) body.append(list);
+      } else {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = presentation.text;
+        body.append(paragraph);
+      }
+      if (presentation.notice) {
+        const note = document.createElement("p");
+        note.className = "answer-note";
+        note.textContent = presentation.notice;
+        body.append(note);
+      }
+    } else {
+      body = document.createElement("p");
+      body.className = "chat-copy";
+      body.textContent = safeMessage;
+    }
     article.append(label, body);
 
     if (Array.isArray(options.choices) && options.choices.length) {
@@ -320,7 +367,8 @@
       } else {
         data = window.FortuneMockSite.staticAnswer(safeQuestion, currentPage());
       }
-      history.push({ role: "user", content: safeQuestion }, { role: "assistant", content: redactSixDigitValues(data.message || "") });
+      const displayedAnswer = Core.answerPresentation(redactSixDigitValues(data.message || "")).text;
+      history.push({ role: "user", content: safeQuestion }, { role: "assistant", content: displayedAnswer });
       history = history.slice(-6);
       showAnswer(data);
     } finally {

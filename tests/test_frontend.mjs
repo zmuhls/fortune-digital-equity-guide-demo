@@ -45,10 +45,12 @@ test("every page has a tailored heading, placeholder, and exactly two prompts", 
     const starter = Core.starterFor(page);
     assert.ok(starter.heading.length > 8, page.url);
     assert.ok(starter.placeholder.endsWith("?"), page.url);
+    assert.ok(starter.placeholder.split(/\s+/).length <= 7, page.url);
     assert.equal(starter.suggestions.length, 2, page.url);
     assert.equal(new Set(starter.suggestions).size, 2, page.url);
   }
-  assert.equal(Core.starterFor(byPath.get("/devices")).placeholder, "Do you need a device or help using one?");
+  assert.equal(Core.starterFor(byPath.get("/devices")).placeholder, "Device or computer help?");
+  assert.equal(Core.starterFor(byPath.get("/contact")).placeholder, "Who do you need to reach?");
   assert.equal(Core.starterFor(byPath.get("/calendar")).suggestions[0], "Where and when are current classes?");
   assert.equal(Core.starterFor(byPath.get("/service-page/intro-to-computers")).suggestions[0], "What does this class cover?");
 });
@@ -132,4 +134,17 @@ test("viewer mode defaults to admin locally and public on deployed hosts", () =>
   assert.equal(Core.viewerMode("www.fortunedigitalequity.org"), "public");
   assert.equal(Core.viewerMode("zmuhls.github.io", "admin"), "admin");
   assert.equal(Core.viewerMode("127.0.0.1", "public"), "public");
+});
+
+test("long answers become short source points and a confirmation note", () => {
+  const presentation = Core.answerPresentation(
+    "The Regular Workshops page says: Recommended Prerequisites: Intro to Computers, Intro to Windows, Intro to Email, Intro to Word Digital Safety Online Safety - Protecting yourself online is an essential skill in today's digital world. Word Mail Merge, Macros, and some advanced Excel offerings are marked coming soon on the current page. Conditional Formatting - COMING SOON: Learn how to apply formatting to spreadsheet data based on a given set of predefined criteria. Use the live page or Digital Equity staff to confirm current dates, eligibility, locations, inventory, and availability.",
+  );
+  assert.equal(presentation.lead, "The Regular Workshops page says");
+  assert.equal(presentation.points.length, 2);
+  assert.equal(presentation.points[0].label, "Recommended Prerequisites");
+  assert.equal(presentation.points[0].text.endsWith("-…"), false);
+  assert.match(presentation.points[1].text, /coming soon\.$/);
+  assert.equal(presentation.notice, "Confirm current details on the live page or with Digital Equity staff.");
+  assert.ok(presentation.text.split(/\s+/).length <= Core.DISPLAY_MESSAGE_WORD_LIMIT);
 });
