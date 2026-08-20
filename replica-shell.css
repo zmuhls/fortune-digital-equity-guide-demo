@@ -3,7 +3,9 @@
   position: relative;
   z-index: 2147482999;
   box-sizing: border-box;
-  width: 100%;
+  /* The captured Wix canvas has a 980px minimum width.  Keep the shell
+   * anchored to the actual viewport instead of inheriting that wider canvas. */
+  width: min(100%, 100vw);
   min-width: 0;
   min-height: 36px;
   display: flex;
@@ -39,7 +41,7 @@ html[data-fortune-replica-header-ready="true"] #SITE_HEADER {
   z-index: 2147482998;
   display: block;
   box-sizing: border-box;
-  width: 100%;
+  width: min(100%, 100vw);
   min-width: 0;
   color: #251532;
   background: #ffffff;
@@ -215,7 +217,9 @@ html[data-fortune-replica-header-ready="true"] #SITE_HEADER {
   pointer-events: auto;
 }
 
-@media (max-width: 760px) {
+/* The original site grid is 980px wide, so switch to the compact header
+ * before its desktop navigation can collide with the logo. */
+@media (max-width: 1080px) {
   #fortune-replica-notice {
     width: 100vw;
     padding: 7px 14px;

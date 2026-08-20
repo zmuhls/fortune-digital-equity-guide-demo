@@ -81,6 +81,13 @@ class IndexRouteTests(unittest.TestCase):
 
 
 class SnapshotRenderingTests(unittest.TestCase):
+    def test_replica_shell_uses_viewport_bounded_mid_width_navigation(self):
+        shell_css = (DEMO / "replica-shell.css").read_text(encoding="utf-8")
+
+        self.assertGreaterEqual(shell_css.count("width: min(100%, 100vw);"), 2)
+        self.assertIn("@media (max-width: 1080px)", shell_css)
+        self.assertIn(".fortune-replica-header__toggle", shell_css)
+
     def test_nested_replica_uses_depth_aware_assets_and_one_trusted_script(self):
         route = {
             "path": "/service-page/understanding-computers",

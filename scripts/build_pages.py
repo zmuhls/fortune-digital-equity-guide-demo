@@ -36,8 +36,8 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
-REPLICA_SHELL_CSS_VERSION = "20260820-responsive-header-1"
-REPLICA_SHELL_JS_VERSION = "20260820-responsive-header-1"
+REPLICA_SHELL_CSS_VERSION = "20260820-header-fit-2"
+REPLICA_SHELL_JS_VERSION = "20260820-header-fit-2"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
