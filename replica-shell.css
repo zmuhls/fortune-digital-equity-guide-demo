@@ -4,7 +4,7 @@
   z-index: 2147482999;
   box-sizing: border-box;
   width: 100%;
-  min-width: 980px;
+  min-width: 0;
   min-height: 36px;
   display: flex;
   align-items: center;
@@ -21,6 +21,170 @@
   color: #bde9fb;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/*
+ * The rendered Wix header uses a 980px grid even at phone widths. Its menu
+ * buttons also need Wix JavaScript to position their content. The shell
+ * rebuilds the already-captured public links as a small native header so the
+ * replica's navigation is usable independently of that retired runtime.
+ */
+html[data-fortune-replica-header-ready="true"] #SITE_HEADER {
+  display: none !important;
+}
+
+#fortune-replica-header {
+  all: initial;
+  position: relative;
+  z-index: 2147482998;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: #251532;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(37, 21, 50, 0.18);
+  font: 700 14px/1.2 Arial, sans-serif;
+}
+
+#fortune-replica-header *,
+#fortune-replica-header *::before,
+#fortune-replica-header *::after {
+  box-sizing: border-box;
+}
+
+.fortune-replica-header__inner {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 3vw, 42px);
+  width: min(1180px, 100%);
+  min-width: 0;
+  min-height: 86px;
+  margin: 0 auto;
+  padding: 10px max(24px, calc((100vw - 1180px) / 2));
+}
+
+.fortune-replica-header__brand {
+  display: block;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.fortune-replica-header__brand img {
+  display: block;
+  width: clamp(168px, 19vw, 244px);
+  max-height: 66px;
+  object-fit: contain;
+}
+
+.fortune-replica-header__toggle {
+  display: none;
+  margin-left: auto;
+  padding: 9px 12px;
+  color: #251532;
+  background: #ffffff;
+  border: 1px solid currentColor;
+  border-radius: 0;
+  font: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.fortune-replica-header__nav {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fortune-replica-header__nav > ul,
+.fortune-replica-header__menu > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fortune-replica-header__nav > ul {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(14px, 2vw, 28px);
+}
+
+.fortune-replica-header__nav li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fortune-replica-header__link,
+.fortune-replica-header__menu > summary,
+.fortune-replica-header__sublink {
+  color: #251532;
+  text-decoration: none;
+}
+
+.fortune-replica-header__link,
+.fortune-replica-header__menu > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  font: inherit;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fortune-replica-header__link:hover,
+.fortune-replica-header__link:focus-visible,
+.fortune-replica-header__menu > summary:hover,
+.fortune-replica-header__menu > summary:focus-visible,
+.fortune-replica-header__sublink:hover,
+.fortune-replica-header__sublink:focus-visible {
+  color: #145da0;
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fortune-replica-header__menu {
+  position: relative;
+}
+
+.fortune-replica-header__menu > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.fortune-replica-header__menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.fortune-replica-header__menu > summary::after {
+  content: "▾";
+  margin-left: 6px;
+  font-size: 0.8em;
+}
+
+.fortune-replica-header__menu > ul {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 1;
+  display: none;
+  min-width: 220px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(37, 21, 50, 0.24);
+  box-shadow: 0 7px 18px rgba(37, 21, 50, 0.16);
+}
+
+.fortune-replica-header__menu[open] > ul {
+  display: block;
+}
+
+.fortune-replica-header__sublink {
+  display: block;
+  padding: 9px 10px;
+  font: 600 13px/1.25 Arial, sans-serif;
 }
 
 #fortune-sidecar-host {
@@ -49,6 +213,75 @@
   color-scheme: light;
   background: transparent;
   pointer-events: auto;
+}
+
+@media (max-width: 760px) {
+  #fortune-replica-notice {
+    width: 100vw;
+    padding: 7px 14px;
+    font-size: 11px;
+  }
+
+  #fortune-replica-header {
+    width: 100vw;
+  }
+
+  .fortune-replica-header__inner {
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 68px;
+    padding: 8px 14px;
+  }
+
+  .fortune-replica-header__brand img {
+    width: min(190px, 54vw);
+    max-height: 50px;
+  }
+
+  .fortune-replica-header__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fortune-replica-header__nav {
+    display: none;
+    flex-basis: 100%;
+    width: 100%;
+    padding-top: 2px;
+    border-top: 1px solid rgba(37, 21, 50, 0.15);
+  }
+
+  #fortune-replica-header[data-menu-open="true"] .fortune-replica-header__nav {
+    display: block;
+  }
+
+  .fortune-replica-header__nav > ul {
+    display: block;
+  }
+
+  .fortune-replica-header__nav > ul > li {
+    border-bottom: 1px solid rgba(37, 21, 50, 0.12);
+  }
+
+  .fortune-replica-header__link,
+  .fortune-replica-header__menu > summary {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 42px;
+    padding: 4px 2px;
+  }
+
+  .fortune-replica-header__menu > ul {
+    position: static;
+    min-width: 0;
+    margin: 0 0 8px;
+    padding: 4px 8px;
+    border: 0;
+    border-left: 2px solid rgba(20, 93, 160, 0.42);
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 520px) {

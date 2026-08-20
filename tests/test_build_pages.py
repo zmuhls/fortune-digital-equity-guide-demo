@@ -91,8 +91,14 @@ class SnapshotRenderingTests(unittest.TestCase):
         shell = build_pages.render_snapshot(snapshot_document(), route, "../../")
 
         self.assertIn(build_pages.REPLICA_MARKER, shell)
-        self.assertIn('href="../../replica-shell.css?v=20260803-replica-1"', shell)
-        self.assertIn('src="../../replica-shell.js?v=20260817-route-refresh-1"', shell)
+        self.assertIn(
+            f'href="../../replica-shell.css?v={build_pages.REPLICA_SHELL_CSS_VERSION}"',
+            shell,
+        )
+        self.assertIn(
+            f'src="../../replica-shell.js?v={build_pages.REPLICA_SHELL_JS_VERSION}"',
+            shell,
+        )
         self.assertIn(f'data-source-url="{route["sourceUrl"]}"', shell)
         self.assertEqual(shell.lower().count("<script"), 1)
         self.assertIn("form-action &#x27;none&#x27;", shell)
@@ -103,8 +109,14 @@ class SnapshotRenderingTests(unittest.TestCase):
     def test_root_replica_keeps_root_relative_assets(self):
         shell = build_pages.render_snapshot(snapshot_document(), HOME_ROUTE, "")
 
-        self.assertIn('href="replica-shell.css?v=20260803-replica-1"', shell)
-        self.assertIn('src="replica-shell.js?v=20260817-route-refresh-1"', shell)
+        self.assertIn(
+            f'href="replica-shell.css?v={build_pages.REPLICA_SHELL_CSS_VERSION}"',
+            shell,
+        )
+        self.assertIn(
+            f'src="replica-shell.js?v={build_pages.REPLICA_SHELL_JS_VERSION}"',
+            shell,
+        )
         self.assertNotIn('href="../replica-shell.css', shell)
 
     def test_invalid_or_active_snapshot_markup_is_rejected_before_build(self):
