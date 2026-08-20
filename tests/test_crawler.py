@@ -2,7 +2,11 @@
 """Network-free tests for the public Wix sitemap crawler's pure functions."""
 
 import importlib.util
+import gzip
+import hashlib
+import json
 import pathlib
+import tempfile
 import unittest
 from unittest import mock
 
@@ -187,6 +191,9 @@ class RecordUtilityTests(NoNetworkTestCase):
             <h1>Digital skills</h1>
             <p>Learn computer basics.</p>
             <script>privateTrackerValue = 123;</script>
+            <div data-replica-embed-placeholder="true"><p>Open embedded content from example.org</p></div>
+            <a data-replica-live-action="true" href="/contact">Submit on Fortune's live site</a>
+            <p data-replica-static-preview-note="true">Static preview — use the link for the live content.</p>
             <a href="/contact">Contact staff</a>
           </main>
           </body></html>
@@ -196,7 +203,95 @@ class RecordUtilityTests(NoNetworkTestCase):
         self.assertIn("Digital skills", parser.headings)
         self.assertIn("Learn computer basics.", parser.blocks)
         self.assertNotIn("privateTrackerValue", " ".join(parser.blocks))
+        self.assertNotIn("Open embedded content", " ".join(parser.blocks))
+        self.assertNotIn("Submit on Fortune's live site", " ".join(parser.blocks))
+        self.assertNotIn("Static preview", " ".join(parser.blocks))
         self.assertIn("/contact", parser.links)
+
+
+class RenderedSnapshotRefreshTests(NoNetworkTestCase):
+    def test_rendered_snapshot_refresh_uses_visible_full_text_not_thin_raw_blocks(self):
+        page = {
+            **row("/contact"),
+            "id": "page-contact-test",
+            "authority": "answer",
+            "authority_reason": "current public page",
+            "volatile": False,
+            "status": 200,
+            "title": "Old contact title",
+            "description": "",
+            "headings": ["Frequently Asked Questions"],
+            "blocks": ["Raw crawl only retained the question."],
+            "internal_links": [],
+            "content_characters": 39,
+            "content_hash": "old",
+            "source_owner": "Fortune staff",
+            "approval_state": "reviewed",
+            "reviewed_on": "2026-08-20",
+        }
+        html = """<!doctype html><html><head><title>Contact | Fortune</title>
+        <meta name=\"description\" content=\"Contact the Digital Equity Program.\"></head>
+        <body><main id=\"PAGES_CONTAINER\"><h1>Frequently Asked Questions</h1>
+        <section data-replica-static-disclosure><h2>Can I walk in?</h2>
+        <p>Yes. Walk-in attendance is allowed for regular classes, with priority for advance registration.</p>
+        </section><a href=\"/support\">Individual Support</a></main></body></html>"""
+        expanded = html.encode("utf-8")
+        compressed = gzip.compress(expanded, mtime=0)
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            snapshots = root / "replica-snapshots"
+            snapshots.mkdir()
+            filename = "replica-snapshots/page-contact-test.html.gz"
+            (root / filename).write_bytes(compressed)
+            manifest = {
+                "route_count": 1,
+                "pages": [{
+                    "id": page["id"],
+                    "url": page["url"],
+                    "final_url": page["url"],
+                    "status": 200,
+                    "file": filename,
+                    "site_revision": 2063,
+                    "source_sha256": hashlib.sha256(expanded).hexdigest(),
+                    "snapshot_sha256": hashlib.sha256(compressed).hexdigest(),
+                }],
+            }
+            refreshed = crawler.rendered_snapshot_pages({"pages": [page]}, manifest, snapshots)
+
+        self.assertEqual(len(refreshed), 1)
+        result = refreshed[0]
+        self.assertEqual(result["title"], "Contact | Fortune")
+        self.assertEqual(result["description"], "Contact the Digital Equity Program.")
+        self.assertIn("Frequently Asked Questions", result["headings"])
+        self.assertIn(
+            "Yes. Walk-in attendance is allowed for regular classes, with priority for advance registration.",
+            result["blocks"],
+        )
+        self.assertEqual(result["internal_links"], ["https://www.fortunedigitalequity.org/support"])
+        self.assertEqual(result["source_owner"], "Fortune staff")
+        self.assertEqual(result["approval_state"], "reviewed")
+        self.assertEqual(result["rendered_snapshot"]["site_revision"], 2063)
+
+    def test_rendered_snapshot_refresh_rejects_route_or_hash_drift(self):
+        page = {**row("/contact"), "id": "page-contact-test"}
+        manifest = {
+            "route_count": 1,
+            "pages": [{
+                "id": page["id"],
+                "url": page["url"],
+                "final_url": page["url"],
+                "status": 200,
+                "file": "replica-snapshots/page-contact-test.html.gz",
+                "site_revision": 2063,
+                "source_sha256": "0" * 64,
+                "snapshot_sha256": "0" * 64,
+            }],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            snapshots = pathlib.Path(directory) / "replica-snapshots"
+            snapshots.mkdir()
+            with self.assertRaisesRegex(RuntimeError, "cannot read rendered snapshot"):
+                crawler.rendered_snapshot_pages({"pages": [page]}, manifest, snapshots)
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ inventory but cannot become answer authority.
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+import gzip
 from html import unescape
 from html.parser import HTMLParser
 import argparse
@@ -27,6 +28,8 @@ import xml.etree.ElementTree as ET
 
 HERE = pathlib.Path(__file__).resolve().parents[1]
 OUTPUT = HERE / "site-index.json"
+SNAPSHOT_MANIFEST = HERE / "replica-manifest.json"
+SNAPSHOT_ROOT = HERE / "replica-snapshots"
 ROOT_SITEMAP = "https://www.fortunedigitalequity.org/sitemap.xml"
 BLOG_FEED = "https://www.fortunedigitalequity.org/blog-feed.xml"
 ALLOWED_HOST = "www.fortunedigitalequity.org"
@@ -43,6 +46,11 @@ BLOCK_TAGS = {
     "section", "table", "td", "th", "tr",
 }
 SKIP_TAGS = {"script", "style", "noscript", "svg", "template"}
+REPLICA_PRESENTATION_ATTRIBUTES = {
+    "data-replica-embed-placeholder",
+    "data-replica-static-preview-note",
+    "data-replica-live-action",
+}
 
 EXCLUDED_PAGE_PATHS = {
     "/acp": "outdated program page",
@@ -169,6 +177,7 @@ class PageExtractor(HTMLParser):
         self._in_title = False
         self._main_depth = 0
         self._skip_depth = 0
+        self._skip_root_depths = set()
         self._heading_depth = 0
         self._buffer = []
 
@@ -193,8 +202,9 @@ class PageExtractor(HTMLParser):
         if not self._main_depth:
             return
         self._main_depth += 1
-        if tag in SKIP_TAGS:
+        if tag in SKIP_TAGS or any(name in values for name in REPLICA_PRESENTATION_ATTRIBUTES):
             self._skip_depth += 1
+            self._skip_root_depths.add(self._main_depth)
             return
         if self._skip_depth:
             return
@@ -222,8 +232,9 @@ class PageExtractor(HTMLParser):
             self._in_title = False
         if not self._main_depth:
             return
-        if tag in SKIP_TAGS and self._skip_depth:
+        if self._main_depth in self._skip_root_depths:
             self._skip_depth -= 1
+            self._skip_root_depths.remove(self._main_depth)
         elif not self._skip_depth:
             if tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
                 text = self._flush()
@@ -417,6 +428,107 @@ def write_index(pages, sitemap_entry_count, generated_from):
     print(f"wrote {OUTPUT} ({successful}/{len(pages)} pages fetched; authorities={counts})")
 
 
+def _snapshot_document(manifest_path):
+    try:
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"cannot read rendered snapshot manifest {manifest_path}: {error}") from error
+    pages = document.get("pages")
+    if not isinstance(pages, list) or not pages:
+        raise RuntimeError("rendered snapshot manifest must contain a non-empty pages list")
+    if document.get("route_count") != len(pages):
+        raise RuntimeError("rendered snapshot manifest route_count does not match pages")
+    return document
+
+
+def _rendered_snapshot_content(page, manifest_page, snapshot_root):
+    """Return source fields extracted from one reviewed rendered snapshot.
+
+    The raw Wix response can omit lazy-loaded and accordion text.  This path is
+    deliberately separate from ``crawl_page``: it only accepts a manifest-bound
+    snapshot captured by Firefox after the public page has rendered.
+    """
+    if manifest_page.get("url") != page.get("url") or manifest_page.get("id") != page.get("id"):
+        raise RuntimeError(f"snapshot identity does not match index page: {page.get('url')}")
+    if manifest_page.get("status") != 200 or manifest_page.get("final_url") != page.get("url"):
+        raise RuntimeError(f"snapshot is not a canonical HTTP 200 page: {page.get('url')}")
+
+    relative = pathlib.PurePosixPath(str(manifest_page.get("file") or ""))
+    if relative.is_absolute() or ".." in relative.parts or relative.suffixes[-2:] != [".html", ".gz"]:
+        raise RuntimeError(f"snapshot filename is unsafe: {relative}")
+    snapshot_path = snapshot_root.parent / pathlib.Path(relative.as_posix())
+    try:
+        snapshot_path.relative_to(snapshot_root)
+    except ValueError as error:
+        raise RuntimeError(f"snapshot escapes snapshot root: {relative}") from error
+
+    try:
+        compressed = snapshot_path.read_bytes()
+        expanded = gzip.decompress(compressed)
+    except (OSError, gzip.BadGzipFile) as error:
+        raise RuntimeError(f"cannot read rendered snapshot {relative}: {error}") from error
+    if hashlib.sha256(compressed).hexdigest() != manifest_page.get("snapshot_sha256"):
+        raise RuntimeError(f"compressed snapshot hash does not match manifest: {relative}")
+    if hashlib.sha256(expanded).hexdigest() != manifest_page.get("source_sha256"):
+        raise RuntimeError(f"rendered snapshot hash does not match manifest: {relative}")
+
+    parser = PageExtractor()
+    parser.feed(expanded.decode("utf-8", errors="strict"))
+    blocks = clean_blocks(parser.blocks)
+    content_characters = sum(len(block) for block in blocks)
+    if not blocks:
+        raise RuntimeError(f"rendered snapshot has no public main-frame text: {page.get('url')}")
+    return {
+        "title": normalize_text(" ".join(parser.title_parts)) or page.get("title", ""),
+        "description": parser.description,
+        "headings": clean_blocks(parser.headings)[:30],
+        "blocks": blocks,
+        "internal_links": internal_links(page["url"], parser.links),
+        "content_characters": content_characters,
+        "content_hash": hashlib.sha256("\n".join(blocks).encode()).hexdigest(),
+        "rendered_snapshot": {
+            "file": str(relative),
+            "source_sha256": manifest_page["source_sha256"],
+            "site_revision": manifest_page["site_revision"],
+        },
+    }
+
+
+def rendered_snapshot_pages(index_document, manifest_document, snapshot_root):
+    """Refresh page text from manifest-bound rendered snapshots without network I/O."""
+    pages = index_document.get("pages")
+    if not isinstance(pages, list) or not pages:
+        raise RuntimeError("site index must contain a non-empty pages list")
+    manifest_pages = manifest_document.get("pages")
+    if not isinstance(manifest_pages, list):
+        raise RuntimeError("rendered snapshot manifest must contain pages")
+    by_url = {item.get("url"): item for item in manifest_pages if isinstance(item, dict)}
+    expected_urls = {page.get("url") for page in pages if isinstance(page, dict)}
+    if expected_urls != set(by_url):
+        missing = sorted(expected_urls - set(by_url))
+        extra = sorted(set(by_url) - expected_urls)
+        raise RuntimeError(
+            "site index and rendered snapshot manifest differ; "
+            f"missing={missing[:3]!r}, extra={extra[:3]!r}"
+        )
+
+    refreshed = []
+    revisions = set()
+    for page in pages:
+        if not isinstance(page, dict) or not page.get("url"):
+            raise RuntimeError("site index contains an invalid page record")
+        manifest_page = by_url[page["url"]]
+        content = _rendered_snapshot_content(page, manifest_page, snapshot_root)
+        revisions.add(content["rendered_snapshot"]["site_revision"])
+        record = dict(page)
+        record.update(content)
+        record.pop("crawl_error", None)
+        refreshed.append(record)
+    if len(revisions) != 1:
+        raise RuntimeError(f"rendered snapshot refresh spans multiple Wix revisions: {sorted(revisions)}")
+    return refreshed
+
+
 def cached_inventory_pages(path):
     inventory = json.loads(path.read_text(encoding="utf-8"))
     kind_map = {
@@ -481,7 +593,19 @@ def cached_inventory_pages(path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--from-inventory", type=pathlib.Path, help="Convert an already completed public crawl without making new requests.")
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument("--from-inventory", type=pathlib.Path, help="Convert an already completed public crawl without making new requests.")
+    source.add_argument(
+        "--from-rendered-snapshots",
+        action="store_true",
+        help="Refresh text from the reviewed Firefox-rendered snapshot manifest without making network requests.",
+    )
+    parser.add_argument(
+        "--snapshot-manifest",
+        type=pathlib.Path,
+        default=SNAPSHOT_MANIFEST,
+        help="Manifest paired with --from-rendered-snapshots (default: replica-manifest.json).",
+    )
     args = parser.parse_args()
     if args.from_inventory:
         inventory, pages = cached_inventory_pages(args.from_inventory)
@@ -489,6 +613,27 @@ def main():
             pages,
             inventory.get("unique_url_count", len(pages)) + 1,
             inventory.get("generated_from", [ROOT_SITEMAP]),
+        )
+        return
+
+    if args.from_rendered_snapshots:
+        try:
+            index_document = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            parser.error(f"cannot read current site index for rendered refresh: {error}")
+        try:
+            manifest_document = _snapshot_document(args.snapshot_manifest)
+            pages = rendered_snapshot_pages(index_document, manifest_document, SNAPSHOT_ROOT)
+        except RuntimeError as error:
+            parser.error(str(error))
+        generated_from = list(index_document.get("generated_from", []))
+        rendered_source = f"rendered Firefox snapshots ({args.snapshot_manifest.name})"
+        if rendered_source not in generated_from:
+            generated_from.append(rendered_source)
+        write_index(
+            pages,
+            index_document.get("sitemap_entries", len(pages)),
+            generated_from,
         )
         return
 

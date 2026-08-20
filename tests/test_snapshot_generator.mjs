@@ -9,8 +9,14 @@ import test from "node:test";
 
 import {
   CaptureError,
+  CALENDAR_STATIC_HORIZON_EXPANSIONS,
+  MAX_PROGRESSIVE_COLLECTION_EXPANSIONS,
+  MAX_TRANSIENT_NAVIGATION_ATTEMPTS,
   SOURCE_ORIGIN,
   assertSanitized,
+  assertStaticContentMaterialized,
+  collectionMetricAdvanced,
+  isTransientNavigationFailure,
   atomicPublish,
   buildManifest,
   capturedAt,
@@ -169,6 +175,9 @@ test("sanitized markup guard accepts inert HTML and rejects executable or secret
     '<div id="wix-viewer-model"></div>',
     '<div data-value="X-XSRF-TOKEN"></div>',
     '<style>:root{--cookie-banner-primary-color:#fff}</style>',
+    '<p>An error occurred. Try again later</p>',
+    '<p>Your content has been submitted</p>',
+    '<p>Widget Didn\'t Load</p>',
   ];
   for (const fragment of unsafe) {
     assert.throws(
@@ -176,6 +185,58 @@ test("sanitized markup guard accepts inert HTML and rejects executable or secret
       CaptureError,
     );
   }
+});
+
+
+test("static disclosure and navigation gates reject hidden Wix-only content", () => {
+  const materialized = `
+    <details data-replica-static-disclosure="true" open><summary>FAQ</summary><div data-replica-static-content="true">Answer</div></details>
+    <details data-replica-static-menu="true"><summary>Services</summary><ul data-replica-static-menu-content="true"><li><a href="/workshops">Workshops</a></li></ul></details>
+  `;
+  assert.doesNotThrow(() => assertStaticContentMaterialized(materialized, {
+    disclosures: 1,
+    navigationMenus: 1,
+  }));
+  assert.throws(
+    () => assertStaticContentMaterialized(
+      materialized.replace(" open><summary>FAQ", "><summary>FAQ"),
+      { disclosures: 1, navigationMenus: 1 },
+    ),
+    /not open/,
+  );
+  assert.throws(
+    () => assertStaticContentMaterialized(
+      `${materialized}<button data-hook="accordion-item-header">FAQ</button>`,
+      { disclosures: 1, navigationMenus: 1 },
+    ),
+    /Wix accordion header remains/,
+  );
+  assert.throws(
+    () => assertStaticContentMaterialized(materialized, {
+      disclosures: 1,
+      navigationMenus: 2,
+    }),
+    /static navigation menus; expected 2/,
+  );
+});
+
+
+test("collection capture uses an explicit finite static calendar horizon", () => {
+  assert.equal(CALENDAR_STATIC_HORIZON_EXPANSIONS, 9);
+  assert.ok(MAX_PROGRESSIVE_COLLECTION_EXPANSIONS > CALENDAR_STATIC_HORIZON_EXPANSIONS);
+  const baseline = { visible_text_characters: 748, links: 9, service_page_links: 0, images: 7 };
+  assert.equal(collectionMetricAdvanced(baseline, { ...baseline, images: 55 }), true);
+  assert.equal(collectionMetricAdvanced(baseline, baseline), false);
+});
+
+
+test("only transient transport failures qualify for a bounded navigation retry", () => {
+  assert.equal(MAX_TRANSIENT_NAVIGATION_ATTEMPTS, 3);
+  assert.equal(isTransientNavigationFailure(new Error("page.goto: NS_ERROR_UNKNOWN_HOST")), true);
+  assert.equal(isTransientNavigationFailure(new Error("net::ERR_CONNECTION_RESET")), true);
+  assert.equal(isTransientNavigationFailure(new Error("Navigation timeout of 90000ms exceeded")), true);
+  assert.equal(isTransientNavigationFailure(new Error("https://example.test returned 404; expected 200")), false);
+  assert.equal(isTransientNavigationFailure(new Error("snapshot has unsafe markup")), false);
 });
 
 

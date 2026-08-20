@@ -31,6 +31,14 @@ if [[ "${1:-}" == "test" ]]; then
 fi
 
 if [[ "${1:-}" == "index" ]]; then
+  # The Guide's factual corpus must come from the reviewed, rendered capture.
+  # Raw Wix HTML can omit accordions, lazy collection items, and calendar rows.
+  exec python3 "$DEMO_DIR/scripts/rebuild_site_index.py" --from-rendered-snapshots
+fi
+
+if [[ "${1:-}" == "crawl-index" ]]; then
+  # Inventory-only operator path. Review its output against a rendered capture
+  # before using it to replace the indexed source corpus.
   exec python3 "$DEMO_DIR/scripts/rebuild_site_index.py"
 fi
 
