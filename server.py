@@ -1014,13 +1014,16 @@ def likely_source_ids(text, fallback=True):
         formula_focus = word_set.intersection({"formula", "formulas", "function", "functions"})
         focus_groups = [formatting_focus, organizing_focus, presenting_focus, formula_focus]
         focused_count = sum(bool(group) for group in focus_groups)
-        if formatting_focus and focused_count == 1:
+        # Preserve every explicitly named Excel topic as a model candidate.
+        # A question can intentionally compare two classes; sending it only
+        # the generic directory makes that comparison less grounded.
+        if formatting_focus:
             add(EXCEL_FORMATTING_ID)
-        if organizing_focus and focused_count == 1:
+        if organizing_focus:
             add(EXCEL_ORGANIZING_ID)
-        if presenting_focus and focused_count == 1:
+        if presenting_focus:
             add(EXCEL_PRESENTING_ID)
-        if formula_focus and focused_count == 1:
+        if formula_focus:
             add(EXCEL_FORMULAS_ID)
         if (
             focused_count == 0

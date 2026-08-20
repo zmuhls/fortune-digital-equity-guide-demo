@@ -39,6 +39,17 @@ export const FIXED_USER_AGENT =
   "Gecko/20100101 Firefox/128.0 FortuneReplicaCapture/1.0";
 export const DEFAULT_CONCURRENCY = 2;
 export const DEFAULT_NAVIGATION_TIMEOUT_MS = 90_000;
+export const MAX_TRANSIENT_NAVIGATION_ATTEMPTS = 3;
+export const MAIN_CONTENT_SELECTOR = '#PAGES_CONTAINER,main,[data-main-content="true" i]';
+export const WIX_ACCORDION_HEADER_SELECTOR =
+  'button[data-hook="accordion-item-header"][aria-controls]';
+export const MAX_PROGRESSIVE_COLLECTION_EXPANSIONS = 24;
+export const CALENDAR_STATIC_HORIZON_EXPANSIONS = 9;
+
+// This exists only while Firefox is collecting hidden panel content. It is
+// removed when the native static disclosure is written into the document.
+const CAPTURE_DISCLOSURE_ATTRIBUTE = "data-replica-capture-disclosure";
+const CAPTURE_COLLECTION_ATTRIBUTE = "data-replica-capture-collection-control";
 
 const SAFE_ID = /^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?$/i;
 const FORBIDDEN_MARKUP = [
@@ -54,7 +65,11 @@ const FORBIDDEN_MARKUP = [
   [/(?:x-)?xsrf-token/i, "XSRF token"],
   [/["'](?:sessionToken|accessToken)["']\s*[:=]/i, "session or access token"],
   [/--cookie-banner-/i, "transient cookie-banner style"],
+  [/>\s*An error occurred\.\s*Try again later\s*</i, "transient Wix form error state"],
+  [/>\s*Your content has been submitted\s*</i, "transient Wix form success state"],
+  [/>\s*Widget Didn[’']t Load\s*</i, "transient Wix widget error state"],
   [/<button\b(?![^>]*\bdisabled(?:\s|=|>))[^>]*>/i, "active button"],
+  [/<(?:input|textarea|select)\b(?![^>]*\bdisabled(?:\s|=|>))[^>]*>/i, "active form control"],
 ];
 
 
@@ -360,6 +375,618 @@ export function assertSanitized(html) {
 }
 
 
+function openingTags(html, tagName) {
+  return html.match(new RegExp(`<${tagName}\\b[^>]*>`, "gi")) || [];
+}
+
+
+function hasMarker(tag, name) {
+  return new RegExp(`\\b${name}=(?:["']true["']|true)(?:\\s|>|$)`, "i").test(tag);
+}
+
+
+/**
+ * The live Wix FAQ widget mounts one response at a time. A static capture
+ * must instead contain native, open disclosures for each item it collected.
+ * This is intentionally a string-level release gate so an incomplete browser
+ * interaction can never quietly replace a full FAQ with closed, inert buttons.
+ */
+export function assertStaticContentMaterialized(html, expected = {}) {
+  const expectedDisclosures = Number(expected.disclosures || 0);
+  const expectedMenus = Number(expected.navigationMenus || 0);
+  if (!Number.isSafeInteger(expectedDisclosures) || expectedDisclosures < 0) {
+    throw new CaptureError("static disclosure expectation must be a non-negative integer");
+  }
+  if (!Number.isSafeInteger(expectedMenus) || expectedMenus < 0) {
+    throw new CaptureError("static navigation-menu expectation must be a non-negative integer");
+  }
+
+  const staticDisclosureTags = openingTags(html, "details")
+    .filter((tag) => hasMarker(tag, "data-replica-static-disclosure"));
+  const staticContentTags = openingTags(html, "div")
+    .filter((tag) => hasMarker(tag, "data-replica-static-content"));
+  if (staticDisclosureTags.length !== expectedDisclosures) {
+    throw new CaptureError(
+      `snapshot contains ${staticDisclosureTags.length} static disclosures; expected ${expectedDisclosures}`,
+    );
+  }
+  if (staticContentTags.length !== expectedDisclosures) {
+    throw new CaptureError(
+      `snapshot contains ${staticContentTags.length} static disclosure bodies; expected ${expectedDisclosures}`,
+    );
+  }
+  if (staticDisclosureTags.some((tag) => !/\bopen(?:\s|=|>)/i.test(tag))) {
+    throw new CaptureError("static disclosure is not open in its capture state");
+  }
+  if (/<button\b[^>]*\bdata-hook=(?:"accordion-item-header"|'accordion-item-header')[^>]*>/i.test(html)) {
+    throw new CaptureError("Wix accordion header remains instead of a native static disclosure");
+  }
+
+  const staticMenuTags = openingTags(html, "details")
+    .filter((tag) => hasMarker(tag, "data-replica-static-menu"));
+  if (staticMenuTags.length !== expectedMenus) {
+    throw new CaptureError(
+      `snapshot contains ${staticMenuTags.length} static navigation menus; expected ${expectedMenus}`,
+    );
+  }
+  for (const tag of staticMenuTags) {
+    if (/\baria-hidden=(?:"true"|'true')/i.test(tag) || /display\s*:\s*none/i.test(tag)) {
+      throw new CaptureError("static navigation menu remains hidden");
+    }
+  }
+}
+
+
+/** This function is passed directly to page.evaluate. */
+export function progressiveCollectionMetric() {
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) {
+    return { visible_text_characters: 0, links: 0, service_page_links: 0, images: 0 };
+  }
+  const text = (root.innerText || "").replace(/\s+/g, " ").trim();
+  const visibleLinks = [...root.querySelectorAll("a[href]")].filter((anchor) => {
+    const style = getComputedStyle(anchor);
+    return anchor.getClientRects().length > 0 && style.display !== "none" && style.visibility !== "hidden";
+  });
+  const visibleImages = [...root.querySelectorAll("img")].filter((image) => {
+    const style = getComputedStyle(image);
+    return (
+      image.getClientRects().length > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      Boolean(image.currentSrc || image.getAttribute("src"))
+    );
+  });
+  return {
+    visible_text_characters: text.length,
+    links: visibleLinks.length,
+    service_page_links: visibleLinks.filter((anchor) => /\/service-page\//.test(anchor.href)).length,
+    images: visibleImages.length,
+  };
+}
+
+
+/**
+ * A collection may add cards, text links, or (for gallery widgets) media.
+ * Keep this pure so the policy is testable outside the browser capture.
+ */
+export function collectionMetricAdvanced(before, after) {
+  return (
+    Number(after?.visible_text_characters || 0) > Number(before?.visible_text_characters || 0) ||
+    Number(after?.links || 0) > Number(before?.links || 0) ||
+    Number(after?.service_page_links || 0) > Number(before?.service_page_links || 0) ||
+    Number(after?.images || 0) > Number(before?.images || 0)
+  );
+}
+
+
+/**
+ * Mark precisely one visible, content-only collection control. The matching
+ * deliberately excludes filters, registration buttons, and arbitrary action
+ * controls: only reviewed public Wix collection widgets are safe to activate
+ * during a static capture.
+ */
+export function markNextProgressiveCollectionControl() {
+  document.querySelectorAll("[data-replica-capture-collection-control]").forEach((element) => {
+    element.removeAttribute("data-replica-capture-collection-control");
+  });
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) return null;
+  const candidates = [...root.querySelectorAll("button,[role='button']")];
+  for (const candidate of candidates) {
+    const label = (candidate.getAttribute("aria-label") || candidate.innerText || candidate.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const style = getComputedStyle(candidate);
+    const visible =
+      candidate.getClientRects().length > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.opacity !== "0";
+    const disabled =
+      candidate.disabled === true ||
+      candidate.getAttribute("aria-disabled") === "true" ||
+      candidate.hasAttribute("inert");
+    const hook = candidate.getAttribute("data-hook") || "";
+    const safeCollectionWidget =
+      hook === "load-services-button-button" ||
+      hook === "daily-agenda-load-more-button" ||
+      hook === "show-more";
+    if (visible && !disabled && safeCollectionWidget && /^(?:load|show) more$/i.test(label)) {
+      candidate.setAttribute("data-replica-capture-collection-control", "next");
+      return { label, hook };
+    }
+  }
+  return null;
+}
+
+
+/** This function is serialized into Firefox by page.waitForFunction. */
+export function progressiveCollectionHasAdvanced(before) {
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) return false;
+  const text = (root.innerText || "").replace(/\s+/g, " ").trim();
+  const visibleLinks = [...root.querySelectorAll("a[href]")].filter((anchor) => {
+    const style = getComputedStyle(anchor);
+    return anchor.getClientRects().length > 0 && style.display !== "none" && style.visibility !== "hidden";
+  });
+  const visibleImages = [...root.querySelectorAll("img")].filter((image) => {
+    const style = getComputedStyle(image);
+    return (
+      image.getClientRects().length > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      Boolean(image.currentSrc || image.getAttribute("src"))
+    );
+  });
+  const metric = {
+    visible_text_characters: text.length,
+    links: visibleLinks.length,
+    service_page_links: visibleLinks.filter((anchor) => /\/service-page\//.test(anchor.href)).length,
+    images: visibleImages.length,
+  };
+  return (
+    metric.visible_text_characters > before.visible_text_characters ||
+    metric.links > before.links ||
+    metric.service_page_links > before.service_page_links ||
+    metric.images > before.images
+  );
+}
+
+
+/**
+ * This function is serialized into Firefox by page.waitForFunction. A gallery
+ * can already have all of its lazy media materialized by the bounded scroll
+ * hydration step; its final Load More click then retires the control without
+ * increasing the metric. That is a completed collection, not a no-op. An
+ * enabled, remaining control with no metric increase still fails the capture.
+ */
+export function progressiveCollectionTransitioned(before) {
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) return false;
+  const text = (root.innerText || "").replace(/\s+/g, " ").trim();
+  const visibleLinks = [...root.querySelectorAll("a[href]")].filter((anchor) => {
+    const style = getComputedStyle(anchor);
+    return anchor.getClientRects().length > 0 && style.display !== "none" && style.visibility !== "hidden";
+  });
+  const visibleImages = [...root.querySelectorAll("img")].filter((image) => {
+    const style = getComputedStyle(image);
+    return (
+      image.getClientRects().length > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      Boolean(image.currentSrc || image.getAttribute("src"))
+    );
+  });
+  const metric = {
+    visible_text_characters: text.length,
+    links: visibleLinks.length,
+    service_page_links: visibleLinks.filter((anchor) => /\/service-page\//.test(anchor.href)).length,
+    images: visibleImages.length,
+  };
+  const advanced =
+    metric.visible_text_characters > before.visible_text_characters ||
+    metric.links > before.links ||
+    metric.service_page_links > before.service_page_links ||
+    metric.images > before.images;
+  const control = document.querySelector(
+    '[data-replica-capture-collection-control="next"]',
+  );
+  const retired =
+    !control ||
+    control.disabled === true ||
+    control.getAttribute("aria-disabled") === "true" ||
+    control.hasAttribute("inert");
+  return advanced || retired;
+}
+
+
+/**
+ * A completed collection can retain a disabled visual Load More control. It
+ * has no remaining source content to reveal, so omit it from the static copy
+ * rather than publishing a dead control after sanitization.
+ */
+export function removeExhaustedProgressiveCollectionControls() {
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) return 0;
+  let removed = 0;
+  root.querySelectorAll("button,[role='button']").forEach((candidate) => {
+    const label = (candidate.getAttribute("aria-label") || candidate.innerText || candidate.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const disabled =
+      candidate.disabled === true ||
+      candidate.getAttribute("aria-disabled") === "true" ||
+      candidate.hasAttribute("inert");
+    const hook = candidate.getAttribute("data-hook") || "";
+    const safeCollectionWidget =
+      hook === "load-services-button-button" ||
+      hook === "daily-agenda-load-more-button" ||
+      hook === "show-more";
+    if (disabled && safeCollectionWidget && /^(?:load|show) more$/i.test(label)) {
+      candidate.remove();
+      removed += 1;
+    }
+  });
+  document.querySelectorAll("[data-replica-capture-collection-control]").forEach((element) => {
+    element.removeAttribute("data-replica-capture-collection-control");
+  });
+  return removed;
+}
+
+
+/**
+ * The live calendar offers an unbounded future agenda. Preserve a useful,
+ * explicitly labeled horizon rather than pretending a static page can contain
+ * an infinite schedule, and direct visitors to the actual live calendar.
+ */
+export function replaceBoundedCalendarContinuationWithLiveLink() {
+  const control = document.querySelector(
+    '[data-replica-capture-collection-control="next"]',
+  );
+  if (!control || control.getAttribute("data-hook") !== "daily-agenda-load-more-button") {
+    return false;
+  }
+  const note = document.createElement("p");
+  note.setAttribute("data-replica-live-calendar-note", "true");
+  note.style.setProperty("display", "block", "important");
+  note.style.setProperty("margin", "1rem 0", "important");
+  note.textContent = "Current public events are captured in this static snapshot. ";
+  const link = document.createElement("a");
+  link.href = window.location.href;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.setAttribute("data-live-action", "true");
+  link.textContent = "View the live calendar at Fortune.";
+  note.append(link);
+  control.replaceWith(note);
+  document.querySelectorAll("[data-replica-capture-collection-control]").forEach((element) => {
+    element.removeAttribute("data-replica-capture-collection-control");
+  });
+  return true;
+}
+
+
+export async function materializeProgressiveCollections(page) {
+  const before = await page.evaluate(progressiveCollectionMetric);
+  let clicks = 0;
+  let retiredWithoutGrowth = 0;
+  let calendarClicks = 0;
+  let calendarHorizonReached = false;
+  for (; clicks < MAX_PROGRESSIVE_COLLECTION_EXPANSIONS;) {
+    const control = await page.evaluate(markNextProgressiveCollectionControl);
+    if (!control) break;
+    if (
+      control.hook === "daily-agenda-load-more-button" &&
+      calendarClicks >= CALENDAR_STATIC_HORIZON_EXPANSIONS
+    ) {
+      calendarHorizonReached = true;
+      break;
+    }
+    const beforeClick = await page.evaluate(progressiveCollectionMetric);
+    const locator = page.locator(`[${CAPTURE_COLLECTION_ATTRIBUTE}="next"]`);
+    try {
+      await locator.scrollIntoViewIfNeeded({ timeout: 10_000 });
+      await locator.click({ timeout: 10_000 });
+      // A calendar button is briefly detached while Wix re-renders it after
+      // every page. Detachment alone is a valid terminal signal for finite
+      // galleries, but it must never make an open-ended public agenda look
+      // exhausted before its next event rows have actually rendered.
+      const transitionCheck = control.hook === "daily-agenda-load-more-button"
+        ? progressiveCollectionHasAdvanced
+        : progressiveCollectionTransitioned;
+      await page.waitForFunction(
+        transitionCheck,
+        beforeClick,
+        { timeout: 15_000 },
+      );
+      // Wix briefly fades and disables the same control while it appends the
+      // next page. Re-scan only after that transition has settled; otherwise a
+      // calendar capture can stop after one page despite more public rows.
+      await page.waitForTimeout(800);
+    } catch (error) {
+      throw new CaptureError(
+        `could not expand public ${control.label} collection content (${error.message})`,
+      );
+    }
+    const afterClick = await page.evaluate(progressiveCollectionMetric);
+    if (!collectionMetricAdvanced(beforeClick, afterClick)) retiredWithoutGrowth += 1;
+    clicks += 1;
+    if (control.hook === "daily-agenda-load-more-button") calendarClicks += 1;
+  }
+  const remaining = await page.evaluate(markNextProgressiveCollectionControl);
+  let calendarContinuationRemoved = false;
+  if (remaining && calendarHorizonReached && remaining.hook === "daily-agenda-load-more-button") {
+    calendarContinuationRemoved = await page.evaluate(
+      replaceBoundedCalendarContinuationWithLiveLink,
+    );
+    if (!calendarContinuationRemoved) {
+      throw new CaptureError("could not replace the bounded live-calendar continuation");
+    }
+  } else if (remaining) {
+    throw new CaptureError(
+      `public ${remaining.label} collection still has more content after ${MAX_PROGRESSIVE_COLLECTION_EXPANSIONS} expansions`,
+    );
+  }
+  const exhaustedControlsRemoved = await page.evaluate(
+    removeExhaustedProgressiveCollectionControls,
+  );
+  const unresolved = await page.evaluate(markNextProgressiveCollectionControl);
+  if (unresolved) {
+    throw new CaptureError(`static capture left an active ${unresolved.label} collection control`);
+  }
+  const after = await page.evaluate(progressiveCollectionMetric);
+  return {
+    load_more_clicks: clicks,
+    controls_retired_without_growth: retiredWithoutGrowth,
+    exhausted_controls_removed: exhaustedControlsRemoved,
+    calendar_horizon: calendarHorizonReached
+      ? {
+          clicks: calendarClicks,
+          limit: CALENDAR_STATIC_HORIZON_EXPANSIONS,
+          continuation_removed: calendarContinuationRemoved,
+          policy: "volatile live agenda; continue on Fortune's live calendar",
+        }
+      : null,
+    before,
+    after,
+  };
+}
+
+
+/**
+ * This function is passed directly to page.evaluate. Wix lazily mounts an
+ * accordion response only after its header is activated, so mark the direct
+ * widget headers before interacting with them one by one.
+ */
+export function discoverWixAccordionHeaders() {
+  const root = document.querySelector('#PAGES_CONTAINER,main,[data-main-content="true" i]');
+  if (!root) return [];
+  const headers = [...root.querySelectorAll('button[data-hook="accordion-item-header"][aria-controls]')];
+  return headers.map((header, index) => {
+    const controls = (header.getAttribute("aria-controls") || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    header.setAttribute("data-replica-capture-disclosure", String(index));
+    return {
+      index,
+      controls,
+      label: (header.textContent || "").replace(/\s+/g, " ").trim(),
+      initiallyExpanded: header.getAttribute("aria-expanded") === "true",
+    };
+  }).filter((header) => header.controls.length > 0 && header.label.length > 0);
+}
+
+
+/**
+ * Read the live content after an accordion opens. Keeping this separate from
+ * the final document matters because Wix closes and unmounts the previous
+ * answer as soon as the next header is selected.
+ */
+export function readWixAccordionContent({ index, controls }) {
+  const header = document.querySelector(
+    `[data-replica-capture-disclosure="${index}"]`,
+  );
+  if (!header) return { ready: false, targets: [] };
+  const targets = controls.map((id) => document.getElementById(id));
+  const ready =
+    header.getAttribute("aria-expanded") === "true" &&
+    targets.every((target) => {
+      if (!target) return false;
+      const text = (target.textContent || "").replace(/\s+/g, "").trim();
+      return Boolean(text || target.querySelector("img,video,audio,canvas,svg,table"));
+    });
+  return {
+    ready,
+    targets: targets.map((target, targetIndex) => ({
+      id: controls[targetIndex],
+      html: target ? target.innerHTML : "",
+    })),
+  };
+}
+
+
+/** This function is serialized into Firefox by page.waitForFunction. */
+export function wixAccordionContentIsReady({ index, controls }) {
+  const header = document.querySelector(
+    `[data-replica-capture-disclosure="${index}"]`,
+  );
+  if (!header || header.getAttribute("aria-expanded") !== "true") return false;
+  return controls.every((id) => {
+    const target = document.getElementById(id);
+    if (!target) return false;
+    const text = (target.textContent || "").replace(/\s+/g, "").trim();
+    return Boolean(text || target.querySelector("img,video,audio,canvas,svg,table"));
+  });
+}
+
+
+export async function materializeWixAccordionContent(page) {
+  const headers = await page.evaluate(discoverWixAccordionHeaders);
+  const records = [];
+  for (const header of headers) {
+    const locator = page.locator(
+      `[${CAPTURE_DISCLOSURE_ATTRIBUTE}="${header.index}"]`,
+    );
+    try {
+      if (!header.initiallyExpanded) {
+        await locator.scrollIntoViewIfNeeded({ timeout: 10_000 });
+        await locator.click({ timeout: 10_000 });
+      }
+      await page.waitForFunction(
+        wixAccordionContentIsReady,
+        { index: header.index, controls: header.controls },
+        { timeout: 10_000 },
+      );
+      const content = await page.evaluate(readWixAccordionContent, {
+        index: header.index,
+        controls: header.controls,
+      });
+      if (!content.ready) {
+        throw new CaptureError("the opened response did not contain public content");
+      }
+      records.push({ ...header, targets: content.targets });
+    } catch (error) {
+      const label = header.label.slice(0, 120) || `accordion ${header.index + 1}`;
+      throw new CaptureError(`could not materialize Wix accordion response: ${label} (${error.message})`);
+    }
+  }
+  return records;
+}
+
+
+/**
+ * Replace only direct Wix accordion items with native details/summary markup.
+ * Native details preserve readable source text after scripts are removed, while
+ * still allowing a visitor to collapse an answer voluntarily.
+ */
+export function replaceWixAccordionsWithNativeDisclosures(records) {
+  const result = { disclosures: 0, missing: [] };
+  for (const record of records) {
+    const header = document.querySelector(
+      `[data-replica-capture-disclosure="${record.index}"]`,
+    );
+    const item = header?.parentElement;
+    if (!header || !item || !record.targets?.length) {
+      result.missing.push(record.index);
+      continue;
+    }
+    const controlsRemainInsideItem = record.controls.every((id) => {
+      const target = document.getElementById(id);
+      return target && item.contains(target);
+    });
+    if (!controlsRemainInsideItem) {
+      result.missing.push(record.index);
+      continue;
+    }
+
+    const details = document.createElement("details");
+    details.open = true;
+    details.setAttribute("data-replica-static-disclosure", "true");
+    // Keep the header's horizontal navigation rhythm.  The previous block
+    // override made each recovered menu wrap onto a new line in the static
+    // header, even while closed.
+    details.style.setProperty("display", "inline-block", "important");
+    details.style.setProperty("width", "100%", "important");
+    details.style.setProperty("height", "auto", "important");
+    details.style.setProperty("overflow", "visible", "important");
+
+    const summary = document.createElement("summary");
+    summary.setAttribute("data-replica-static-summary", "true");
+    summary.textContent = record.label;
+    summary.style.setProperty("cursor", "pointer", "important");
+    summary.style.setProperty("padding", "0.75rem 0", "important");
+    summary.style.setProperty("font", "inherit", "important");
+
+    const content = document.createElement("div");
+    content.setAttribute("data-replica-static-content", "true");
+    content.style.setProperty("display", "block", "important");
+    content.style.setProperty("height", "auto", "important");
+    content.style.setProperty("max-height", "none", "important");
+    content.style.setProperty("overflow", "visible", "important");
+    content.style.setProperty("padding", "0 0 1rem", "important");
+    for (const target of record.targets) {
+      const section = document.createElement("div");
+      section.setAttribute("data-replica-static-content-source", target.id);
+      section.innerHTML = target.html;
+      content.append(section);
+    }
+    details.append(summary, content);
+    item.replaceWith(details);
+    result.disclosures += 1;
+  }
+  document.querySelectorAll("[data-replica-capture-disclosure]").forEach((element) => {
+    element.removeAttribute("data-replica-capture-disclosure");
+  });
+  return result;
+}
+
+
+/**
+ * The Wix header already contains its submenu links, but hides them behind a
+ * JavaScript-only button. Convert that direct, public link list to native
+ * details markup so the static replica still exposes its routes.
+ */
+export function replaceWixNavigationMenusWithNativeDisclosures() {
+  let converted = 0;
+  for (const item of [...document.querySelectorAll("nav li")]) {
+    if (!item.isConnected) continue;
+    const children = [...item.children];
+    const submenu = children.find((child) =>
+      child.localName === "ul" && child.querySelector(":scope > li > a[href]"),
+    );
+    const trigger = children.find((child) => child.getAttribute("aria-haspopup") === "true");
+    const label = (trigger?.textContent || "").replace(/\s+/g, " ").trim();
+    if (!submenu || !trigger || !label) continue;
+
+    const details = document.createElement("details");
+    details.setAttribute("data-replica-static-menu", "true");
+    details.style.setProperty("display", "block", "important");
+    details.style.setProperty("position", "static", "important");
+    details.style.setProperty("visibility", "visible", "important");
+    details.style.setProperty("height", "auto", "important");
+    details.style.setProperty("overflow", "visible", "important");
+
+    const summary = document.createElement("summary");
+    summary.textContent = label;
+    summary.setAttribute("data-replica-static-menu-summary", "true");
+    summary.style.setProperty("cursor", "pointer", "important");
+    summary.style.setProperty("font", "inherit", "important");
+
+    // Preserve the public links, not Wix's generated hidden-menu state. A
+    // cloned, plain list can be opened natively without inheriting a
+    // display:none or aria-hidden state from the original widget.
+    const staticList = document.createElement("ul");
+    staticList.setAttribute("data-replica-static-menu-content", "true");
+    staticList.style.setProperty("display", "block", "important");
+    staticList.style.setProperty("position", "static", "important");
+    staticList.style.setProperty("visibility", "visible", "important");
+    staticList.style.setProperty("height", "auto", "important");
+    staticList.style.setProperty("max-height", "none", "important");
+    staticList.style.setProperty("overflow", "visible", "important");
+    for (const child of [...submenu.children]) {
+      staticList.append(child.cloneNode(true));
+    }
+    staticList.querySelectorAll("a[tabindex='-1']").forEach((anchor) => {
+      anchor.removeAttribute("tabindex");
+    });
+
+    details.append(summary, staticList);
+    item.replaceChildren(details);
+    item.setAttribute("data-replica-static-menu-item", "true");
+    item.style.setProperty("display", "inline-block", "important");
+    item.style.setProperty("position", "static", "important");
+    item.style.setProperty("visibility", "visible", "important");
+    item.style.setProperty("width", "auto", "important");
+    item.style.setProperty("height", "auto", "important");
+    item.style.setProperty("overflow", "visible", "important");
+    converted += 1;
+  }
+  return converted;
+}
+
+
 /**
  * This function is passed directly to page.evaluate, so it must remain
  * self-contained and use browser globals only.
@@ -418,6 +1045,75 @@ export function sanitizeDocument() {
     if (removeElement) element.remove();
   });
 
+  // Wix keeps submission, error, and "submit another" screens mounted in
+  // the initial document, then merely hides them until the form state changes.
+  // They are not public instructional copy, and publishing them in a static
+  // snapshot makes a never-submitted form look broken or already complete.
+  const normalizedText = (element) => (element.textContent || "").replace(/\s+/g, " ").trim();
+  const isTransientFormState = (text) =>
+    /^(?:an error occurred\. try again later|your content has been submitted|thanks for reaching out!|submit another(?: [^.!]{1,96})?!|widget didn[’']t load)$/i.test(text);
+  document.querySelectorAll("[aria-live],[role='alert'],[data-testid='richTextElement']").forEach((element) => {
+    const text = normalizedText(element);
+    const isEmptyLiveRegion =
+      !text &&
+      (element.matches("[aria-live]") || element.matches("[role='alert']"));
+    if (isEmptyLiveRegion || isTransientFormState(text)) element.remove();
+  });
+  // Wix error widgets are not consistently marked as alerts or rich text.
+  // Remove only a leaf whose complete visible text is a known transient state,
+  // never a container with public page content.
+  document.querySelectorAll("*").forEach((element) => {
+    if (!element.isConnected || !isTransientFormState(normalizedText(element))) return;
+    const childRepeatsState = [...element.children].some((child) =>
+      isTransientFormState(normalizedText(child)),
+    );
+    if (!childRepeatsState) element.remove();
+  });
+
+  // A static replica must never present an interactive-looking booking,
+  // registration, upload, or submit affordance that cannot work. Keep the
+  // original public action available by replacing visible action controls with
+  // a direct link to the approved source page that supplied the snapshot.
+  const liveSourceHref = window.location.href;
+  const actionLabelPattern = /^(?:register(?:\s+here)?|book(?:\s+now)?|submit|send|share|subscribe|view|see|read|upload(?:\s+(?:a\s+)?(?:file|photo|design|resume))?|apply|sign\s*up|reserve|continue|join(?:\s+now)?)\b/i;
+  const makeLiveActionLink = (label) => {
+    const link = document.createElement("a");
+    link.href = liveSourceHref;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute("data-replica-live-action", "true");
+    link.textContent = label
+      ? `${label} on Fortune's live site`
+      : "Continue on Fortune's live site";
+    link.setAttribute(
+      "aria-label",
+      label
+        ? `${label} on the live Fortune page`
+        : "Continue on the live Fortune page",
+    );
+    return link;
+  };
+  document.querySelectorAll("button,input[type='button' i],input[type='submit' i],input[type='reset' i],[role='button']").forEach((control) => {
+    if (!control.isConnected || control.matches("a[href]")) return;
+    // Wix can temporarily report a collapsed client rect for an otherwise
+    // published control while a page is hydrating. Semantic hidden state is
+    // reliable; geometry and opacity are not.
+    if (control.closest("[hidden],[aria-hidden='true']")) return;
+    const label = (
+      control.getAttribute("aria-label") ||
+      control.getAttribute("value") ||
+      control.innerText ||
+      control.textContent ||
+      ""
+    ).replace(/\s+/g, " ").trim();
+    if (!actionLabelPattern.test(label)) return;
+    const link = makeLiveActionLink(label);
+    for (const name of ["id", "class", "style"]) {
+      if (control.hasAttribute(name)) link.setAttribute(name, control.getAttribute(name));
+    }
+    control.replaceWith(link);
+  });
+
   document.querySelectorAll("form").forEach((form) => {
     const shell = document.createElement("div");
     for (const attribute of [...form.attributes]) {
@@ -425,24 +1121,45 @@ export function sanitizeDocument() {
         shell.setAttribute(attribute.name, attribute.value);
       }
     }
-    shell.setAttribute("inert", "");
     shell.setAttribute("role", "group");
     shell.setAttribute("aria-disabled", "true");
     shell.setAttribute("data-replica-inert", "form");
     shell.replaceChildren(...form.childNodes);
+    if (!shell.querySelector("[data-replica-live-action]")) {
+      shell.append(" ", makeLiveActionLink("Use this form"));
+    }
     form.replaceWith(shell);
   });
-  document.querySelectorAll('button, input[type="button" i], input[type="submit" i], input[type="reset" i]').forEach((button) => {
-    button.setAttribute("disabled", "");
-    button.setAttribute("aria-disabled", "true");
-    button.setAttribute("data-replica-inert", "button");
+  // A static mirror must not look like an application with broken fields,
+  // filters, pagination, or social controls. Public text remains in place;
+  // actions were converted above to direct official-source links. A few Wix
+  // panels put their only human-readable title inside a disabled button, so
+  // retain substantial non-action labels as plain static text before removing
+  // the control itself.
+  const disposableControlLabel = /^(?:skip to (?:main )?content|all locations|like|more(?: actions)?|previous|next|play(?: video)?|expand image|show more|load more|close|menu|filter|choose|clear|reset)$/i;
+  document.querySelectorAll("button").forEach((control) => {
+    const label = (
+      control.getAttribute("aria-label") || control.innerText || control.textContent || ""
+    ).replace(/\s+/g, " ").trim();
+    if (!label || disposableControlLabel.test(label)) {
+      control.remove();
+      return;
+    }
+    const staticLabel = document.createElement("p");
+    staticLabel.setAttribute("data-replica-static-control-label", "true");
+    staticLabel.textContent = label;
+    control.replaceWith(staticLabel);
   });
+  document.querySelectorAll("input,textarea,select").forEach((control) => control.remove());
   document.querySelectorAll('[role="button" i]').forEach((button) => {
     if (button.matches("a[href]")) return;
-    button.setAttribute("inert", "");
-    button.setAttribute("aria-disabled", "true");
-    button.setAttribute("tabindex", "-1");
-    button.setAttribute("data-replica-inert", "button");
+    // Some Wix media cards use a button role for their container. Keep their
+    // public image/text but turn the container into ordinary static markup.
+    button.removeAttribute("role");
+    button.removeAttribute("inert");
+    button.removeAttribute("aria-disabled");
+    button.removeAttribute("tabindex");
+    button.removeAttribute("data-replica-inert");
   });
 
   document.querySelectorAll("iframe").forEach((frame) => {
@@ -475,7 +1192,10 @@ export function sanitizeDocument() {
       const label = frame.title
         ? `Open embedded content: ${frame.title}`
         : `Open embedded content from ${source.hostname}`;
-      if (/^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(previewSource)) {
+      const interactiveEmbed = /\b(?:forms?|subscribe|newsletter|maps?|calendar|scheduler|booking|register)\b/i.test(
+        `${frame.title || ""} ${source.hostname}`,
+      );
+      if (!interactiveEmbed && /^data:image\/png;base64,[a-z0-9+/]+=*$/i.test(previewSource)) {
         const preview = document.createElement("img");
         preview.src = previewSource;
         preview.alt = `${label} (static preview)`;
@@ -489,6 +1209,12 @@ export function sanitizeDocument() {
         link.textContent = label;
       }
       placeholder.append(link);
+      const note = document.createElement("p");
+      note.setAttribute("data-replica-static-preview-note", "true");
+      note.textContent = interactiveEmbed
+        ? "Interactive content is available on Fortune's live site."
+        : "Static preview — use the link for the live content.";
+      placeholder.append(note);
     } else {
       placeholder.textContent = frame.title || "Embedded content is available on the original page.";
     }
@@ -548,11 +1274,9 @@ export function auditSanitizedDocument() {
       }
     }
   });
-  document.querySelectorAll('button,input[type="button" i],input[type="submit" i],input[type="reset" i]').forEach((button) => {
-    if (!button.disabled) add("active button remains");
-  });
+  if (document.querySelector("button,input,textarea,select")) add("interactive control remains");
   document.querySelectorAll('[role="button" i]:not(a[href])').forEach((button) => {
-    if (!button.hasAttribute("inert")) add("active button role remains");
+    add("button role remains");
   });
   if (document.querySelector("img[srcset],img[sizes]")) add("responsive image candidates remain");
   if (document.querySelectorAll('meta[name="robots" i][content*="noindex" i]').length !== 1) {
@@ -686,6 +1410,41 @@ function expectedStatus(route, allowedStatuses) {
 }
 
 
+/**
+ * A full capture is atomic, so one short-lived DNS or transport failure must
+ * not discard a complete public-source run. Status/content failures are never
+ * retried here: only errors before the official page can be reached are.
+ */
+export function isTransientNavigationFailure(error) {
+  const message = String(error?.message || error || "");
+  return /(?:NS_ERROR_UNKNOWN_HOST|NS_ERROR_NET_RESET|ERR_NAME_NOT_RESOLVED|ERR_CONNECTION_(?:RESET|CLOSED)|ERR_NETWORK_CHANGED|ERR_TIMED_OUT|navigation timeout|timeout \d+ms exceeded|did not return a main-frame response)/i.test(message);
+}
+
+
+async function navigateToOfficialPage(page, route, navigationTimeoutMs) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_TRANSIENT_NAVIGATION_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await page.goto(route.url, {
+        waitUntil: "domcontentloaded",
+        timeout: navigationTimeoutMs,
+      });
+      if (!response) {
+        throw new CaptureError(`${route.url} did not return a main-frame response`);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (!isTransientNavigationFailure(error) || attempt === MAX_TRANSIENT_NAVIGATION_ATTEMPTS) {
+        throw error;
+      }
+      await page.waitForTimeout(750 * attempt);
+    }
+  }
+  throw lastError;
+}
+
+
 async function captureRoute(browser, route, snapshotDirectory, options) {
   const context = await browser.newContext({
     viewport: VIEWPORT,
@@ -702,11 +1461,7 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
   try {
     const page = await context.newPage();
     page.setDefaultNavigationTimeout(options.navigationTimeoutMs);
-    const response = await page.goto(route.url, {
-      waitUntil: "domcontentloaded",
-      timeout: options.navigationTimeoutMs,
-    });
-    if (!response) throw new CaptureError(`${route.url} did not return a main-frame response`);
+    const response = await navigateToOfficialPage(page, route, options.navigationTimeoutMs);
 
     const status = response.status();
     const permittedStatus = expectedStatus(route, options.allowedStatuses);
@@ -719,6 +1474,24 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     }
 
     await hydratePage(page);
+    const progressiveCollections = await materializeProgressiveCollections(page);
+    if (progressiveCollections.load_more_clicks > 0) await hydratePage(page);
+    const accordionRecords = await materializeWixAccordionContent(page);
+    // Opening one Wix accordion closes the previous one. Let the live page
+    // settle once more, then replace every recorded response at once below.
+    if (accordionRecords.length > 0) await hydratePage(page);
+    const staticContent = await page.evaluate(
+      replaceWixAccordionsWithNativeDisclosures,
+      accordionRecords,
+    );
+    if (staticContent.missing.length > 0 || staticContent.disclosures !== accordionRecords.length) {
+      throw new CaptureError(
+        `${route.url} could not replace every materialized Wix accordion (${staticContent.missing.join(", ")})`,
+      );
+    }
+    const staticNavigationMenus = await page.evaluate(
+      replaceWixNavigationMenusWithNativeDisclosures,
+    );
     const embedPreviews = await captureIframePreviews(page);
     const capturedCookies = await context.cookies();
     if (capturedCookies.length > 0) {
@@ -745,6 +1518,10 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     }
     const html = await page.content();
     assertSanitized(html);
+    assertStaticContentMaterialized(html, {
+      disclosures: staticContent.disclosures,
+      navigationMenus: staticNavigationMenus,
+    });
     const source = Buffer.from(html, "utf8");
     const snapshot = await deterministicGzip(source);
     const file = `replica-snapshots/${route.id}.html.gz`;
@@ -762,6 +1539,11 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
       site_revision: siteRevision,
       etag: responseHeaders.etag || null,
       embed_previews: embedPreviews,
+      static_content: {
+        wix_accordions: staticContent.disclosures,
+        navigation_menus: staticNavigationMenus,
+        progressive_collections: progressiveCollections,
+      },
       source_bytes: source.byteLength,
       snapshot_bytes: snapshot.byteLength,
       source_sha256: sha256(source),
