@@ -36,6 +36,8 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
+REPLICA_SHELL_CSS_VERSION = "20260820-responsive-header-1"
+REPLICA_SHELL_JS_VERSION = "20260820-responsive-header-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
@@ -226,9 +228,11 @@ def render_snapshot(snapshot_html: str, route: dict[str, str], asset_base: str) 
     escaped_csp = html.escape(CSP, quote=True)
     escaped_source = html.escape(route["sourceUrl"], quote=True)
     escaped_page_id = html.escape(route["pageId"], quote=True)
-    escaped_css = html.escape(f"{asset_base}replica-shell.css?v=20260803-replica-1", quote=True)
+    escaped_css = html.escape(
+        f"{asset_base}replica-shell.css?v={REPLICA_SHELL_CSS_VERSION}", quote=True
+    )
     escaped_js = html.escape(
-        f"{asset_base}replica-shell.js?v=20260817-route-refresh-1",
+        f"{asset_base}replica-shell.js?v={REPLICA_SHELL_JS_VERSION}",
         quote=True,
     )
     head_injection = (

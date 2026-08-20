@@ -76,6 +76,125 @@
     });
   }
 
+  function visibleText(element) {
+    return (element?.innerText || element?.textContent || "").replace(/\s+/g, " ").trim();
+  }
+
+  function makeReplicaLink(source, className) {
+    const label = visibleText(source);
+    const href = source?.href || source?.getAttribute("href") || "";
+    if (!label || !href) return null;
+    const link = document.createElement("a");
+    link.className = className;
+    link.href = href;
+    link.textContent = label;
+    if (source.getAttribute("aria-current")) {
+      link.setAttribute("aria-current", source.getAttribute("aria-current"));
+    }
+    return link;
+  }
+
+  /**
+   * Wix's captured header is a fixed-width, JavaScript-dependent grid. The
+   * public page links themselves are complete in the snapshot, so rebuild only
+   * that navigation in neutral native markup. This lets the static replica
+   * remain usable at narrow widths without inventing a new navigation tree.
+   */
+  function installReplicaHeader() {
+    const sourceHeader = document.querySelector("#SITE_HEADER");
+    const sourceNav = sourceHeader?.querySelector("nav > ul");
+    if (!sourceHeader || !sourceNav || document.querySelector("#fortune-replica-header")) return;
+
+    const header = document.createElement("header");
+    header.id = "fortune-replica-header";
+    header.setAttribute("aria-label", "Fortune Digital Equity site header");
+    header.dataset.menuOpen = "false";
+
+    const inner = document.createElement("div");
+    inner.className = "fortune-replica-header__inner";
+
+    const sourceBrand = [...sourceHeader.querySelectorAll("a[href]")]
+      .find((anchor) => anchor.querySelector("img"));
+    const sourceLogo = sourceBrand?.querySelector("img");
+    if (sourceBrand && sourceLogo) {
+      const brand = document.createElement("a");
+      brand.className = "fortune-replica-header__brand";
+      brand.href = sourceBrand.href;
+      brand.setAttribute("aria-label", sourceBrand.getAttribute("aria-label") || "Fortune Digital Equity home");
+      const logo = document.createElement("img");
+      logo.src = sourceLogo.currentSrc || sourceLogo.src;
+      logo.alt = sourceLogo.alt || "The Fortune Society";
+      brand.append(logo);
+      inner.append(brand);
+    }
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "fortune-replica-header__toggle";
+    toggle.textContent = "Menu";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", "fortune-replica-site-navigation");
+
+    const nav = document.createElement("nav");
+    nav.className = "fortune-replica-header__nav";
+    nav.id = "fortune-replica-site-navigation";
+    nav.setAttribute("aria-label", "Site navigation");
+    const list = document.createElement("ul");
+
+    for (const sourceItem of sourceNav.children) {
+      if (sourceItem.getAttribute("aria-hidden") === "true") continue;
+      const item = document.createElement("li");
+      const sourceLink = sourceItem.querySelector(":scope > a[href]");
+      if (sourceLink) {
+        const link = makeReplicaLink(sourceLink, "fortune-replica-header__link");
+        if (link) item.append(link);
+      } else {
+        const sourceMenu = sourceItem.querySelector(":scope > details[data-replica-static-menu]");
+        const sourceSummary = sourceMenu?.querySelector(":scope > summary");
+        const label = visibleText(sourceSummary);
+        if (!sourceMenu || !label) continue;
+        const menu = document.createElement("details");
+        menu.className = "fortune-replica-header__menu";
+        const summary = document.createElement("summary");
+        summary.textContent = label;
+        menu.append(summary);
+        const submenu = document.createElement("ul");
+        for (const sourceSubLink of sourceMenu.querySelectorAll(":scope > ul > li > a[href]")) {
+          const link = makeReplicaLink(sourceSubLink, "fortune-replica-header__sublink");
+          if (!link) continue;
+          const subitem = document.createElement("li");
+          subitem.append(link);
+          submenu.append(subitem);
+        }
+        if (!submenu.childElementCount) continue;
+        menu.append(submenu);
+        item.append(menu);
+      }
+      if (item.childElementCount) list.append(item);
+    }
+    if (!list.childElementCount) return;
+
+    nav.append(list);
+    inner.append(toggle, nav);
+    header.append(inner);
+    sourceHeader.before(header);
+    document.documentElement.dataset.fortuneReplicaHeaderReady = "true";
+
+    toggle.addEventListener("click", () => {
+      const isOpen = header.dataset.menuOpen === "true";
+      header.dataset.menuOpen = String(!isOpen);
+      toggle.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    nav.addEventListener("toggle", (event) => {
+      const opened = event.target;
+      if (!(opened instanceof HTMLDetailsElement) || !opened.open) return;
+      nav.querySelectorAll("details[open]").forEach((menu) => {
+        if (menu !== opened) menu.open = false;
+      });
+    }, true);
+  }
+
   fetch(new URL("site-index.json", assetRoot), { cache: "no-store" })
     .then((response) => {
       if (!response.ok) throw new Error(`route index returned ${response.status}`);
@@ -109,6 +228,8 @@
   liveLink.textContent = "Fortune's current website";
   notice.append(liveLink, ".");
   document.body.prepend(notice);
+
+  installReplicaHeader();
 
   if (new URLSearchParams(window.location.search).get("guide") === "0") return;
 
