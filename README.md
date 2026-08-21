@@ -1,8 +1,8 @@
 # Fortune Digital Equity page-aware guide
 
-This repository publishes an inert replica of the public Fortune Digital Equity site with its informational sidecar. The August 17 inventory contains 138 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each route preserves the rendered public page while removing Wix scripts, forms, tokens, trackers, and authenticated services. Internal links stay inside the replica; booking, form, upload, and member actions lead to the live Fortune site.
+This repository publishes text views of the public Fortune Digital Equity sources used by its informational sidecar. The August 17 inventory contains 138 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each published route is regenerated from the same approved title, description, and content blocks available to retrieval; image markup, visual captions, Wix styling, scripts, forms, tokens, trackers, and authenticated services are not published. The reviewed rendered captures remain private build inputs for source completeness and integrity checks.
 
-The page remains readable when the model service is unavailable. In that state, the static GitHub Pages build uses the public index for page context and links visitors to source pages. The published Pages configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds the provider key, accepts the `https://zmuhls.github.io` browser origin, and applies per-client and shared daily model-call limits. The server preloads GLM-5.2 at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the model ready for 30 minutes.
+The source text remains readable when the model service is unavailable. In that state, the static GitHub Pages build uses the public index for page context and links visitors to source pages. The published Pages configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds the provider key, accepts the `https://zmuhls.github.io` browser origin, and applies per-client and shared daily model-call limits. The server preloads GLM-5.2 at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the model ready for 30 minutes.
 
 ## Source limits
 
@@ -87,7 +87,7 @@ python3 scripts/build_pages.py
 python3 -m http.server 8791 --directory _site
 ```
 
-The build writes 138 `index.html` route snapshots under `_site/`, including the root route, and copies only the shared files that the replica and sidecar require.
+The build writes 138 human-readable, text-only `index.html` source routes under `_site/`, including the root route, and copies only the shared files that those views and the sidecar require.
 
 Run the live local model demo:
 
@@ -128,7 +128,7 @@ The provider remains behind the server contract. Fortune can later move from the
 
 ## GitHub publication
 
-The demonstration has a dedicated public repository at [zmuhls/fortune-digital-equity-guide-demo](https://github.com/zmuhls/fortune-digital-equity-guide-demo). Its repository root contains only the demonstration source, tests, workflows, and deployment notes. GitHub Actions builds the allowlisted static artifact and publishes it at [zmuhls.github.io/fortune-digital-equity-guide-demo](https://zmuhls.github.io/fortune-digital-equity-guide-demo/). The public Pages version uses the HTTPS model backend configured in `config.js`. If that service is unavailable, the replicated pages and source navigation remain readable, while chat reports that it is unavailable instead of substituting an unlogged browser answer.
+The demonstration has a dedicated public repository at [zmuhls/fortune-digital-equity-guide-demo](https://github.com/zmuhls/fortune-digital-equity-guide-demo). Its repository root contains only the demonstration source, tests, workflows, and deployment notes. GitHub Actions builds the allowlisted static artifact and publishes it at [zmuhls.github.io/fortune-digital-equity-guide-demo](https://zmuhls.github.io/fortune-digital-equity-guide-demo/). The public Pages version uses the HTTPS model backend configured in `config.js`. If that service is unavailable, the text source pages and navigation remain readable, while chat reports that it is unavailable instead of substituting an unlogged browser answer.
 
 ## Suggested meeting path
 

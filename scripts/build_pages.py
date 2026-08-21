@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the reviewed Fortune replica and its isolated informational sidecar."""
+"""Build text views of reviewed Fortune sources and the isolated Website Guide."""
 
 from __future__ import annotations
 
@@ -36,8 +36,8 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
-REPLICA_SHELL_CSS_VERSION = "20260820-header-fit-2"
-REPLICA_SHELL_JS_VERSION = "20260820-header-fit-2"
+REPLICA_SHELL_CSS_VERSION = "20260820-text-source-1"
+REPLICA_SHELL_JS_VERSION = "20260820-text-source-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
@@ -50,15 +50,74 @@ CSP = (
     "default-src 'none'; "
     "base-uri 'none'; "
     "connect-src 'self'; "
-    "font-src data: https://static.parastorage.com https://static.wixstatic.com https://fonts.gstatic.com; "
+    "font-src 'none'; "
     "frame-src 'self'; "
-    "img-src 'self' data: blob: https://static.parastorage.com https://static.wixstatic.com "
-    "https://siteassets.parastorage.com https://www-fortunedigitalequity-org.filesusr.com https://i.ytimg.com; "
-    "media-src https://static.parastorage.com https://static.wixstatic.com; "
+    "img-src 'none'; "
+    "media-src 'none'; "
     "object-src 'none'; "
     "script-src 'self'; "
-    "style-src 'self' 'unsafe-inline' https://static.parastorage.com https://static.wixstatic.com https://fonts.googleapis.com; "
+    "style-src 'self'; "
     "form-action 'none'"
+)
+
+VISUAL_SCAFFOLD = (
+    re.compile(r"^(?:an?\s+)?icon representing\b", re.I),
+    re.compile(r"^(?:image|photo|photograph)\s+(?:of|showing)\b", re.I),
+    re.compile(r"^qr ?code\b", re.I),
+    re.compile(r"^a digital navigator helping\b", re.I),
+    re.compile(r"^participant being helped\b", re.I),
+    re.compile(r"^the crowd at the annual fortune society tech fair\b", re.I),
+    re.compile(r"^profile photo of\b", re.I),
+    re.compile(r"^an animation of\b", re.I),
+    re.compile(r"^a series of .+ icons?\b", re.I),
+    re.compile(r"^a collage of .+ photos?\b", re.I),
+    re.compile(r"^logo for\b", re.I),
+    re.compile(r"^.{1,120}\bicon drawn by artificial intelligence$", re.I),
+    re.compile(r"^.{1,120}\b(?:logo|icon|stock image|splash image|collage)$", re.I),
+    re.compile(r"^.+\s+(?:badge|clip art)$", re.I),
+    re.compile(r"^.+\.(?:gif|jpe?g|png|webp)$", re.I),
+)
+BOILERPLATE_PHRASES = (
+    "double click on the text box",
+    "this space is a great opportunity",
+    "every website has a story",
+    "use tab to navigate",
+    "loading days",
+    "book now",
+)
+NAVIGATION_LABELS = {
+    "welcome!",
+    "to the fortune society",
+    "choose a service",
+    "explore learning paths",
+    "more about us",
+    "find a workshop",
+    "view calendar",
+    "get a device",
+    "internship",
+    "get support",
+    "explore tools",
+    "contact us",
+    "attend an open lab",
+    "more",
+    "explore more",
+    "other resources",
+    "volunteer",
+    "special events",
+    "donate",
+    "tech fair",
+    "program updates",
+    "media kit",
+    "hear from past participants",
+    "still not sure where to start?",
+}
+PRIMARY_NAVIGATION = (
+    ("Home", "/"),
+    ("Workshops", "/workshops"),
+    ("Calendar", "/calendar"),
+    ("Devices", "/devices"),
+    ("Support", "/support"),
+    ("Contact", "/contact"),
 )
 
 
@@ -79,7 +138,7 @@ def route_path(url: str) -> str:
     return path
 
 
-def load_routes() -> list[dict[str, str]]:
+def load_routes() -> list[dict]:
     try:
         document = json.loads(INDEX_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -111,7 +170,12 @@ def load_routes() -> list[dict[str, str]]:
             raise BuildError(f"duplicate page id: {page_id}")
         seen_paths.add(path)
         seen_ids.add(page_id)
-        routes.append({"path": path, "sourceUrl": url, "pageId": page_id})
+        routes.append({
+            "path": path,
+            "sourceUrl": url,
+            "pageId": page_id,
+            "page": page,
+        })
 
     if "/" not in seen_paths:
         raise BuildError("site-index.json does not contain the root route")
@@ -212,54 +276,144 @@ def route_destination(site_root: pathlib.Path, path: str) -> pathlib.Path:
     return site_root.joinpath(*path.strip("/").split("/"), "index.html")
 
 
-def render_snapshot(snapshot_html: str, route: dict[str, str], asset_base: str) -> str:
-    snapshot_html = re.sub(
-        r"(?<!:)//(?=(?:static\.parastorage\.com|static\.wixstatic\.com|siteassets\.parastorage\.com|www-fortunedigitalequity-org\.filesusr\.com|i\.ytimg\.com)/)",
-        "https://",
-        snapshot_html,
-        flags=re.IGNORECASE,
-    )
-    lower = snapshot_html.lower()
-    head_match = re.search(r"<head\b[^>]*>", snapshot_html, re.IGNORECASE)
-    body_position = lower.rfind("</body>")
-    if not head_match or body_position < 0 or body_position < head_match.end():
-        raise BuildError(f"snapshot has invalid document boundaries: {route['sourceUrl']}")
+def clean_source_fragment(value: object) -> str:
+    """Mirror the model's visual-scaffolding filter for a readable source view."""
 
-    escaped_csp = html.escape(CSP, quote=True)
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    text = re.sub(r"^[*#]+\s*", "", text)
+    folded = text.casefold().strip(" .")
+    if (
+        not text
+        or "©" in text
+        or folded.startswith("copyright ")
+        or any(phrase in folded for phrase in BOILERPLATE_PHRASES)
+        or any(pattern.search(text) for pattern in VISUAL_SCAFFOLD)
+    ):
+        return ""
+    return text
+
+
+def source_fragments(page: dict) -> list[tuple[str, bool]]:
+    """Return deduplicated source text, marking captured headings for hierarchy."""
+
+    heading_keys = {
+        clean_source_fragment(value).casefold()
+        for value in page.get("headings", [])
+        if clean_source_fragment(value)
+    }
+    values = [page.get("description", ""), *page.get("blocks", [])]
+    seen: set[str] = set()
+    fragments: list[tuple[str, bool]] = []
+    title_key = clean_source_fragment(page.get("title", "")).casefold()
+    for value in values:
+        text = clean_source_fragment(value)
+        key = text.casefold()
+        if not text or key == title_key or key in seen:
+            continue
+        seen.add(key)
+        is_heading = key in heading_keys
+        if key in NAVIGATION_LABELS:
+            continue
+        if (
+            text.isupper()
+            and len(text.split()) <= 4
+            and not is_heading
+            and "COMING SOON" not in text
+        ):
+            continue
+        if fragments and not fragments[-1][1]:
+            prior, _ = fragments[-1]
+            continues_prior = bool(
+                re.search(r"\b(?:and|for|of|out of|the|to|with)$", prior, re.I)
+                or (text[:1].islower() and not prior.endswith((".", "?", "!", ":")))
+            )
+            if continues_prior:
+                fragments[-1] = (f"{prior} {text}", False)
+                continue
+        fragments.append((text, is_heading))
+    return fragments
+
+
+def static_href(asset_base: str, path: str) -> str:
+    if path == "/":
+        return f"{asset_base}index.html"
+    return f"{asset_base}{path.strip('/')}/"
+
+
+def render_text_page(route: dict, asset_base: str) -> str:
+    """Render the approved retrieval record as a small, text-only HTML page."""
+
+    page = route.get("page") or {}
+    title = clean_source_fragment(page.get("title")) or route["path"].strip("/") or "Home"
+    authority = str(page.get("authority") or "excluded")
+    is_answer_source = authority == "answer" and int(page.get("status") or 0) == 200
+    escaped_title = html.escape(title)
     escaped_source = html.escape(route["sourceUrl"], quote=True)
     escaped_page_id = html.escape(route["pageId"], quote=True)
+    escaped_csp = html.escape(CSP, quote=True)
     escaped_css = html.escape(
         f"{asset_base}replica-shell.css?v={REPLICA_SHELL_CSS_VERSION}", quote=True
     )
     escaped_js = html.escape(
-        f"{asset_base}replica-shell.js?v={REPLICA_SHELL_JS_VERSION}",
-        quote=True,
+        f"{asset_base}replica-shell.js?v={REPLICA_SHELL_JS_VERSION}", quote=True
     )
-    head_injection = (
-        "\n  <!-- Fortune replica publication controls -->\n"
-        "  <meta name=\"robots\" content=\"noindex,nofollow,noarchive\">\n"
-        "  <meta name=\"referrer\" content=\"no-referrer\">\n"
-        f"  <meta http-equiv=\"Content-Security-Policy\" content=\"{escaped_csp}\">\n"
-        f"  <meta name=\"fortune-replica-source\" content=\"{escaped_source}\">\n"
-        f"  <link rel=\"stylesheet\" href=\"{escaped_css}\">\n"
+    navigation = "".join(
+        f'<a href="{html.escape(static_href(asset_base, path), quote=True)}"'
+        + (' aria-current="page"' if route["path"] == path else "")
+        + f">{html.escape(label)}</a>"
+        for label, path in PRIMARY_NAVIGATION
     )
-    head_position = head_match.end()
-    shell = snapshot_html[:head_position] + head_injection + snapshot_html[head_position:]
-    body_position = shell.lower().rfind("</body>")
-    body_injection = (
-        "\n  <!-- Trusted sidecar and same-site navigation bridge -->\n"
-        f"  <script src=\"{escaped_js}\" data-source-url=\"{escaped_source}\" "
-        f"data-page-id=\"{escaped_page_id}\"></script>\n"
-    )
-    shell = shell[:body_position] + body_injection + shell[body_position:]
-    shell = re.sub(
-        r"<html\b",
-        f"<html {REPLICA_MARKER}",
-        shell,
-        count=1,
-        flags=re.IGNORECASE,
-    )
-    return shell
+
+    if is_answer_source:
+        content = []
+        for text, is_heading in source_fragments(page):
+            tag = "h2" if is_heading else "p"
+            content.append(f"      <{tag}>{html.escape(text)}</{tag}>")
+        source_content = "\n".join(content) or "      <p>No source text is available.</p>"
+        source_label = "Website Guide source text"
+    else:
+        source_content = (
+            "      <p>This route is retained for navigation or reference. "
+            "It is not used by Website Guide as a current answer source.</p>"
+        )
+        source_label = "Not a current answer source"
+
+    lastmod = clean_source_fragment(page.get("lastmod"))
+    updated = f" · site update {html.escape(lastmod)}" if lastmod else ""
+    return f"""<!doctype html>
+<html lang="en" {REPLICA_MARKER} data-fortune-text-view="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{escaped_title} · Fortune source text</title>
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="{escaped_csp}">
+  <meta name="fortune-replica-source" content="{escaped_source}">
+  <link rel="stylesheet" href="{escaped_css}">
+</head>
+<body>
+  <a class="skip-link" href="#source-text">Skip to source text</a>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="site-name" href="{html.escape(static_href(asset_base, '/'), quote=True)}">Fortune Society Digital Equity</a>
+      <nav aria-label="Source pages">{navigation}</nav>
+    </div>
+  </header>
+  <main id="source-text">
+    <p class="source-kind">{html.escape(source_label)}</p>
+    <h1>{escaped_title}</h1>
+    <article class="source-document">
+{source_content}
+    </article>
+    <footer class="source-footer">
+      <p>Source: <a href="{escaped_source}" target="_blank" rel="noreferrer">Fortune Society Digital Equity</a>{updated}</p>
+    </footer>
+  </main>
+  <script src="{escaped_js}" data-source-url="{escaped_source}" data-page-id="{escaped_page_id}"></script>
+</body>
+</html>
+"""
 
 
 def expected_files(routes: list[dict[str, str]]) -> set[pathlib.PurePosixPath]:
@@ -302,8 +456,12 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
         shell = (site_root / pathlib.Path(shell_path.as_posix())).read_text(encoding="utf-8")
         if REPLICA_MARKER not in shell:
             raise BuildError(f"replica marker is missing from {shell_path}")
+        if 'data-fortune-text-view="true"' not in shell:
+            raise BuildError(f"text-source marker is missing from {shell_path}")
         if shell.lower().count("<script") != 1 or "replica-shell.js" not in shell:
             raise BuildError(f"unexpected executable scripts in {shell_path}")
+        if re.search(r"<\s*(?:img|picture|svg)\b|<\s*style\b", shell, re.IGNORECASE):
+            raise BuildError(f"visual or inline-style markup found in {shell_path}")
         for forbidden in ("wix-viewer-model", "X-XSRF-TOKEN", "OLLAMA_API_KEY"):
             if forbidden.lower() in shell.lower():
                 raise BuildError(f"private or runtime-only value found in {shell_path}: {forbidden}")
@@ -336,9 +494,9 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
             destination.parent.mkdir(parents=True, exist_ok=True)
             depth = 0 if route["path"] == "/" else len(route["path"].strip("/").split("/"))
             prefix = "../" * depth
-            rendered = render_snapshot(
-                snapshots[route["sourceUrl"]]["html"], route, prefix
-            )
+            if route["sourceUrl"] not in snapshots:
+                raise BuildError(f"missing reviewed snapshot for {route['sourceUrl']}")
+            rendered = render_text_page(route, prefix)
             destination.write_text(rendered, encoding="utf-8")
         counts = validate_output(temporary, routes)
         if OUTPUT_PATH.exists():

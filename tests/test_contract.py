@@ -2565,7 +2565,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260817-route-refresh-1")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20260820-text-source-1")', replica_shell)
         self.assertIn("persistConversation();", app)
         self.assertIn("restoreConversation();", app)
         self.assertIn("clearPersistedConversation();", app)

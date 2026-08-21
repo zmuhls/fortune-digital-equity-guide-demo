@@ -23,6 +23,21 @@ HOME_ROUTE = {
     "path": "/",
     "sourceUrl": "https://www.fortunedigitalequity.org/",
     "pageId": "page-home-33c2c081",
+    "page": {
+        "id": "page-home-33c2c081",
+        "url": "https://www.fortunedigitalequity.org/",
+        "title": "Digital Equity Hub",
+        "description": "Digital tools, workshops, access, and support.",
+        "headings": ["Frequently Asked Questions"],
+        "blocks": [
+            "A Digital Navigator helping a Fortune Digital Equity student",
+            "Frequently Asked Questions",
+            "Can I attend a class without registering?",
+        ],
+        "authority": "answer",
+        "status": 200,
+        "lastmod": "2026-08-17",
+    },
 }
 
 
@@ -81,23 +96,41 @@ class IndexRouteTests(unittest.TestCase):
 
 
 class SnapshotRenderingTests(unittest.TestCase):
-    def test_replica_shell_uses_viewport_bounded_mid_width_navigation(self):
+    def test_text_shell_css_is_small_and_contains_no_visual_assets(self):
         shell_css = (DEMO / "replica-shell.css").read_text(encoding="utf-8")
 
-        self.assertGreaterEqual(shell_css.count("width: min(100%, 100vw);"), 2)
-        self.assertIn("@media (max-width: 1080px)", shell_css)
-        self.assertIn(".fortune-replica-header__toggle", shell_css)
+        self.assertLess(len(shell_css.encode("utf-8")), 5000)
+        self.assertIn(".source-document", shell_css)
+        self.assertIn("#fortune-sidecar-host", shell_css)
+        self.assertNotIn("background-image", shell_css)
+        self.assertNotIn("url(", shell_css)
 
-    def test_nested_replica_uses_depth_aware_assets_and_one_trusted_script(self):
+    def test_nested_text_source_uses_depth_aware_assets_and_one_trusted_script(self):
         route = {
             "path": "/service-page/understanding-computers",
             "sourceUrl": "https://www.fortunedigitalequity.org/service-page/understanding-computers",
             "pageId": "service-intro",
+            "page": {
+                "title": "Understanding Computers",
+                "description": "Learn the basic parts of a computer and how they work.",
+                "headings": ["What you will learn"],
+                "blocks": [
+                    "Image of a laptop computer",
+                    "A collage of class photos",
+                    "an icon representing email safety",
+                    "Logo for a partner organization",
+                    "What you will learn",
+                    "Identify hardware, software, storage, and common ports.",
+                ],
+                "authority": "answer",
+                "status": 200,
+            },
         }
 
-        shell = build_pages.render_snapshot(snapshot_document(), route, "../../")
+        shell = build_pages.render_text_page(route, "../../")
 
         self.assertIn(build_pages.REPLICA_MARKER, shell)
+        self.assertIn('data-fortune-text-view="true"', shell)
         self.assertIn(
             f'href="../../replica-shell.css?v={build_pages.REPLICA_SHELL_CSS_VERSION}"',
             shell,
@@ -108,13 +141,21 @@ class SnapshotRenderingTests(unittest.TestCase):
         )
         self.assertIn(f'data-source-url="{route["sourceUrl"]}"', shell)
         self.assertEqual(shell.lower().count("<script"), 1)
+        self.assertIn("Learn the basic parts of a computer", shell)
+        self.assertIn("Identify hardware, software, storage", shell)
+        self.assertNotIn("Image of a laptop", shell)
+        self.assertNotIn("collage of class photos", shell)
+        self.assertNotIn("icon representing email safety", shell)
+        self.assertNotIn("Logo for a partner", shell)
+        self.assertNotIn("<img", shell.lower())
+        self.assertNotIn("<style", shell.lower())
+        self.assertNotIn("static.wix", shell.lower())
         self.assertIn("form-action &#x27;none&#x27;", shell)
+        self.assertIn("img-src &#x27;none&#x27;", shell)
         self.assertIn('content="noindex,nofollow,noarchive"', shell)
-        self.assertLess(shell.index("Content-Security-Policy"), shell.index("<style>"))
-        self.assertIn("url('https://static.parastorage.com/font.woff2')", shell)
 
-    def test_root_replica_keeps_root_relative_assets(self):
-        shell = build_pages.render_snapshot(snapshot_document(), HOME_ROUTE, "")
+    def test_root_text_source_keeps_root_relative_assets(self):
+        shell = build_pages.render_text_page(HOME_ROUTE, "")
 
         self.assertIn(
             f'href="replica-shell.css?v={build_pages.REPLICA_SHELL_CSS_VERSION}"',
@@ -125,6 +166,20 @@ class SnapshotRenderingTests(unittest.TestCase):
             shell,
         )
         self.assertNotIn('href="../replica-shell.css', shell)
+
+    def test_non_answer_route_does_not_publish_stale_source_blocks(self):
+        route = {
+            **HOME_ROUTE,
+            "page": {
+                **HOME_ROUTE["page"],
+                "authority": "archive",
+                "blocks": ["A stale class schedule that the model cannot retrieve."],
+            },
+        }
+        shell = build_pages.render_text_page(route, "")
+
+        self.assertIn("Not a current answer source", shell)
+        self.assertNotIn("stale class schedule", shell)
 
     def test_invalid_or_active_snapshot_markup_is_rejected_before_build(self):
         fixtures = (
@@ -229,6 +284,14 @@ class ArtifactTests(unittest.TestCase):
                 "path": "/about",
                 "sourceUrl": "https://www.fortunedigitalequity.org/about",
                 "pageId": "page-about",
+                "page": {
+                    "title": "About Digital Equity",
+                    "description": "About the Digital Equity program.",
+                    "headings": [],
+                    "blocks": ["The program supports Fortune participants."],
+                    "authority": "answer",
+                    "status": 200,
+                },
             },
         ]
         snapshots = {
@@ -273,7 +336,7 @@ class ArtifactTests(unittest.TestCase):
                 (root / asset).write_text("public\n", encoding="utf-8")
             (root / build_pages.SIDECAR_OUTPUT).write_text("sidecar\n", encoding="utf-8")
             (root / "index.html").write_text(
-                f"<html {build_pages.REPLICA_MARKER}><body>"
+                f"<html {build_pages.REPLICA_MARKER} data-fortune-text-view=\"true\"><body>"
                 '<script src="replica-shell.js"></script></body></html>',
                 encoding="utf-8",
             )

@@ -1,12 +1,12 @@
 # GitHub Pages demonstration roadmap
 
-GitHub Pages hosts an inert replica for each of the 138 public HTML routes in `site-index.json`, so a reviewer can open a class, device, support, calendar, event, news, or archive path directly. Each snapshot preserves its rendered Wix page and adds the informational sidecar with the canonical Fortune source ID.
+GitHub Pages hosts a human-readable text view for each of the 138 public HTML routes in `site-index.json`, so a reviewer can open a class, device, support, calendar, event, news, or archive path directly. Current answer routes expose the same approved title, description, and content blocks available to retrieval; navigation, archive, and excluded routes do not publish stale answer text. The reviewed Wix captures remain build inputs and are not served as page markup.
 
 GitHub Pages serves static files and cannot protect a runtime model credential. The public site therefore has two operating states.
 
 ## Static source-backed state
 
-The Pages build contains public HTML, CSS, JavaScript, `site-index.json`, and an empty or public API-base configuration. When the backend is absent, the current route still supplies its source title, summary, authority state, tailored prompts, and verified Fortune links. The guide reports that the live model is unavailable and continues to direct visitors to current pages and staff.
+The Pages build contains small semantic HTML documents, one minimal text-view stylesheet, the Website Guide JavaScript, `site-index.json`, and an empty or public API-base configuration. It publishes no page images, inline visual styling, or Wix asset dependencies. When the backend is absent, the current route still supplies its source text, authority state, tailored prompts, and verified Fortune link.
 
 The static state cannot confirm schedules, registration, availability, eligibility, inventory, or other changing details. It links to the live Fortune page for those facts.
 
@@ -36,9 +36,9 @@ python3 scripts/build_pages.py
 python3 -m http.server 8791 --directory _site
 ```
 
-The builder creates `_site/index.html` and one nested `index.html` for every non-root canonical path. The complete output contains 138 route snapshots plus the shared replica, sidecar, configuration, and source-index files.
+The builder creates `_site/index.html` and one nested `index.html` for every non-root canonical path. The complete output contains 138 text-source routes plus the shared text view, sidecar, configuration, and source-index files.
 
-Each route shell sets public route context with `path`, `sourceUrl`, and `pageId`. Internal mock links remain inside the Pages site when the destination is indexed. Unindexed booking actions, PDFs, and other live-only destinations open the canonical Fortune URL.
+Each route sets public context with `path`, `sourceUrl`, and `pageId`. The small text navigation remains inside the Pages site; the source footer opens the canonical Fortune URL.
 
 ## Local live-model check
 
