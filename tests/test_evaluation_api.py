@@ -24,6 +24,7 @@ class _FakeEvaluationStore:
         self.claimed = False
         self.invited_email = None
         self.prompt_proposals = {}
+        self.review_notes = {}
 
     def public_status(self):
         return {
@@ -127,7 +128,18 @@ class _FakeEvaluationStore:
     def list_conversations(self, _slot, _limit):
         return []
 
+    def get_conversation(self, _slot, conversation_id):
+        return {
+            "id": conversation_id,
+            "note": self.review_notes.get(conversation_id),
+            "annotations": [],
+            "messages": [],
+            "evaluation_version": 3,
+            "transcript_version": 9,
+        }
+
     def save_note(self, slot, conversation_id, note, expected_version, transcript_version, operation_id):
+        self.review_notes[conversation_id] = str(note or "").strip() or None
         return {
             "slot": slot,
             "conversation_id": conversation_id,
@@ -475,6 +487,17 @@ class EvaluationApiTests(unittest.TestCase):
         )
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(body)["evaluation"]["version"], 3)
+
+        status, _, body = self.request(
+            "GET",
+            f"/api/evaluation/conversations/{conversation_id}",
+            headers={"Cookie": "__Host-fs_eval=editor-2-session"},
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(
+            json.loads(body)["conversation"]["note"],
+            "The next step was clear.",
+        )
 
         status, _, body = self.request(
             "PUT",

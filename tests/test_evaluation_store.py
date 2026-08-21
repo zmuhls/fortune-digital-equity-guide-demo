@@ -405,7 +405,26 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260821-human-review-1", html)
+        self.assertIn("20260821-shared-note-persistence-1", html)
+
+    def test_reviewer_notes_and_annotations_are_reloaded_after_saving(self):
+        javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
+        html = (DEMO / "evaluation.html").read_text(encoding="utf-8")
+
+        self.assertIn("Shared reviewer note", html)
+        self.assertIn("async function refreshOpenConversation()", javascript)
+        self.assertGreaterEqual(
+            javascript.count("await refreshOpenConversation();"),
+            2,
+        )
+        self.assertIn('reviewNoteStatus.textContent = "Unsaved changes"', javascript)
+        self.assertIn('reviewNoteStatus.textContent = "Saved to shared review"', javascript)
+        self.assertIn('class="save-status annotation-status"', javascript)
+        self.assertIn("showAnnotationEditor(", javascript)
+        self.assertIn(
+            'Object.prototype.hasOwnProperty.call(evaluation, "note")',
+            javascript,
+        )
 
     def test_prompt_lab_is_compact_shared_and_has_no_activation_control(self):
         html = (DEMO / "evaluation.html").read_text(encoding="utf-8")

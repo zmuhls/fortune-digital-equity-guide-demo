@@ -35,6 +35,7 @@
   const transcript = document.querySelector("#transcript");
   const reviewNoteForm = document.querySelector("#review-note-form");
   const reviewNote = document.querySelector("#review-note");
+  const reviewNoteSave = reviewNoteForm.querySelector('button[type="submit"]');
   const reviewNoteStatus = document.querySelector("#review-note-status");
   const moveStatus = document.querySelector("#move-status");
   const deployedPromptVersion = document.querySelector("#deployed-prompt-version");
@@ -797,7 +798,7 @@
     transcriptTitle.textContent = shortId(detail.id);
     transcriptMeta.textContent = `${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)} · ${versionLabel(detail, true)}`;
     reviewNote.value = detail.note || "";
-    reviewNoteStatus.textContent = "";
+    reviewNoteStatus.textContent = detail.note ? "Saved in shared review" : "";
     renderTranscriptMessages();
     transcriptDialog.showModal();
   }
@@ -838,6 +839,7 @@
           <div class="annotation-actions">
             <button class="secondary-button" type="submit">Save annotation</button>
             ${annotation ? '<button class="text-button remove-annotation" type="button">Remove</button>' : ""}
+            <span class="save-status annotation-status" role="status"></span>
           </div>
         </form>
       </article>`;
@@ -865,7 +867,9 @@
 
   function updateOpenConversation(evaluation) {
     if (!state.openConversation) return;
-    state.openConversation.note = evaluation.note ?? state.openConversation.note ?? null;
+    if (Object.prototype.hasOwnProperty.call(evaluation, "note")) {
+      state.openConversation.note = evaluation.note || null;
+    }
     state.openConversation.evaluation_version = Number(evaluation.version ?? state.openConversation.evaluation_version ?? 0);
     state.openConversation.transcript_version = Number(evaluation.transcript_version ?? state.openConversation.transcript_version ?? 0);
     const conversation = state.conversations.find(item => item.id === state.openConversation.id);
@@ -876,8 +880,37 @@
     }
   }
 
+  async function refreshOpenConversation() {
+    if (!state.openConversation || localPreview) return state.openConversation;
+    const conversationId = state.openConversation.id;
+    const detail = (await api(`/api/evaluation/conversations/${encodeURIComponent(conversationId)}`)).conversation;
+    if (!detail || detail.id !== conversationId) throw new Error("Saved review could not be verified.");
+    state.openConversation = detail;
+    const conversation = state.conversations.find(item => item.id === conversationId);
+    if (conversation) {
+      conversation.bucket_id = detail.bucket_id || null;
+      conversation.note = detail.note || null;
+      conversation.annotations = detail.annotations || [];
+      conversation.evaluation_version = Number(detail.evaluation_version || 0);
+      conversation.transcript_version = Number(detail.transcript_version || 0);
+    }
+    return detail;
+  }
+
+  function showAnnotationEditor(messageId, statusText) {
+    const message = [...transcript.querySelectorAll(".message")].find(item => item.dataset.messageId === messageId);
+    if (!message) return;
+    const toggle = message.querySelector(".annotation-toggle");
+    const form = message.querySelector(".annotation-form");
+    form.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+    form.querySelector(".annotation-status").textContent = statusText;
+  }
+
   async function saveReviewNote() {
-    if (!state.openConversation) return;
+    if (!state.openConversation || reviewNoteSave.disabled) return;
+    const submittedNote = reviewNote.value;
+    reviewNoteSave.disabled = true;
     reviewNoteStatus.textContent = "Saving…";
     try {
       let evaluation;
@@ -899,14 +932,30 @@
         })).evaluation;
       }
       updateOpenConversation(evaluation || {});
-      if (localPreview) previewSave();
-      reviewNoteStatus.textContent = "Saved";
+      if (localPreview) {
+        previewSave();
+      } else {
+        try {
+          await refreshOpenConversation();
+        } catch (_error) {
+          reviewNoteStatus.textContent = "Saved. Reopen to confirm.";
+          return;
+        }
+      }
+      if (reviewNote.value === submittedNote) {
+        reviewNote.value = state.openConversation.note || "";
+        reviewNoteStatus.textContent = "Saved to shared review";
+      } else {
+        reviewNoteStatus.textContent = "Saved. New changes not saved.";
+      }
     } catch (error) {
       if (error.status === 409 && error.payload?.current) {
         updateOpenConversation(error.payload.current);
         reviewNote.value = state.openConversation.note || "";
       }
       reviewNoteStatus.textContent = `Not saved. ${error.message}`;
+    } finally {
+      reviewNoteSave.disabled = false;
     }
   }
 
@@ -915,7 +964,10 @@
     const current = annotationFor(messageId);
     const category = remove ? "" : form.elements.category.value;
     const note = remove ? "" : form.elements.note.value;
-    reviewNoteStatus.textContent = "Saving annotation…";
+    const annotationSave = form.querySelector('button[type="submit"]');
+    const annotationStatus = form.querySelector(".annotation-status");
+    annotationSave.disabled = true;
+    annotationStatus.textContent = "Saving…";
     try {
       let annotation;
       if (localPreview) {
@@ -942,11 +994,27 @@
       if (annotation) state.openConversation.annotations.push(annotation);
       const conversation = state.conversations.find(item => item.id === state.openConversation.id);
       if (conversation) conversation.annotations = state.openConversation.annotations;
-      if (localPreview) previewSave();
+      let verified = true;
+      if (localPreview) {
+        previewSave();
+      } else {
+        try {
+          await refreshOpenConversation();
+        } catch (_error) {
+          verified = false;
+        }
+      }
       renderTranscriptMessages();
-      reviewNoteStatus.textContent = annotation ? "Annotation saved" : "Annotation removed";
+      showAnnotationEditor(
+        messageId,
+        verified
+          ? (annotation ? "Saved to shared review" : "Removed from shared review")
+          : "Saved. Reopen to confirm.",
+      );
     } catch (error) {
-      reviewNoteStatus.textContent = `Annotation not saved. ${error.message}`;
+      annotationStatus.textContent = `Not saved. ${error.message}`;
+    } finally {
+      annotationSave.disabled = false;
     }
   }
 
@@ -1066,6 +1134,9 @@
   reviewNoteForm.addEventListener("submit", event => {
     event.preventDefault();
     saveReviewNote();
+  });
+  reviewNote.addEventListener("input", () => {
+    reviewNoteStatus.textContent = "Unsaved changes";
   });
   transcriptClose.addEventListener("click", () => {
     transcriptDialog.close();
