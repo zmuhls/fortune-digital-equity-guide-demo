@@ -249,7 +249,7 @@ async function waitFor(predicate, message = "frontend state did not settle") {
   assert.fail(message);
 }
 
-async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false } = {}) {
+async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false, captureMode = "none" } = {}) {
   const document = new FakeDocument();
   const panel = document.register("#guide-panel", new FakeElement("section", document));
   const toggle = document.register("#guide-toggle", new FakeElement("button", document));
@@ -264,12 +264,13 @@ async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelE
   send.type = "submit";
   const editStatus = document.register("#edit-status", new FakeElement("p", document));
   const editCancel = document.register("#edit-cancel", new FakeElement("button", document));
+  const privacyCopy = document.register("#privacy-copy", new FakeElement("p", document));
   const modelStatus = document.register("#model-status", new FakeElement("p", document));
   const contextText = document.register("#context-window-text", new FakeElement("p", document));
   const contextCopy = document.register("#context-window-copy", new FakeElement("p", document));
   const reset = document.register("#guide-reset", new FakeElement("button", document));
   form.append(input, send, editCancel);
-  panel.append(close, title, transcript, suggestions, form, editStatus, modelStatus, contextText, contextCopy, reset);
+  panel.append(close, title, transcript, suggestions, form, editStatus, privacyCopy, modelStatus, contextText, contextCopy, reset);
   panel.hidden = false;
 
   const storage = new FakeStorage();
@@ -280,7 +281,7 @@ async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelE
     const value = String(url);
     if (value.endsWith("/health")) {
       healthRequests += 1;
-      return fakeResponse({ model_enabled: modelEnabled, conversation_logging: { capture_mode: "none" } });
+      return fakeResponse({ model_enabled: modelEnabled, conversation_logging: { capture_mode: captureMode } });
     }
     if (value.endsWith("/api/chat")) {
       chatRequests.push(JSON.parse(options.body));
@@ -330,7 +331,7 @@ async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelE
     console,
   }, { filename: "app.js" });
   await waitFor(() => healthRequests === 1 && window.FortuneGuide.state().apiReady, "Pages health check did not settle");
-  return { window, document, input, transcript, editStatus, storage, chatRequests };
+  return { window, document, input, transcript, editStatus, privacyCopy, contextCopy, storage, chatRequests };
 }
 
 class FakeShadowRoot extends FakeElement {
@@ -360,6 +361,7 @@ class FakeShadowRoot extends FakeElement {
     const send = add(".send", "button");
     const cancel = add(".cancel-edit", "button");
     const editStatus = add(".edit-status", "p");
+    const privacy = add("#fortune-guide-privacy", "p");
     const capture = add(".capture-notice", "p");
     const context = add(".context-count", "p");
     const model = add(".model-status", "p");
@@ -371,7 +373,7 @@ class FakeShadowRoot extends FakeElement {
     reset.hidden = true;
     cancel.hidden = true;
     form.append(input, send, cancel, editStatus, status);
-    panel.append(close, transcript, suggestions, form, capture, context, model, reset, contact);
+    panel.append(close, transcript, suggestions, form, privacy, capture, context, model, reset, contact);
     this.append(toggle, panel, questionLabel);
   }
 
@@ -382,7 +384,7 @@ class FakeShadowRoot extends FakeElement {
   }
 }
 
-async function wixHarness({ chatPayload, chatError, chatResponses = [] } = {}) {
+async function wixHarness({ chatPayload, chatError, chatResponses = [], captureMode = "none" } = {}) {
   const document = new FakeDocument();
   const storage = new FakeStorage();
   const chatRequests = [];
@@ -393,7 +395,7 @@ async function wixHarness({ chatPayload, chatError, chatResponses = [] } = {}) {
     const value = String(url);
     if (value.endsWith("/health")) {
       healthRequests += 1;
-      return fakeResponse({ model_enabled: true, conversation_logging: { capture_mode: "none" } });
+      return fakeResponse({ model_enabled: true, conversation_logging: { capture_mode: captureMode } });
     }
     if (value.endsWith("/api/warmup")) return fakeResponse({ status: "ready" });
     if (value.endsWith("/api/chat")) {
@@ -450,6 +452,8 @@ async function wixHarness({ chatPayload, chatError, chatResponses = [] } = {}) {
     input: guide.input,
     transcript: guide.transcript,
     status: guide.status,
+    privacyNotice: guide.privacyNotice,
+    captureNotice: guide.captureNotice,
     storage,
     chatRequests,
   };
@@ -520,6 +524,28 @@ test("evaluation conversations are ordered newest first before pagination", () =
     { Date, Intl, JSON, Number, String },
   );
   assert.deepEqual(JSON.parse(orderedJson), ["newest", "same-a", "same-b", "older", "invalid"]);
+});
+
+test("Pages and Wix disclose human transcript review when capture is active", async () => {
+  const pages = await pagesHarness({ captureMode: "transcript" });
+  assert.equal(
+    pages.privacyCopy.textContent,
+    "Recorded for team review. Don’t include personal information.",
+  );
+  assert.equal(
+    pages.contextCopy.textContent,
+    "Questions and answers are recorded for team review.",
+  );
+
+  const wix = await wixHarness({ captureMode: "transcript" });
+  assert.equal(
+    wix.privacyNotice.textContent,
+    "Recorded for team review. Don’t include personal information.",
+  );
+  assert.equal(
+    wix.captureNotice.textContent,
+    "Questions and answers are recorded for team review.",
+  );
 });
 
 test("canonical URLs stay on the approved public host", () => {

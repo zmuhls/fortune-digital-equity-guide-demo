@@ -23,7 +23,8 @@ from prompt_policy import PROMPT_POLICY_VERSION
 
 
 CAPTURE_MODES = {"none", "metadata", "transcript"}
-SCHEMA_VERSION = "005_interaction_context"
+HUMAN_REVIEW_SURFACES = frozenset({"replica", "wix"})
+SCHEMA_VERSION = "009_human_review_capture"
 
 
 class CaptureUnavailable(RuntimeError):
@@ -231,6 +232,7 @@ class ConversationRecorder:
             app_version
             or os.environ.get("RAILWAY_GIT_COMMIT_SHA")
             or os.environ.get("FORTUNE_APP_VERSION")
+            or os.environ.get("RAILWAY_DEPLOYMENT_ID")
             or "local"
         )[:120]
         self.prompt_version = str(prompt_version or PROMPT_POLICY_VERSION)[:80]
@@ -630,7 +632,9 @@ class ConversationRecorder:
             raise CaptureUnavailable("Required conversation capture is not ready")
         review_state = (
             "ready"
-            if privacy_state == "clear" and reservation.client_surface == "synthetic"
+            if reservation.capture_mode == "transcript"
+            and privacy_state == "clear"
+            and reservation.client_surface in HUMAN_REVIEW_SURFACES
             else "pending" if privacy_state == "clear" else "excluded"
         )
         source_ids = [

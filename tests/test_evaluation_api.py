@@ -316,6 +316,7 @@ class EvaluationApiTests(unittest.TestCase):
             "/migrations/003_evaluator_identity.sql",
             "/migrations/007_prompt_proposals.sql",
             "/migrations/008_remove_handoff_bucket.sql",
+            "/migrations/009_human_review_capture.sql",
             "/scripts/issue_evaluator_invite.py",
             "/tests/test_evaluation_api.py",
             "/replica-snapshots/page-home-e6c04f0f.html.gz",

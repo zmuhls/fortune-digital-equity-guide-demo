@@ -5,6 +5,7 @@ import pathlib
 import sys
 import unittest
 import uuid
+from unittest import mock
 
 
 DEMO = pathlib.Path(__file__).resolve().parents[1]
@@ -90,9 +91,15 @@ def recording_recorder(mode):
 
 
 class ConversationStoreTests(unittest.TestCase):
-    def test_benchmark_surface_is_distinct_from_reviewer_synthetic(self):
+    def test_human_and_automated_surfaces_are_distinct(self):
         self.assertEqual(conversation_store.sanitized_surface("benchmark"), "benchmark")
         self.assertEqual(conversation_store.sanitized_surface("synthetic"), "synthetic")
+        self.assertEqual(conversation_store.sanitized_surface("replica"), "replica")
+        self.assertEqual(conversation_store.sanitized_surface("wix"), "wix")
+        self.assertEqual(
+            conversation_store.HUMAN_REVIEW_SURFACES,
+            frozenset({"replica", "wix"}),
+        )
         self.assertEqual(conversation_store.sanitized_surface("not-allowed"), "unknown")
 
     def test_capture_is_disabled_by_default_and_needs_no_database(self):
@@ -124,6 +131,18 @@ class ConversationStoreTests(unittest.TestCase):
                 mode="transcript",
                 token_secret="short",
             ).open()
+
+    def test_app_version_uses_a_deployment_identifier_when_git_metadata_is_absent(self):
+        with mock.patch.dict(
+            "os.environ",
+            {
+                "RAILWAY_GIT_COMMIT_SHA": "",
+                "FORTUNE_APP_VERSION": "",
+                "RAILWAY_DEPLOYMENT_ID": "deployment-2026-08-21",
+            },
+        ):
+            recorder = conversation_store.ConversationRecorder(mode="none")
+        self.assertEqual(recorder.app_version, "deployment-2026-08-21")
 
     def test_conversation_continuation_requires_the_server_token(self):
         recorder = conversation_store.ConversationRecorder(
@@ -244,18 +263,20 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertIn('if existing["status"] == "failed":', source)
         self.assertIn('"This turn already failed. Send it again as a new turn."', source)
 
-    def test_only_clear_synthetic_turns_are_review_ready(self):
+    def test_only_clear_human_transcript_turns_are_review_ready(self):
         cases = (
-            ("synthetic", "clear", "ready"),
-            ("benchmark", "clear", "pending"),
-            ("replica", "clear", "pending"),
-            ("synthetic", "blocked", "excluded"),
+            ("transcript", "replica", "clear", "ready"),
+            ("transcript", "wix", "clear", "ready"),
+            ("transcript", "benchmark", "clear", "pending"),
+            ("transcript", "synthetic", "clear", "pending"),
+            ("metadata", "replica", "clear", "pending"),
+            ("transcript", "replica", "blocked", "excluded"),
         )
-        for surface, privacy_state, expected_review_state in cases:
-            with self.subTest(surface=surface, privacy_state=privacy_state):
-                recorder = recording_recorder("metadata")
+        for mode, surface, privacy_state, expected_review_state in cases:
+            with self.subTest(mode=mode, surface=surface, privacy_state=privacy_state):
+                recorder = recording_recorder(mode)
                 recorder.complete_turn(
-                    persisted_reservation("metadata", surface),
+                    persisted_reservation(mode, surface),
                     question="Synthetic question",
                     response={
                         "kind": "answer",
@@ -309,7 +330,16 @@ class ConversationStoreTests(unittest.TestCase):
             self.assertIn(f"ADD COLUMN {column}", interaction_context)
         self.assertIn("conversation_turns_ready_is_safe", interaction_context)
         self.assertIn("conversation_turns_ready_is_synthetic", interaction_context)
-        self.assertEqual(conversation_store.SCHEMA_VERSION, "005_interaction_context")
+        human_review = (
+            DEMO / "migrations" / "009_human_review_capture.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("DROP TRIGGER IF EXISTS conversation_turns_ready_is_synthetic", human_review)
+        self.assertIn("conversation_turns_ready_is_human", human_review)
+        self.assertIn("c.client_surface IN ('replica', 'wix')", human_review)
+        self.assertIn("SET review_state = 'pending'", human_review)
+        self.assertIn("SET review_state = 'ready'", human_review)
+        self.assertNotIn("DELETE FROM conversation", human_review)
+        self.assertEqual(conversation_store.SCHEMA_VERSION, "009_human_review_capture")
 
 
 if __name__ == "__main__":

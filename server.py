@@ -3031,6 +3031,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     "version": PROMPT_POLICY_VERSION,
                     "behavior_release": PROMPT_BEHAVIOR_RELEASE,
                 },
+                "app_version": CONVERSATION_RECORDER.app_version,
                 "model_call_limits": {
                     "per_client_hour": MODEL_CALLS_PER_HOUR,
                     "shared_day": MODEL_CALLS_PER_DAY,

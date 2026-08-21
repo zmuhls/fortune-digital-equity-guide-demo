@@ -34,7 +34,7 @@ python3 scripts/reset_evaluator_invite.py admin \
 
 The replacement link follows the same single-use, 24-hour, private-delivery rules. Resetting a claimed account is destructive to its existing login and requires explicit owner authorization.
 
-## Staging variables
+## Evaluator variables
 
 ```text
 FORTUNE_EVALUATION_ENABLED=1
@@ -52,12 +52,12 @@ FORTUNE_EVALUATOR_MIN_INACTIVE_SECONDS=60
 Only a conversation satisfying every condition enters the shared review queue:
 
 - transcript capture mode;
-- `client_surface='synthetic'`;
+- public human surface: `client_surface IN ('replica', 'wix')`;
 - unexpired and inactive for the configured minimum;
 - every turn complete, privacy-clear, and ready;
 - exactly one user and one assistant message for every turn.
 
-Mixed or privacy-held conversations are withheld in full. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
+Mixed or privacy-held conversations are withheld in full. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
 
 Automated suites and capture verification use `client_surface='benchmark'`.
 Those rows remain available to aggregate audits but never satisfy the shared
@@ -86,10 +86,11 @@ Prompts never edits the compiled system prompt and has no activation or publishi
 
 1. Run `./run.sh test` and both snapshot checks.
 2. Apply migrations through Railway's pre-deploy command.
-3. Confirm `/health` reports evaluation schema `008_remove_handoff_bucket`, four total slots, and the expected claimed/unassigned slot counts.
-4. Confirm `/server.py`, `/.env.example`, `/migrations/003_evaluator_identity.sql`, `/migrations/008_remove_handoff_bucket.sql`, and `/scripts/issue_evaluator_invite.py` return `404`.
+3. Confirm `/health` reports evaluation schema `009_human_review_capture`, four total slots, and the expected claimed/unassigned slot counts.
+4. Confirm `/server.py`, `/.env.example`, `/migrations/003_evaluator_identity.sql`, `/migrations/009_human_review_capture.sql`, and `/scripts/issue_evaluator_invite.py` return `404`.
 5. Confirm `/evaluation` shows the login surface and no reviewer data without a session.
 6. Claim the admin account, create one editor link from **Account**, and verify first-use registration signs the editor in without exposing the token in an HTTP request path or server log.
-7. Save a bucket placement, note, and annotation as one evaluator; sign in as another evaluator and confirm the same state is visible. Make a second change and confirm the first evaluator sees it after reload.
+7. Save a bucket placement, note, and annotation as one evaluator; sign in as another evaluator and confirm the same state is visible. Make a second change and confirm the first evaluator sees it after reload. Confirm both users see the same newest-first human transcript set, timestamps, prompt versions, and app versions.
 8. Create, revise, and comment on one Prompts proposal as an editor; confirm another evaluator sees it, confirm an editor cannot change its status, and confirm the administrator can mark it ready without activating it.
 9. Confirm the same invitation cannot be claimed twice, then leave the remaining invitation fields null until Fortune names the recipients.
+10. Submit one automated smoke with `client_surface='benchmark'` and confirm it is persisted for aggregate auditing but absent from every evaluator account.

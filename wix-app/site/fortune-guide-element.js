@@ -426,6 +426,7 @@
       this.sendButton = root.querySelector(".send");
       this.cancelEditButton = root.querySelector(".cancel-edit");
       this.editStatus = root.querySelector(".edit-status");
+      this.privacyNotice = root.querySelector("#fortune-guide-privacy");
       this.captureNotice = root.querySelector(".capture-notice");
       this.contextCount = root.querySelector(".context-count");
       this.modelStatus = root.querySelector(".model-status");
@@ -661,6 +662,7 @@
       try {
         healthUrl = this.apiUrl("/health");
       } catch {
+        this.privacyNotice.textContent = "Don’t include personal information.";
         this.captureNotice.textContent = "Privacy unavailable.";
         this.modelStatus.textContent = "Unavailable";
         this.capturePolicyReady = false;
@@ -673,10 +675,13 @@
           const payload = await response.json();
           const mode = payload.conversation_logging?.capture_mode;
           if (mode === "transcript") {
-            this.captureNotice.textContent = "This review build records questions and answers.";
+            this.privacyNotice.textContent = "Recorded for team review. Don’t include personal information.";
+            this.captureNotice.textContent = "Questions and answers are recorded for team review.";
           } else if (mode === "metadata") {
+            this.privacyNotice.textContent = "Don’t include personal information.";
             this.captureNotice.textContent = "This review build stores IDs and response data. Chat stays in this tab across pages.";
           } else {
+            this.privacyNotice.textContent = "Don’t include personal information.";
             this.captureNotice.textContent = "Up to 3 exchanges stay in this tab across pages.";
           }
           this.modelStatus.textContent = payload.model_enabled ? "Starting…" : "Unavailable";
@@ -684,6 +689,7 @@
           return payload;
         })
         .catch(() => {
+          this.privacyNotice.textContent = "Don’t include personal information.";
           this.captureNotice.textContent = "Privacy unavailable.";
           this.modelStatus.textContent = "Unavailable";
           this.capturePolicyReady = false;

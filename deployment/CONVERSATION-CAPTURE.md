@@ -1,10 +1,10 @@
 # Conversation capture and evaluation deployment
 
-This is the operator contract for adding PostgreSQL evidence capture to the Fortune Digital Equity guide and then building the evaluator dashboard. It deliberately separates a synthetic Railway staging environment from the public production guide.
+This is the operator contract for PostgreSQL evidence capture and the evaluator dashboard. Automated benchmark traffic remains isolated from the public production guide's human-conversation review queue.
 
 ## Current implementation slice
 
-The first migration creates `conversations`, `conversation_turns`, and `conversation_messages`; later migrations add server-approved page context, evaluator data, and bounded interaction labels. Each turn records opening or follow-up stage, request type, request and response language, retrieval scope, and prompt-policy version. Every accepted chat response receives UUIDs for its conversation, turn, client event, user message, and assistant message. Clients keep a server-signed conversation continuation token and reuse one client event ID across retries.
+The first migration creates `conversations`, `conversation_turns`, and `conversation_messages`; later migrations add server-approved page context, evaluator data, bounded interaction labels, and the human-only review gate. Each turn records opening or follow-up stage, request type, request and response language, retrieval scope, app version, and prompt-policy version. Every accepted chat response receives UUIDs for its conversation, turn, client event, user message, and assistant message. Clients keep a server-signed conversation continuation token and reuse one client event ID across retries.
 
 The server reserves a turn before generating an answer and completes storage before returning it. If capture is required and PostgreSQL is unavailable, `/health` and `/api/chat` return `503` rather than creating an unlogged conversation. Request limits, a 50-turn conversation bound, request fingerprints, and expiring turn leases limit duplicate or unbounded writes. The server stores no IP address, user agent, device identifier, or provider credential.
 
@@ -14,7 +14,7 @@ Capture modes are explicit:
 - `metadata`: IDs, page record, routing/result fields, model state, timing, and privacy/review state; no question or answer text.
 - `transcript`: the metadata above plus question and answer text only for turns classified `clear` by the automated privacy hold. Blocked or sensitive turns contain no message rows.
 
-`transcript` is not an anonymization guarantee. It must remain limited to invented, synthetic questions until Fortune approves participant capture, the visible disclosure, the reviewer list, and the deletion period.
+`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. The guide must visibly state **Recorded for team review. Don’t include personal information.** Only privacy-clear conversations from the public `replica` and `wix` surfaces become review-ready. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
 
 Captured conversations receive `expires_at`; the server purges expired conversations at startup and at most hourly while serving capture traffic. The default is 90 days and can be shortened for a pilot.
 
@@ -25,21 +25,23 @@ Use one existing project with isolated environments:
 ```text
 fortune-guide-demo
 ├── production
-│   └── guide-api        capture=none; existing public service
+│   ├── guide-api        human transcript capture and shared evaluator
+│   └── Postgres         private capture/evaluation database
 └── staging
     ├── guide-api        evaluation API; synthetic traffic only
     └── Postgres         private DATABASE_URL reference
 ```
 
-Create staging by duplicating production so model and origin configuration remain environment-scoped, then add PostgreSQL only in staging. The API service receives `DATABASE_URL=${{Postgres.DATABASE_URL}}`; the database password never belongs in Git, a browser bundle, or a command transcript. Generate the conversation-token secret and pipe it to Railway through standard input.
+Each environment uses its own private PostgreSQL service. The API receives `DATABASE_URL=${{Postgres.DATABASE_URL}}`; the database password never belongs in Git, a browser bundle, or a command transcript. Generate the conversation-token and evaluator-auth secrets independently and pipe them to Railway through standard input. Never point production at the staging database or copy benchmark transcripts into production.
 
-Required staging variables:
+Required capture variables:
 
 ```text
 DATABASE_URL=${{Postgres.DATABASE_URL}}
+FORTUNE_APP_VERSION=<deployed Git commit SHA>
 FORTUNE_CONVERSATION_CAPTURE=transcript
 FORTUNE_CONVERSATION_TOKEN_SECRET=<at least 32 random characters>
-FORTUNE_CONVERSATION_RETENTION_DAYS=30
+FORTUNE_CONVERSATION_RETENTION_DAYS=90
 FORTUNE_TURN_LEASE_SECONDS=180
 FORTUNE_MAX_TURNS_PER_CONVERSATION=50
 FORTUNE_CHAT_REQUESTS_PER_HOUR=120
@@ -51,7 +53,7 @@ the recorder by the server. Do not set a separate Railway prompt-version
 variable; that previously allowed transcript metadata to drift from the prompt
 that actually generated the response.
 
-`railway.json` runs `python3 scripts/migrate.py` as a pre-deploy command and starts `python3 server.py`. Do not enable production capture merely by copying staging variables.
+`railway.json` runs `python3 scripts/migrate.py` as a pre-deploy command and starts `python3 server.py`. Set variables on the intended environment explicitly; never copy a staging database reference or staging-only rate limits into production.
 
 ## Staging acceptance
 
@@ -59,13 +61,13 @@ A staging release is accepted only after all of these are true:
 
 1. The local Python and JavaScript suites pass.
 2. The Railway deployment reaches terminal `SUCCESS`.
-3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=005_interaction_context` without revealing database or token values.
+3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=009_human_review_capture` without revealing database or token values.
 4. Re-running the migration reports a current schema.
-5. One invented question produces stable UUIDs and exactly two message rows.
+5. One invented `benchmark` question produces stable UUIDs and exactly two message rows while remaining review-pending and absent from the evaluator.
 6. Replaying its client event ID returns the same turn and response without another row.
 7. Reusing that event ID with different input returns `409`.
 8. A synthetic six-digit-ID sentinel produces an excluded turn and zero message rows; the sentinel is absent from all persisted JSON and text fields.
-9. Production still reports `capture_mode=none` and has not been redeployed.
+9. Human `replica`/`wix` turns are review-ready; `benchmark`, `synthetic`, and direct API turns are not.
 10. `python3 scripts/audit_conversation_quality.py` passes without selecting message content.
 
 ## Dashboard migrations that come next
@@ -79,6 +81,6 @@ Do not combine evaluator identity and taxonomy tables into the evidence-capture 
 
 Seed the four accounts with expiring invitation links rather than checked-in passwords or Railway variables. The admin may manage bucket templates and accounts; all four reviewers can sort conversations and create personal or shared buckets according to the approved policy.
 
-## Production approval gate
+## Production approval record
 
-Before any participant transcript reaches production, Fortune must record: the evaluation purpose, legal/privacy owner, exact on-page notice, inclusion and exclusion rules, four named account owners, retention period, deletion/export procedure, incident contact, and the date capture will end or be renewed. Until then, production remains `none` and staging uses synthetic data only.
+The August 21, 2026 owner instruction authorizes the production human-conversation review pilot, the shared evaluator workspace, and a reset baseline with no imported benchmark transcripts. The release uses the exact visible notice above, a 90-day retention period, private Railway networking, four bounded evaluator slots, and human-only queue eligibility. Blocked or sensitive turns store no message text. A later change to retention, reviewer identities, inclusion rules, export/deletion procedure, or pilot duration requires a new explicit owner decision and a documented deployment change.

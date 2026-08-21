@@ -62,25 +62,37 @@ class EvaluationSchemaTests(unittest.TestCase):
         list_source = inspect.getsource(evaluation_store.EvaluationStore.list_buckets)
         self.assertIn("b.archived_at IS NULL", list_source)
 
-    def test_evaluation_schema_version_is_separate_from_capture_schema(self):
+    def test_evaluation_schema_version_tracks_the_human_review_migration(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "008_remove_handoff_bucket",
+            "009_human_review_capture",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 
+    def test_human_review_migration_preserves_transcripts_and_excludes_tests(self):
+        sql = (DEMO / "migrations" / "009_human_review_capture.sql").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("c.client_surface IN ('replica', 'wix')", sql)
+        self.assertIn("c.capture_mode = 'transcript'", sql)
+        self.assertIn("SET review_state = 'pending'", sql)
+        self.assertIn("SET review_state = 'ready'", sql)
+        self.assertIn("conversation_turns_ready_is_human", sql)
+        self.assertNotIn("DELETE FROM conversation", sql)
+
 
 class EvaluationStoreBoundaryTests(unittest.TestCase):
-    def test_reviewer_queue_accepts_only_manual_synthetic_conversations(self):
+    def test_reviewer_queue_accepts_only_public_human_conversations(self):
         eligible_source = inspect.getsource(
             evaluation_store.EvaluationStore._eligible_cte
         )
         detail_source = inspect.getsource(
             evaluation_store.EvaluationStore._current_transcript_version
         )
-        self.assertIn("c.client_surface = 'synthetic'", eligible_source)
-        self.assertIn("c.client_surface = 'synthetic'", detail_source)
-        self.assertNotIn("benchmark", eligible_source + detail_source)
+        for source in (eligible_source, detail_source):
+            self.assertIn("c.client_surface IN ('replica', 'wix')", source)
+            self.assertNotIn("benchmark", source)
+            self.assertNotIn("synthetic", source)
 
     def test_all_evaluators_use_one_shared_review_workspace(self):
         self.assertEqual(evaluation_store.SHARED_BUCKET_OWNER, "admin")
@@ -374,6 +386,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
 
         self.assertIn("ORDER BY e.last_turn_at DESC, e.id", store_source)
         self.assertIn("m.created_at", store_source)
+        self.assertIn("t.app_version", store_source)
+        self.assertIn("t.prompt_policy_version", store_source)
         self.assertIn("ORDER BY t.sequence, m.ordinal", store_source)
         self.assertIn("function newestFirst(items)", javascript)
         self.assertIn(
@@ -387,7 +401,11 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         )
         self.assertIn('timeHtml(message.created_at, "message-time")', javascript)
         self.assertIn("readableTimestamp(detail.last_turn_at)", javascript)
-        self.assertIn("20260818-prompts-v22", html)
+        self.assertIn("versionLabel(conversation)", javascript)
+        self.assertIn("versionLabel(detail, true)", javascript)
+        self.assertIn('class="conversation-version"', javascript)
+        self.assertIn('class="message-version"', javascript)
+        self.assertIn("20260821-human-review-1", html)
 
     def test_prompt_lab_is_compact_shared_and_has_no_activation_control(self):
         html = (DEMO / "evaluation.html").read_text(encoding="utf-8")

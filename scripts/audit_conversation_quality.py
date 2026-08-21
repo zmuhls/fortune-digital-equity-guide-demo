@@ -183,7 +183,7 @@ def run_audit(database_url: str) -> dict:
                         FROM conversations AS c
                         JOIN conversation_turns AS t ON t.conversation_id = c.id
                         WHERE c.capture_mode = 'transcript'
-                          AND c.client_surface = 'synthetic'
+                          AND c.client_surface IN ('replica', 'wix')
                           AND c.expires_at > NOW()
                           AND c.last_turn_at <= NOW() - INTERVAL '60 seconds'
                         GROUP BY c.id

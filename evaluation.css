@@ -453,6 +453,7 @@ h1, h2, p { margin-top: 0; }
 .conversation-time,
 .message-time { color: var(--muted); font-size: 12px; line-height: 1.3; }
 .conversation-time { display: block; }
+.conversation-version { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.35; }
 
 .card-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .open-transcript { border: 1px solid var(--blue); border-radius: 3px; padding: 7px 9px; color: var(--blue); background: var(--white); cursor: pointer; font-weight: 800; }
@@ -529,7 +530,9 @@ dialog::backdrop { background: rgb(40 26 57 / 55%); }
 .message.assistant { margin-left: auto; }
 .message-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
 .message-role { margin: 0; font-size: 13px; font-weight: 900; }
+.message-metadata { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px 10px; text-align: right; }
 .message-time { flex: 0 0 auto; }
+.message-version { color: var(--muted); font-size: 11px; line-height: 1.3; }
 .message-content { margin: 0; padding: 14px 16px; border-left: 4px solid var(--blue); background: #edf8ff; white-space: pre-wrap; }
 .message.assistant .message-content { border-color: var(--eggplant); background: #f2eef6; }
 .annotation-toggle {

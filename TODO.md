@@ -1,5 +1,27 @@
 # Website Guide — next steps
 
+## Human transcript review — 2026-08-21
+
+- [x] Record the owner instruction to enable production human-conversation
+  capture with a visible team-review notice and 90-day retention.
+- [x] Make only privacy-clear `replica` and `wix` transcripts review-ready;
+  exclude `benchmark`, `synthetic`, metadata, and direct API traffic.
+- [x] Show stored dates, prompt-policy versions, and deployed app versions on
+  conversation cards, transcript headers, and Guide messages.
+- [x] Keep buckets, placements, notes, annotations, and Prompts shared across
+  every evaluator account while retaining evaluator attribution.
+- [x] Prove the migration and shared queue against PostgreSQL 17, including a
+  database-enforced rejection when benchmark traffic is marked ready.
+- [ ] Connect the production API to its private Postgres service, apply schema
+  `009_human_review_capture`, and enable capture plus evaluation.
+- [ ] Transfer evaluator identities and shared configuration from staging
+  without copying benchmark transcripts, messages, sessions, or review rows.
+- [ ] Push directly to `main`, verify the exact Pages and Railway deployments,
+  and confirm a new benchmark smoke remains absent from the evaluator.
+- [ ] Confirm the first future public `replica`/`wix` conversation appears
+  newest-first for every evaluator. Earlier production message text cannot be
+  recovered because capture was disabled when those requests occurred.
+
 ## Infobot model-first release — 2026-08-18
 
 - [x] Remove the fixed conversational fallbacks that answered vague, frustrated,
@@ -44,7 +66,7 @@
   promotion. Staging deployment `ad436f9b-8df8-4d78-a71f-1515ea4d4b6c` is
   terminal `SUCCESS`; the deployed runtime and prompt hashes match this tree;
   Return, model provenance, and page-to-page conversation persistence passed.
-- [ ] Merge through GitHub, verify Pages, then deploy the exact merged tree to
+- [x] Merge through GitHub, verify Pages, then deploy the exact merged tree to
   Railway production with capture `none`, no database, and evaluation disabled.
 
 ## Meeting 4 release — 2026-08-17
@@ -178,11 +200,18 @@
 - [ ] Install first on a Wix test site and verify page context, compact controls, Return/Shift+Return, mobile layout, privacy hold, and staff handoff.
 - [ ] Obtain Fortune approval before enabling the guide on the production Wix site.
 
-## 5. Participant capture is not authorized
+## 5. Participant capture approval
 
-- [ ] Keep Railway production at `capture_mode=none`; do not copy staging database, capture, or evaluator variables into production.
-- [ ] Before any participant transcript pilot, Fortune must approve the purpose, legal/privacy owner, exact notice, inclusion and exclusion rules, named reviewers, retention period, deletion/export process, incident contact, and end/renewal date.
-- [ ] Run any proposed capture pilot on synthetic staging first. Transcript capture is not anonymization and must not be enabled for public traffic without that approval.
+- [x] The August 21, 2026 owner instruction authorizes production capture for
+  the shared human-conversation review pilot.
+- [x] Keep production and staging databases separate; migrate evaluator
+  identity/configuration only and never copy benchmark transcript rows.
+- [x] Use the exact visible notice **Recorded for team review. Don’t include
+  personal information.**, a 90-day retention period, private database
+  networking, and human-only queue eligibility.
+- [ ] Record any later change to retention, reviewer identities, export/deletion
+  procedure, incident ownership, or pilot end/renewal date before changing the
+  production configuration.
 
 ## Reference
 

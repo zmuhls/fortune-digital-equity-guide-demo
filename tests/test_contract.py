@@ -2484,6 +2484,10 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         serialized = json.dumps(captured["payload"])
         self.assertEqual(captured["status"], 200)
         self.assertEqual(captured["payload"]["conversation_logging"]["capture_mode"], "none")
+        self.assertEqual(
+            captured["payload"]["app_version"],
+            server.CONVERSATION_RECORDER.app_version,
+        )
         self.assertNotIn("DATABASE_URL", serialized)
         self.assertNotIn("FORTUNE_CONVERSATION_TOKEN_SECRET", serialized)
 
@@ -2501,6 +2505,18 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("Ask about this page", panel)
         self.assertIn(">Send</button>", panel)
         self.assertIn("Don’t include personal information.", panel)
+        self.assertIn(
+            "Recorded for team review. Don’t include personal information.",
+            app,
+        )
+        self.assertIn(
+            "Questions and answers are recorded for team review.",
+            app,
+        )
+        self.assertIn(
+            "Recorded for team review. Don’t include personal information.",
+            wix,
+        )
         self.assertIn("<summary>Info</summary>", panel)
         self.assertIn("Press Enter to send. Press Shift+Enter for a new line.", panel)
         self.assertNotIn('id="faq', panel.lower())

@@ -109,6 +109,9 @@
   ].map(([id, page_title, turn_count, bucket_id]) => ({
     id, page_title, turn_count, bucket_id, transcript_version: turn_count,
     last_turn_at: "2026-08-08T14:30:00Z",
+    app_version: "010d369846b09dcaccf8ab5d7955a56d3deaff26",
+    prompt_policy_version: "2026-08-18-v22",
+    client_surface: "replica",
   }));
 
   const previewPromptLab = {
@@ -167,6 +170,23 @@
       hour: "numeric",
       minute: "2-digit",
     }).format(new Date(timestamp));
+  }
+
+  function compactBuildVersion(value) {
+    const version = String(value || "").trim();
+    if (!version) return "";
+    if (/^[0-9a-f]{40}$/i.test(version)) return version.slice(0, 8);
+    if (/^[0-9a-f-]{32,}$/i.test(version)) return version.slice(0, 8);
+    return version.length > 24 ? `${version.slice(0, 23)}…` : version;
+  }
+
+  function versionLabel(item, full = false) {
+    const prompt = String(item?.prompt_policy_version || "").trim();
+    const app = String(item?.app_version || "").trim();
+    const parts = [];
+    if (prompt) parts.push(`Prompt ${prompt}`);
+    if (app) parts.push(`Build ${full ? app : compactBuildVersion(app)}`);
+    return parts.join(" · ") || "Version unavailable";
   }
 
   function newestFirst(items) {
@@ -285,7 +305,7 @@
     const query = search.value.trim().toLowerCase();
     const matches = state.conversations.filter(item => {
       if (!query) return true;
-      return `${shortId(item.id)} ${item.page_title || ""}`.toLowerCase().includes(query);
+      return `${shortId(item.id)} ${item.page_title || ""} ${item.app_version || ""} ${item.prompt_policy_version || ""}`.toLowerCase().includes(query);
     });
     return newestFirst(matches);
   }
@@ -306,11 +326,12 @@
   function cardHtml(conversation) {
     const selected = state.selectedId === conversation.id;
     return `
-      <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}">
+      <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}, ${escapeHtml(versionLabel(conversation))}">
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <p class="conversation-id">${shortId(conversation.id)}</p>
         <p class="conversation-page">${escapeHtml(conversation.page_title || "Unknown page")}</p>
         ${timeHtml(conversation.last_turn_at, "conversation-time")}
+        <p class="conversation-version" title="${escapeHtml(versionLabel(conversation, true))}">${escapeHtml(versionLabel(conversation))}</p>
         ${selected ? `<div class="card-actions"><button class="open-transcript" type="button">Open transcript</button>${moveOptions(conversation)}</div>` : moveOptions(conversation)}
       </article>`;
   }
@@ -765,8 +786,8 @@
         note: conversation.note || null,
         annotations: conversation.annotations || [],
         messages: [
-          { id: `${conversation.id}-user`, role: "user", content: "Where can I find the current information on this page?", created_at: conversation.last_turn_at },
-          { id: `${conversation.id}-assistant`, role: "assistant", content: "I found the relevant public page and can point you to it.", created_at: conversation.last_turn_at },
+          { id: `${conversation.id}-user`, role: "user", content: "Where can I find the current information on this page?", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
+          { id: `${conversation.id}-assistant`, role: "assistant", content: "I found the relevant public page and can point you to it.", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
         ],
       };
     } else {
@@ -774,7 +795,7 @@
     }
     state.openConversation = detail;
     transcriptTitle.textContent = shortId(detail.id);
-    transcriptMeta.textContent = `${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)}`;
+    transcriptMeta.textContent = `${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)} · ${versionLabel(detail, true)}`;
     reviewNote.value = detail.note || "";
     reviewNoteStatus.textContent = "";
     renderTranscriptMessages();
@@ -801,7 +822,10 @@
       <article class="message ${message.role === "assistant" ? "assistant" : "user"}" data-message-id="${escapeHtml(message.id)}">
         <div class="message-heading">
           <p class="message-role">${message.role === "assistant" ? "Website Guide" : "Visitor"}</p>
-          ${timeHtml(message.created_at, "message-time")}
+          <div class="message-metadata">
+            ${timeHtml(message.created_at, "message-time")}
+            ${message.role === "assistant" ? `<span class="message-version" title="${escapeHtml(versionLabel(message, true))}">${escapeHtml(versionLabel(message))}</span>` : ""}
+          </div>
         </div>
         <p class="message-content">${escapeHtml(message.content)}</p>
         <button class="annotation-toggle" type="button" aria-expanded="false">${escapeHtml(buttonLabel)}</button>

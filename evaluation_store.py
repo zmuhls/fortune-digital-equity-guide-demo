@@ -1,4 +1,4 @@
-"""Authenticated, shared evaluation data for synthetic guide transcripts."""
+"""Authenticated, shared evaluation data for privacy-clear human transcripts."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from prompt_policy import (
 )
 
 
-EVALUATION_SCHEMA_VERSION = "008_remove_handoff_bucket"
+EVALUATION_SCHEMA_VERSION = "009_human_review_capture"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -1274,17 +1274,21 @@ class EvaluationStore:
     def _eligible_cte() -> str:
         return """
             WITH eligible AS (
-                SELECT c.id, c.last_turn_at,
+                SELECT c.id, c.last_turn_at, c.client_surface,
                        COUNT(t.id)::INTEGER AS turn_count,
                        MAX(t.sequence)::BIGINT AS transcript_version,
-                       (ARRAY_AGG(t.page_context ORDER BY t.sequence DESC))[1] AS page_context
+                       (ARRAY_AGG(t.page_context ORDER BY t.sequence DESC))[1] AS page_context,
+                       (ARRAY_AGG(t.app_version ORDER BY t.sequence DESC))[1]
+                         AS app_version,
+                       (ARRAY_AGG(t.prompt_policy_version ORDER BY t.sequence DESC))[1]
+                         AS prompt_policy_version
                 FROM conversations c
                 JOIN conversation_turns t ON t.conversation_id = c.id
                 WHERE c.capture_mode = 'transcript'
-                  AND c.client_surface = 'synthetic'
+                  AND c.client_surface IN ('replica', 'wix')
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-                GROUP BY c.id
+                GROUP BY c.id, c.last_turn_at, c.client_surface
                 HAVING BOOL_AND(
                     t.status = 'complete'
                     AND t.privacy_state = 'clear'
@@ -1298,6 +1302,7 @@ class EvaluationStore:
         limit = max(1, min(int(limit), 500))
         query = self._eligible_cte() + """
             SELECT e.id, e.last_turn_at, e.turn_count, e.transcript_version,
+                   e.app_version, e.prompt_policy_version, e.client_surface,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    ce.bucket_id, COALESCE(ce.version, 0) AS evaluation_version
             FROM eligible e
@@ -1317,6 +1322,7 @@ class EvaluationStore:
         conversation_id = _uuid(conversation_value, "conversation_id")
         query = self._eligible_cte() + """
             SELECT e.id, e.last_turn_at, e.turn_count, e.transcript_version,
+                   e.app_version, e.prompt_policy_version, e.client_surface,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    s.id AS bucket_set_id, ce.bucket_id, ce.note,
                    COALESCE(ce.version, 0) AS evaluation_version
@@ -1340,7 +1346,7 @@ class EvaluationStore:
                 cursor.execute(
                     """
                     SELECT m.id, m.turn_id, m.ordinal, m.role, m.content,
-                           m.created_at
+                           m.created_at, t.app_version, t.prompt_policy_version
                     FROM conversation_messages m
                     JOIN conversation_turns t ON t.id = m.turn_id
                     WHERE m.conversation_id = %s
@@ -1372,7 +1378,7 @@ class EvaluationStore:
             FROM conversations c
             JOIN conversation_turns t ON t.conversation_id = c.id
             WHERE c.id = %s AND c.capture_mode = 'transcript'
-              AND c.client_surface = 'synthetic' AND c.expires_at > NOW()
+              AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
             HAVING BOOL_AND(
                 t.status = 'complete' AND t.privacy_state = 'clear'

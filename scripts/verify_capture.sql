@@ -4,11 +4,11 @@
 SELECT json_build_object(
     'schema_current', EXISTS (
         SELECT 1 FROM schema_migrations
-        WHERE version = '005_interaction_context'
+        WHERE version = '009_human_review_capture'
     ),
     'evaluation_schema_current', EXISTS (
         SELECT 1 FROM schema_migrations
-        WHERE version = '008_remove_handoff_bucket'
+        WHERE version = '009_human_review_capture'
     ),
     'evaluation_slot_count', (
         SELECT COUNT(*) FROM evaluator_accounts
@@ -71,7 +71,7 @@ SELECT json_build_object(
         WHERE id = :'clear_turn'::uuid
     ),
     'expires_within_retention_window', (
-        SELECT expires_at > NOW() AND expires_at <= NOW() + INTERVAL '31 days'
+        SELECT expires_at > NOW() AND expires_at <= NOW() + INTERVAL '91 days'
         FROM conversations
         WHERE id = :'clear_conversation'::uuid
     )
