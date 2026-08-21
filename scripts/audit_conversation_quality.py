@@ -119,8 +119,9 @@ def run_audit(database_url: str) -> dict:
                     WHERE message_count > 0 AND capture_mode <> 'transcript'
                 )::INTEGER AS metadata_turns_with_text,
                 COUNT(*) FILTER (
-                    WHERE review_state = 'ready' AND client_surface <> 'synthetic'
-                )::INTEGER AS nonsynthetic_ready_turns,
+                    WHERE review_state = 'ready'
+                      AND client_surface NOT IN ('replica', 'wix')
+                )::INTEGER AS nonhuman_ready_turns,
                 COUNT(*) FILTER (
                     WHERE review_state = 'ready'
                       AND (privacy_state <> 'clear' OR message_count <> 2)

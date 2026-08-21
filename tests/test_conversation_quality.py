@@ -20,6 +20,14 @@ class ConversationQualityAuditTests(unittest.TestCase):
         self.assertNotIn("SELECT m.content", source)
         self.assertNotIn("SELECT content FROM conversation_messages", source)
 
+    def test_audit_enforces_the_human_only_review_boundary(self):
+        source = (ROOT / "scripts" / "audit_conversation_quality.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("client_surface NOT IN ('replica', 'wix')", source)
+        self.assertIn("AS nonhuman_ready_turns", source)
+        self.assertNotIn("AS nonsynthetic_ready_turns", source)
+
     def test_json_values_are_bounded_for_operator_output(self):
         self.assertEqual(
             audit_conversation_quality._json_value({"latency": 1.236}),

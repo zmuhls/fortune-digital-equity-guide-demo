@@ -209,6 +209,12 @@
 - [x] Use the exact visible notice **Recorded for team review. Don’t include
   personal information.**, a 90-day retention period, private database
   networking, and human-only queue eligibility.
+- [x] Deploy schema `009_human_review_capture` to production, connect the
+  private production database, and verify capture/evaluation readiness.
+- [x] Preserve the three claimed evaluator accounts and shared 13-bucket
+  configuration without copying sessions, staging transcripts, or tests.
+- [x] Verify a production benchmark capture stays outside the evaluator and a
+  blocked privacy turn stores no message text.
 - [ ] Record any later change to retention, reviewer identities, export/deletion
   procedure, incident ownership, or pilot end/renewal date before changing the
   production configuration.
