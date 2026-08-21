@@ -332,13 +332,18 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertNotIn("Conversation queue", html)
         self.assertNotIn("conversation-filter", html)
         self.assertIn(
-            "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
+            "repeat(auto-fit, minmax(min(340px, 100%), 1fr))",
             css,
         )
         self.assertIn(
-            "repeat(auto-fit, minmax(min(210px, 100%), 1fr))",
+            "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
             css,
         )
+        self.assertIn("align-items: start", css)
+        self.assertIn(".bucket-cards:empty { display: none; }", css)
+        self.assertNotIn("min-height: 760px", css)
+        self.assertNotIn("min-height: 365px", css)
+        self.assertNotIn("min-height: 285px", css)
         self.assertIn('{ id: null, label: "Not yet reviewed"', javascript)
         for label in ("Success", "Needs work"):
             self.assertIn(f'label: "{label}"', javascript)
