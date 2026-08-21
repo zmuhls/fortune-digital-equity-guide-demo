@@ -36,7 +36,7 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
-REPLICA_SHELL_CSS_VERSION = "20260820-text-source-1"
+REPLICA_SHELL_CSS_VERSION = "20260821-visible-faq-1"
 REPLICA_SHELL_JS_VERSION = "20260820-text-source-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
@@ -119,6 +119,7 @@ PRIMARY_NAVIGATION = (
     ("Support", "/support"),
     ("Contact", "/contact"),
 )
+FAQ_HEADING = "frequently asked questions"
 
 
 class BuildError(RuntimeError):
@@ -340,6 +341,65 @@ def static_href(asset_base: str, path: str) -> str:
     return f"{asset_base}{path.strip('/')}/"
 
 
+def is_faq_heading(text: str) -> bool:
+    """Recognize the captured FAQ heading without relying on route-specific copy."""
+
+    return text.casefold().strip().rstrip(":") == FAQ_HEADING
+
+
+def is_faq_question(text: str) -> bool:
+    """FAQ questions in the reviewed source are paired with their following answer."""
+
+    return text.rstrip().endswith("?")
+
+
+def render_source_fragments(page: dict) -> str:
+    """Render source text, grouping consecutive FAQ question-and-answer pairs semantically."""
+
+    fragments = source_fragments(page)
+    content: list[str] = []
+    index = 0
+    faq_number = 0
+
+    while index < len(fragments):
+        text, is_heading = fragments[index]
+        if is_heading and is_faq_heading(text):
+            pairs: list[tuple[str, str]] = []
+            pair_index = index + 1
+            while pair_index + 1 < len(fragments):
+                question, question_is_heading = fragments[pair_index]
+                answer, answer_is_heading = fragments[pair_index + 1]
+                if question_is_heading or answer_is_heading or not is_faq_question(question):
+                    break
+                pairs.append((question, answer))
+                pair_index += 2
+
+            if pairs:
+                faq_number += 1
+                heading_id = f"source-faq-{faq_number}"
+                content.append(
+                    f'      <section class="source-faq" aria-labelledby="{heading_id}">'\
+                    f'\n        <h2 id="{heading_id}">{html.escape(text)}</h2>'\
+                    '\n        <dl class="source-faq__list">'
+                )
+                for question, answer in pairs:
+                    content.append(
+                        '          <div class="source-faq__item">'\
+                        f'\n            <dt>{html.escape(question)}</dt>'\
+                        f'\n            <dd>{html.escape(answer)}</dd>'\
+                        '\n          </div>'
+                    )
+                content.append("        </dl>\n      </section>")
+                index = pair_index
+                continue
+
+        tag = "h2" if is_heading else "p"
+        content.append(f"      <{tag}>{html.escape(text)}</{tag}>")
+        index += 1
+
+    return "\n".join(content)
+
+
 def render_text_page(route: dict, asset_base: str) -> str:
     """Render the approved retrieval record as a small, text-only HTML page."""
 
@@ -365,11 +425,7 @@ def render_text_page(route: dict, asset_base: str) -> str:
     )
 
     if is_answer_source:
-        content = []
-        for text, is_heading in source_fragments(page):
-            tag = "h2" if is_heading else "p"
-            content.append(f"      <{tag}>{html.escape(text)}</{tag}>")
-        source_content = "\n".join(content) or "      <p>No source text is available.</p>"
+        source_content = render_source_fragments(page) or "      <p>No source text is available.</p>"
         source_label = "Website Guide source text"
     else:
         source_content = (

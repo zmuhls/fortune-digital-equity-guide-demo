@@ -3,6 +3,7 @@
 
 import gzip
 import hashlib
+import html
 import importlib.util
 import json
 import pathlib
@@ -101,6 +102,10 @@ class SnapshotRenderingTests(unittest.TestCase):
 
         self.assertLess(len(shell_css.encode("utf-8")), 5000)
         self.assertIn(".source-document", shell_css)
+        self.assertRegex(
+            shell_css,
+            r"\.source-faq dd\s*\{[^}]*display:\s*block",
+        )
         self.assertIn("#fortune-sidecar-host", shell_css)
         self.assertNotIn("background-image", shell_css)
         self.assertNotIn("url(", shell_css)
@@ -166,6 +171,67 @@ class SnapshotRenderingTests(unittest.TestCase):
             shell,
         )
         self.assertNotIn('href="../replica-shell.css', shell)
+
+    def test_detected_faq_pairs_use_visible_semantic_question_and_answer_markup(self):
+        route = {
+            **HOME_ROUTE,
+            "page": {
+                **HOME_ROUTE["page"],
+                "headings": ["Frequently Asked Questions", "More information"],
+                "blocks": [
+                    "Frequently Asked Questions",
+                    "Can I attend a class without registering?",
+                    "Yes. You can attend regular classes without registering.",
+                    "What should I bring?",
+                    "Bring the information you need for the class.",
+                    "More information",
+                    "This remains ordinary source text.",
+                ],
+            },
+        }
+
+        shell = build_pages.render_text_page(route, "")
+
+        self.assertIn('<section class="source-faq" aria-labelledby="source-faq-1">', shell)
+        self.assertIn('<h2 id="source-faq-1">Frequently Asked Questions</h2>', shell)
+        self.assertIn('<dl class="source-faq__list">', shell)
+        self.assertIn('<dt>Can I attend a class without registering?</dt>', shell)
+        self.assertIn('<dd>Yes. You can attend regular classes without registering.</dd>', shell)
+        self.assertIn('<dt>What should I bring?</dt>', shell)
+        self.assertIn('<dd>Bring the information you need for the class.</dd>', shell)
+        self.assertNotIn('<p>Can I attend a class without registering?</p>', shell)
+        self.assertNotIn("<details", shell)
+        self.assertIn('<h2>More information</h2>', shell)
+        self.assertIn('<p>This remains ordinary source text.</p>', shell)
+
+    def test_current_home_and_contact_faqs_render_all_source_backed_answers(self):
+        routes = {
+            route["path"]: route
+            for route in build_pages.load_routes()
+            if route["path"] in {"/", "/contact"}
+        }
+
+        for path in ("/", "/contact"):
+            with self.subTest(path=path):
+                shell = build_pages.render_text_page(routes[path], "")
+                self.assertIn('<section class="source-faq"', shell)
+                self.assertEqual(shell.count("<dt>"), 4)
+                self.assertEqual(shell.count("<dd>"), 4)
+                self.assertNotIn("<details", shell)
+                fragments = build_pages.source_fragments(routes[path]["page"])
+                faq_index = next(
+                    index
+                    for index, (text, is_heading) in enumerate(fragments)
+                    if is_heading and build_pages.is_faq_heading(text)
+                )
+                for index in range(faq_index + 1, faq_index + 9, 2):
+                    question, question_is_heading = fragments[index]
+                    answer, answer_is_heading = fragments[index + 1]
+                    self.assertFalse(question_is_heading)
+                    self.assertFalse(answer_is_heading)
+                    self.assertTrue(build_pages.is_faq_question(question))
+                    self.assertIn(f"<dt>{html.escape(question)}</dt>", shell)
+                    self.assertIn(f"<dd>{html.escape(answer)}</dd>", shell)
 
     def test_non_answer_route_does_not_publish_stale_source_blocks(self):
         route = {

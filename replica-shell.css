@@ -92,6 +92,41 @@ h1 {
 
 .source-document p { margin: 0 0 18px; }
 
+.source-faq {
+  margin: 36px 0;
+  padding-top: 18px;
+  border-top: 1px solid #ddd;
+}
+
+.source-faq h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.source-faq__list { margin: 0; }
+
+.source-faq__item {
+  padding: 18px 0;
+  border-top: 1px solid #ddd;
+}
+
+.source-faq__item:first-child {
+  padding-top: 8px;
+  border-top: 0;
+}
+
+.source-faq dt {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.source-faq dd {
+  display: block;
+  margin: 8px 0 0;
+  color: #333;
+}
+
 .source-footer {
   margin-top: 56px;
   padding-top: 18px;
