@@ -1274,6 +1274,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(captured["payload"]["choices"], [])
         self.assertEqual(captured["payload"]["message"], clarification)
         self.assertEqual(len(model_calls), 1)
+        self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_natural_clarification_does_not_need_to_match_a_sentence_grammar(self):
         clarification = (
@@ -1290,19 +1291,15 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
 
-    def test_grounded_page_answer_may_end_with_a_natural_follow_up_question(self):
+    def test_conversational_turns_do_not_receive_generic_factual_records(self):
         cases = (
             (
                 "hello hello",
-                "Hello! Welcome to the Fortune Society Digital Equity Hub. We offer "
-                "digital tools, workshops, and support for justice-impacted New Yorkers. "
-                "How can I help you today?",
+                "Hello! What can I help you find?",
             ),
             (
                 "heyo whats up",
-                "Hey! Welcome to the Fortune Society Digital Equity Hub — we offer "
-                "digital tools, workshops, and support for justice-impacted New Yorkers. "
-                "How can I help you today?",
+                "Hey! What's up?",
             ),
         )
         for question, answer in cases:
@@ -1310,17 +1307,18 @@ class StagedRetrievalTests(unittest.TestCase):
                 captured, model_calls = self.dispatch_chat(
                     question,
                     "https://www.fortunedigitalequity.org/",
-                    model_raws=[json.dumps({"pick": "home", "answer": answer})],
+                    model_raws=[json.dumps({"pick": "ASK", "answer": answer})],
                 )
                 self.assertEqual(captured["status"], 200)
-                self.assertEqual(captured["payload"]["kind"], "answer")
-                self.assertEqual(captured["payload"]["sources"][0]["id"], "home")
+                self.assertEqual(captured["payload"]["kind"], "clarify")
+                self.assertEqual(captured["payload"]["sources"], [])
                 self.assertEqual(
                     captured["payload"]["message"],
                     server.clip_words(answer, server.MAX_MESSAGE_WORDS),
                 )
                 self.assertTrue(captured["payload"]["model_called"])
                 self.assertEqual(len(model_calls), 1)
+                self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_missing_model_abstains_instead_of_extracting_a_factual_answer(self):
         captured, model_calls = self.dispatch_chat(
@@ -1375,6 +1373,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(payload["choices"], [])
         self.assertEqual(payload["sources"], [])
         self.assertEqual(len(model_calls), 1)
+        self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_broad_start_request_uses_a_model_authored_question(self):
         clarification = "Would you like help with classes, devices, or individual support?"
@@ -1390,22 +1389,23 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(payload["model_called"])
         self.assertEqual(len(model_calls), 1)
 
-    def test_broad_start_may_use_a_grounded_page_instead_of_forced_clarification(self):
-        answer = (
-            "For regularly scheduled classes we allow walk-in attendance. "
-            "However, we give priority to participants registered in advance."
-        )
+    def test_empty_retrieval_does_not_accept_an_injected_home_page(self):
+        clarification = "What would you like help finding?"
         captured, model_calls = self.dispatch_chat(
             "How can I get started?",
             "https://www.fortunedigitalequity.org/",
-            model_source_id="home",
-            model_answer=answer,
+            model_raws=[
+                json.dumps({"pick": "home", "answer": "Fortune offers classes."}),
+                json.dumps({"pick": "ASK", "answer": clarification}),
+            ],
         )
         self.assertEqual(captured["status"], 200)
-        self.assertEqual(captured["payload"]["kind"], "answer")
-        self.assertEqual(captured["payload"]["message"], answer)
+        self.assertEqual(captured["payload"]["kind"], "clarify")
+        self.assertEqual(captured["payload"]["message"], clarification)
+        self.assertEqual(captured["payload"]["sources"], [])
         self.assertTrue(captured["payload"]["model_called"])
-        self.assertEqual(len(model_calls), 1)
+        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_exact_reported_prompts_each_invoke_the_model(self):
         cases = (
@@ -1424,6 +1424,11 @@ class StagedRetrievalTests(unittest.TestCase):
                     },
                 ],
                 "Would you like help with classes, devices, or individual support?",
+            ),
+            (
+                "who r u",
+                [],
+                "I'm the Website Guide. What can I help you find?",
             ),
             (
                 "Necesito ayuda",
@@ -1449,6 +1454,8 @@ class StagedRetrievalTests(unittest.TestCase):
                 self.assertEqual(captured["payload"]["message"], model_question)
                 self.assertTrue(captured["payload"]["model_called"])
                 self.assertEqual(len(model_calls), 1)
+                if question in {"What the hell", "Help me", "who r u"}:
+                    self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_broad_class_request_can_answer_from_resolved_workshops_page(self):
         answer = (
@@ -2063,8 +2070,9 @@ class ResponseContractTests(unittest.TestCase):
             '{"pick":"<candidate ID or ASK>","answer":"<grounded answer or brief natural follow-up>"}',
             prompt,
         )
-        self.assertIn("Answer naturally using only facts", prompt)
+        self.assertIn("Use the approved candidate records", prompt)
         self.assertIn("answer instead of clarifying", prompt)
+        self.assertIn("If the candidate set is empty", prompt)
         self.assertNotIn("rebuilding routines", prompt)
         self.assertNotIn("request_kind", prompt)
         records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
@@ -2129,7 +2137,6 @@ class ResponseContractTests(unittest.TestCase):
             "What is your full name?",
             "¿Cuál es tu nombre?",
             "Share your email address?",
-            "What do you need\nFortune offers free laptops?",
             "Where do you live?",
             "How old are you?",
             "Are you on parole?",
@@ -2152,7 +2159,7 @@ class ResponseContractTests(unittest.TestCase):
             server.model_clarification_response("Help me", overlong)
 
     def test_clarification_retry_uses_the_same_minimal_safety_contract(self):
-        sources = server.conversational_candidate_sources({})
+        sources = []
         natural = json.dumps({
             "pick": "ASK",
             "answer": "Hey there. Tell me what sounds useful: classes, devices, or support.",
@@ -2177,6 +2184,19 @@ class ResponseContractTests(unittest.TestCase):
             ),
             "personal detail request",
         )
+
+    def test_natural_model_response_can_contain_line_breaks_without_rejection(self):
+        result = server.model_clarification_response(
+            "Yo",
+            "Hey there.\nWhat can I help you with?",
+        )
+        self.assertEqual(result["message"], "Hey there. What can I help you with?")
+
+    def test_runtime_has_no_generic_candidate_injection_for_empty_retrieval(self):
+        handler_source = inspect.getsource(server.Handler.do_POST)
+        module_source = inspect.getsource(server)
+        self.assertNotIn("conversational_candidate_sources", handler_source)
+        self.assertNotIn("def conversational_candidate_sources", module_source)
 
     def test_only_current_model_authored_or_privacy_turns_can_replay(self):
         current = {
@@ -2504,19 +2524,9 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('<h2 id="fortune-guide-title">Website Guide</h2>', wix)
         self.assertIn("Ask about this page", panel)
         self.assertIn(">Send</button>", panel)
-        self.assertIn("Don’t include personal information.", panel)
-        self.assertIn(
-            "Recorded for team review. Don’t include personal information.",
-            app,
-        )
-        self.assertIn(
-            "Questions and answers are recorded for team review.",
-            app,
-        )
-        self.assertIn(
-            "Recorded for team review. Don’t include personal information.",
-            wix,
-        )
+        self.assertNotIn("Recorded for team review", panel + app + wix)
+        self.assertNotIn("Questions and answers are recorded", panel + app + wix)
+        self.assertNotIn("Don’t include personal information.", panel + app + wix)
         self.assertIn("<summary>Info</summary>", panel)
         self.assertIn("Press Enter to send. Press Shift+Enter for a new line.", panel)
         self.assertNotIn('id="faq', panel.lower())
@@ -2693,7 +2703,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn(".guide-panel:not(.is-expanded) .chat-transcript:not(:empty) { min-height: 145px; }", styles)
         self.assertIn("grid-template-columns: minmax(0, 1fr) 74px", styles)
         self.assertIn(".guide-panel.is-expanded .chat-transcript", styles)
-        self.assertIn(".guide-panel.is-expanded .privacy-copy", styles)
+        self.assertNotIn(".privacy-copy", styles)
         self.assertNotIn(".chat-input-row { grid-template-columns: 1fr; }", styles)
         self.assertIn(".send { width: 74px;", wix)
 

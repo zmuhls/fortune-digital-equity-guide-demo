@@ -516,7 +516,6 @@ a:hover { text-decoration-thickness: 2px; }
   font-weight: 700;
   line-height: 1.4;
 }
-.privacy-copy { margin: 0; color: var(--guide-muted); font-size: 11px; line-height: 1.35; }
 
 .context-window {
   position: relative;
@@ -651,7 +650,6 @@ a:hover { text-decoration-thickness: 2px; }
     resize: none;
   }
   .chat-input-row button { min-height: 46px; }
-  .privacy-copy { font-size: 11px; line-height: 1.3; }
   .guide-panel.is-expanded .guide-header { padding-block: 0; }
   .guide-panel.is-expanded .chat-transcript { padding: 14px; }
   .guide-panel.is-expanded .chat-form { gap: 6px; padding: 10px 14px 8px; }
@@ -660,7 +658,6 @@ a:hover { text-decoration-thickness: 2px; }
     max-height: 84px;
   }
   .guide-panel.is-expanded .chat-input-row button { min-height: 46px; }
-  .guide-panel.is-expanded .privacy-copy { font-size: 11px; line-height: 1.3; }
   .guide-panel.is-expanded .guide-footer { min-height: 48px; padding: 0 14px; }
   .context-window { margin: 0; }
   .context-window summary { font-size: 12px; }

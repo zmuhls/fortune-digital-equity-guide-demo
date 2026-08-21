@@ -410,7 +410,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260821-shared-note-persistence-1", html)
+        self.assertIn("20260821-open-conversation-1", html)
 
     def test_reviewer_notes_and_annotations_are_reloaded_after_saving(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -443,11 +443,14 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn('version: "2026-08-18-v22"', javascript)
+        self.assertIn('version: "2026-08-21-v23"', javascript)
         self.assertIn(
-            'behavior_release: "infobot-sitewide-evidence-guide"', javascript
+            'behavior_release: "infobot-open-conversation-grounded-facts"', javascript
         )
-        self.assertIn('current_variant: "blocking_ambiguity_only"', javascript)
+        self.assertIn(
+            'current_variant: "open_conversation_or_blocking_ambiguity"',
+            javascript,
+        )
         self.assertIn('current_variant: "sitewide_evidence_first"', javascript)
         self.assertIn("Production changes still require code review", html)
         self.assertIn("module-diff-columns", css)

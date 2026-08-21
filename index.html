@@ -80,12 +80,11 @@
       <form class="chat-form" id="question-form">
         <label class="sr-only" id="question-label" for="question">Question</label>
         <div class="chat-input-row">
-          <textarea id="question" name="question" maxlength="600" required rows="1" placeholder="Ask about this page" aria-describedby="privacy-copy question-key-hint"></textarea>
+          <textarea id="question" name="question" maxlength="600" required rows="1" placeholder="Ask about this page" aria-describedby="question-key-hint"></textarea>
           <button type="submit">Send</button>
           <button class="edit-cancel" id="edit-cancel" type="button" hidden>Cancel</button>
         </div>
         <p class="edit-status" id="edit-status" role="status" aria-live="polite" hidden></p>
-        <p class="privacy-copy" id="privacy-copy">Don’t include personal information.</p>
         <span class="sr-only" id="question-key-hint">Press Enter to send. Press Shift+Enter for a new line.</span>
       </form>
 
@@ -95,7 +94,6 @@
           <div class="guide-info">
             <p id="context-window-text">Context · conversation · 0/3</p>
             <p id="context-window-copy">Up to 3 exchanges stay in this tab across pages.</p>
-            <p>Don’t include your Fortune ID, name, contact, case, or health information.</p>
             <p id="model-status">Starting…</p>
           </div>
         </details>
@@ -112,7 +110,7 @@
   <script src="config.js?v=20260813-source-free-2"></script>
   <script src="guide-core.js?v=20260817-route-refresh-1"></script>
   <script src="site.js?v=20260817-route-refresh-1"></script>
-  <script src="app.js?v=20260821-human-review-1"></script>
+  <script src="app.js?v=20260821-open-conversation-1"></script>
   <script src="embed-frame.js?v=20260803-replica-1"></script>
 </body>
 </html>

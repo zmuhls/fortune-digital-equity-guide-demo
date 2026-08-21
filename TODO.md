@@ -206,8 +206,8 @@
   the shared human-conversation review pilot.
 - [x] Keep production and staging databases separate; migrate evaluator
   identity/configuration only and never copy benchmark transcript rows.
-- [x] Use the exact visible notice **Recorded for team review. Don’t include
-  personal information.**, a 90-day retention period, private database
+- [x] Keep capture mode out of the compact participant interface while retaining
+  the pre-model privacy hold, a 90-day retention period, private database
   networking, and human-only queue eligibility.
 - [x] Deploy schema `009_human_review_capture` to production, connect the
   private production database, and verify capture/evaluation readiness.

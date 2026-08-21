@@ -2015,29 +2015,6 @@ def retrieval_plan(question, page_context=None):
     return "staff", []
 
 
-def conversational_candidate_sources(page_context=None):
-    """Provide a bounded approved site map when lexical retrieval has no hit.
-
-    These records give the model enough current site context to ask a useful
-    question. They are evidence candidates, not server-authored answers.
-    """
-
-    candidates = []
-    current = approved_current_page_source(page_context)
-    if current:
-        candidates.append(current)
-    for source_id in CORE_IDS:
-        source = SOURCE_BY_ID.get(source_id)
-        if (
-            source
-            and source.get("authority") == "answer"
-            and source.get("status", 200) == 200
-            and all(row["url"] != source["url"] for row in candidates)
-        ):
-            candidates.append(source)
-    return candidates[:6]
-
-
 def related_links(question, sources, limit=3):
     lowered = fold_text(question)
     candidates = []
@@ -2169,8 +2146,6 @@ def model_clarification_response(
     if (
         not message
         or len(message.split()) > MAX_MESSAGE_WORDS
-        or "\n" in raw_message
-        or "\r" in raw_message
         or re.search(r"https?://|www\.", message, flags=re.I)
         or re.search(
             r"\b(?:system|developer|hidden).{0,32}(?:prompt|message|instruction|rules|safety)|"
@@ -3221,12 +3196,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 retrieval_scope, retrieved = retrieval_plan(routing_question, page_context)
                 if not retrieved:
                     retrieval_scope = "site"
-                    retrieved = conversational_candidate_sources(page_context)
             require_model_answer = sensitive_request
-            # The model sees the current page plus bounded approved site records.
-            # It may answer from one supported record or pick ASK when the request
-            # is genuinely ambiguous; the server no longer predetermines that
-            # every broad or conversational message must become a clarification.
+            # Retrieval supplies approved evidence for factual answers. When it
+            # finds no evidence, the model receives an empty candidate set and can
+            # respond conversationally with ASK; generic pages are never injected
+            # merely to make an ordinary turn pass a factual-grounding filter.
             prior_answer = next(
                 (
                     item.get("content", "")

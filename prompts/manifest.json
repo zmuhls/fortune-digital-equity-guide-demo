@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-18-v22",
+  "current_policy_id": "2026-08-21-v23",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "c18f5abb5d270b05a0024bf5ac8d16adacdfe1591f4d8dfcd90c899977814f55",
-  "current_compiled_prompt_sha256": "eadc5eaf624c8e21b04b9a981846eedd423cfcfbee3340bb000d98c9c6b99b27",
+  "current_policy_source_sha256": "0a51ed6867b622d92c171c7d0ac6e7ac4d3a7085c51f619abf11ba2e3f1ada3a",
+  "current_compiled_prompt_sha256": "89053b0553df7e2d4730c2cad2214a7d2c5425dd57be848db62884eaf34a5b37",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -231,8 +231,20 @@
       "behavior_release": "infobot-sitewide-evidence-guide",
       "artifact": "versions/2026-08-18-v22.md",
       "artifact_sha256": "a491cb21f2f6406c89dcfda34a60a1142eb88ca58dbb9828d9116cbd573666c9",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-18-v22-compiled.md",
       "compiled_prompt_artifact_sha256": "a18ac9c384be8278ad17d97565745f9009cc0a0b9a801028468971e86a9e8f4b"
+    },
+    {
+      "policy_id": "2026-08-21-v23",
+      "label": "Open-conversation, grounded-facts Infobot prompt",
+      "reconstructed": false,
+      "source_state": "authored after live production rejected an ordinary conversational turn against injected generic page evidence",
+      "source_date": "2026-08-21",
+      "behavior_release": "infobot-open-conversation-grounded-facts",
+      "artifact": "versions/2026-08-21-v23.md",
+      "artifact_sha256": "9043f842c8e2b4dcbf93c8c30dfb7a682ed1079d11a5b1af6515723f63333151",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "a86f3190e624cb63e236824bed508e0456a329a5ccc8901a203cb312b4d46a01"
     }
   ]
 }

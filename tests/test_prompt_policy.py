@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-18-v22")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-21-v23")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "infobot-sitewide-evidence-guide",
+            "infobot-open-conversation-grounded-facts",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -47,9 +47,10 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("strongest relevant evidence", source_selector.SYSTEM_PROMPT)
         self.assertIn("entirely in that chosen record", source_selector.SYSTEM_PROMPT)
         self.assertIn("rather than blending facts", source_selector.SYSTEM_PROMPT)
-        self.assertIn("brief, natural follow-up", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Pick ASK only when ambiguity actually prevents", source_selector.SYSTEM_PROMPT)
-        self.assertIn("do not append a fake invitation question", source_selector.SYSTEM_PROMPT)
+        self.assertIn("respond naturally to the participant", source_selector.SYSTEM_PROMPT)
+        self.assertIn("When candidate records are empty", source_selector.SYSTEM_PROMPT)
+        self.assertIn("respond naturally to the participant", source_selector.SYSTEM_PROMPT)
+        self.assertIn("open conversational turn", source_selector.SYSTEM_PROMPT)
         self.assertIn("protect privacy and source fidelity", source_selector.SYSTEM_PROMPT)
         self.assertIn("answer the participant's latest request directly", source_selector.SYSTEM_PROMPT)
         self.assertIn("active page is navigation context", source_selector.SYSTEM_PROMPT)
@@ -103,15 +104,16 @@ class PromptPolicyTests(unittest.TestCase):
         clarification = catalog["clarification"]
         self.assertEqual(
             clarification["current_variant"],
-            "blocking_ambiguity_only",
+            "open_conversation_or_blocking_ambiguity",
         )
         self.assertEqual(
             clarification["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["clarification"]
-            ["blocking_ambiguity_only"],
+            ["open_conversation_or_blocking_ambiguity"],
         )
-        self.assertIn("ambiguity actually prevents", clarification["current_value"])
-        self.assertIn("fake invitation question", clarification["current_value"])
+        self.assertIn("candidate records are empty", clarification["current_value"])
+        self.assertIn("respond naturally", clarification["current_value"])
+        self.assertIn("evidence-backed answer", clarification["current_value"])
 
         page_awareness = catalog["page_awareness"]
         self.assertEqual(
@@ -249,6 +251,24 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertEqual(
             v20["compiled_prompt_artifact"],
             "versions/2026-08-18-v20-compiled.md",
+        )
+
+    def test_v22_artifact_remains_byte_exact_after_v23(self):
+        manifest = json.loads(
+            (ROOT / "prompts" / "manifest.json").read_text(encoding="utf-8")
+        )
+        v22 = next(
+            entry
+            for entry in manifest["versions"]
+            if entry["policy_id"] == "2026-08-18-v22"
+        )
+        self.assertEqual(
+            v22["compiled_prompt_artifact"],
+            "versions/2026-08-18-v22-compiled.md",
+        )
+        self.assertEqual(
+            v22["compiled_prompt_artifact_sha256"],
+            "a18ac9c384be8278ad17d97565745f9009cc0a0b9a801028468971e86a9e8f4b",
         )
 
 

@@ -15,10 +15,8 @@
   const submitButton = form.querySelector('button[type="submit"]');
   const editStatus = document.querySelector("#edit-status");
   const editCancel = document.querySelector("#edit-cancel");
-  const privacyCopy = document.querySelector("#privacy-copy");
   const modelStatus = document.querySelector("#model-status");
   const contextWindowText = document.querySelector("#context-window-text");
-  const contextWindowCopy = document.querySelector("#context-window-copy");
   const resetButton = document.querySelector("#guide-reset");
   const API_BASE = String(window.FORTUNE_GUIDE_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
@@ -647,14 +645,6 @@
       captureMode = ["none", "metadata", "transcript"].includes(data.conversation_logging?.capture_mode)
         ? data.conversation_logging.capture_mode
         : "none";
-      privacyCopy.textContent = captureMode === "transcript"
-        ? "Recorded for team review. Don’t include personal information."
-        : "Don’t include personal information.";
-      contextWindowCopy.textContent = captureMode === "transcript"
-        ? "Questions and answers are recorded for team review."
-        : captureMode === "metadata"
-          ? "This review build stores IDs and response data. Chat stays in this tab across pages."
-          : "Up to 3 exchanges stay in this tab across pages.";
       modelStatus.textContent = modelReady ? "Starting…" : "Unavailable";
       modelStatus.classList.toggle("model-ready", modelReady);
       if (modelReady) warmModel();
@@ -662,7 +652,6 @@
       apiReady = false;
       modelReady = false;
       captureMode = "none";
-      privacyCopy.textContent = "Don’t include personal information.";
       modelStatus.textContent = "Unavailable";
       modelStatus.classList.remove("model-ready");
     }

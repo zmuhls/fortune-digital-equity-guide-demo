@@ -14,7 +14,7 @@ Capture modes are explicit:
 - `metadata`: IDs, page record, routing/result fields, model state, timing, and privacy/review state; no question or answer text.
 - `transcript`: the metadata above plus question and answer text only for turns classified `clear` by the automated privacy hold. Blocked or sensitive turns contain no message rows.
 
-`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. The guide must visibly state **Recorded for team review. Don’t include personal information.** Only privacy-clear conversations from the public `replica` and `wix` surfaces become review-ready. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
+`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. Capture mode must not inject status or review copy into the compact participant interface. Only privacy-clear conversations from the public `replica` and `wix` surfaces become review-ready. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
 
 Captured conversations receive `expires_at`; the server purges expired conversations at startup and at most hourly while serving capture traffic. The default is 90 days and can be shortened for a pilot.
 

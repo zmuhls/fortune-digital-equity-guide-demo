@@ -313,7 +313,6 @@
           .cancel-edit { min-width: 62px; min-height: 46px; color: var(--guide-ink); background: var(--guide-paper); }
           .edit-status { margin: 0; color: var(--guide-ink); font-size: 11px; font-weight: 700; line-height: 1.4; }
           .edit-status[hidden] { display: none; }
-          .privacy { margin: 0; color: var(--guide-muted); font-size: 11px; line-height: 1.35; }
           .status { margin: 0; color: var(--guide-muted); font-size: 12px; line-height: 1.4; }
           .status:empty { display: none; }
           .footer {
@@ -390,12 +389,11 @@
           <form>
             <label class="sr-only" id="fortune-guide-question-label" for="fortune-guide-question">Question</label>
             <div class="row">
-              <textarea id="fortune-guide-question" name="question" autocomplete="off" maxlength="600" required rows="1" placeholder="Ask about this page" aria-describedby="fortune-guide-privacy fortune-guide-key-hint"></textarea>
+              <textarea id="fortune-guide-question" name="question" autocomplete="off" maxlength="600" required rows="1" placeholder="Ask about this page" aria-describedby="fortune-guide-key-hint"></textarea>
               <button class="send" type="submit">Send</button>
               <button class="cancel-edit" type="button" hidden>Cancel</button>
             </div>
             <p class="edit-status" role="status" aria-live="polite" hidden></p>
-            <p class="privacy" id="fortune-guide-privacy">Don’t include personal information.</p>
             <span class="sr-only" id="fortune-guide-key-hint">Press Enter to send. Press Shift+Enter for a new line.</span>
             <p class="status" role="status" aria-live="polite"></p>
           </form>
@@ -404,8 +402,6 @@
               <summary>Info</summary>
               <div class="info">
                 <p class="context-count">Context · conversation · 0/3</p>
-                <p class="capture-notice">Starting…</p>
-                <p>Don’t include your Fortune ID, name, contact, case, or health information.</p>
                 <p class="model-status">Starting…</p>
               </div>
             </details>
@@ -426,8 +422,6 @@
       this.sendButton = root.querySelector(".send");
       this.cancelEditButton = root.querySelector(".cancel-edit");
       this.editStatus = root.querySelector(".edit-status");
-      this.privacyNotice = root.querySelector("#fortune-guide-privacy");
-      this.captureNotice = root.querySelector(".capture-notice");
       this.contextCount = root.querySelector(".context-count");
       this.modelStatus = root.querySelector(".model-status");
       this.status = root.querySelector(".status");
@@ -662,8 +656,6 @@
       try {
         healthUrl = this.apiUrl("/health");
       } catch {
-        this.privacyNotice.textContent = "Don’t include personal information.";
-        this.captureNotice.textContent = "Privacy unavailable.";
         this.modelStatus.textContent = "Unavailable";
         this.capturePolicyReady = false;
         return Promise.resolve(null);
@@ -673,24 +665,11 @@
         .then(async (response) => {
           if (!response.ok) throw new Error("Capture policy unavailable.");
           const payload = await response.json();
-          const mode = payload.conversation_logging?.capture_mode;
-          if (mode === "transcript") {
-            this.privacyNotice.textContent = "Recorded for team review. Don’t include personal information.";
-            this.captureNotice.textContent = "Questions and answers are recorded for team review.";
-          } else if (mode === "metadata") {
-            this.privacyNotice.textContent = "Don’t include personal information.";
-            this.captureNotice.textContent = "This review build stores IDs and response data. Chat stays in this tab across pages.";
-          } else {
-            this.privacyNotice.textContent = "Don’t include personal information.";
-            this.captureNotice.textContent = "Up to 3 exchanges stay in this tab across pages.";
-          }
           this.modelStatus.textContent = payload.model_enabled ? "Starting…" : "Unavailable";
           this.capturePolicyReady = true;
           return payload;
         })
         .catch(() => {
-          this.privacyNotice.textContent = "Don’t include personal information.";
-          this.captureNotice.textContent = "Privacy unavailable.";
           this.modelStatus.textContent = "Unavailable";
           this.capturePolicyReady = false;
           return null;
