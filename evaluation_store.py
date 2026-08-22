@@ -34,6 +34,15 @@ PROMPT_MODULE_LABELS = {
 }
 PROMPT_PROPOSAL_STATUSES = {"draft", "ready", "archived"}
 EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+REVIEWABLE_TURN_PREDICATE = """
+    t.status = 'complete'
+    AND t.privacy_state = 'clear'
+    AND t.review_state = 'ready'
+    AND (
+        SELECT COUNT(*) FROM conversation_messages review_messages
+        WHERE review_messages.turn_id = t.id
+    ) = 2
+""".strip()
 
 
 class EvaluationUnavailable(RuntimeError):
@@ -1272,7 +1281,7 @@ class EvaluationStore:
 
     @staticmethod
     def _eligible_cte() -> str:
-        return """
+        return f"""
             WITH eligible AS (
                 SELECT c.id, c.last_turn_at, c.client_surface,
                        COUNT(t.id)::INTEGER AS turn_count,
@@ -1288,13 +1297,7 @@ class EvaluationStore:
                   AND c.client_surface IN ('replica', 'wix')
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-                  AND t.status = 'complete'
-                  AND t.privacy_state = 'clear'
-                  AND t.review_state = 'ready'
-                  AND (
-                      SELECT COUNT(*) FROM conversation_messages m
-                      WHERE m.turn_id = t.id
-                  ) = 2
+                  AND {REVIEWABLE_TURN_PREDICATE}
                 GROUP BY c.id, c.last_turn_at, c.client_surface
             )
         """
@@ -1345,19 +1348,13 @@ class EvaluationStore:
                     raise EvaluationForbidden("That conversation is not available for review.")
                 set_id = str(conversation["bucket_set_id"])
                 cursor.execute(
-                    """
+                    f"""
                     SELECT m.id, m.turn_id, m.ordinal, m.role, m.content,
                            m.created_at, t.app_version, t.prompt_policy_version
                     FROM conversation_messages m
                     JOIN conversation_turns t ON t.id = m.turn_id
                     WHERE m.conversation_id = %s
-                      AND t.status = 'complete'
-                      AND t.privacy_state = 'clear'
-                      AND t.review_state = 'ready'
-                      AND (
-                          SELECT COUNT(*) FROM conversation_messages pair
-                          WHERE pair.turn_id = t.id
-                      ) = 2
+                      AND {REVIEWABLE_TURN_PREDICATE}
                     ORDER BY t.sequence, m.ordinal
                     """,
                     (conversation_id,),
@@ -1381,20 +1378,14 @@ class EvaluationStore:
 
     def _current_transcript_version(self, cursor, conversation_id: str) -> int:
         cursor.execute(
-            """
+            f"""
             SELECT MAX(t.sequence)::BIGINT AS transcript_version
             FROM conversations c
             JOIN conversation_turns t ON t.conversation_id = c.id
             WHERE c.id = %s AND c.capture_mode = 'transcript'
               AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-              AND t.status = 'complete'
-              AND t.privacy_state = 'clear'
-              AND t.review_state = 'ready'
-              AND (
-                  SELECT COUNT(*) FROM conversation_messages m
-                  WHERE m.turn_id = t.id
-              ) = 2
+              AND {REVIEWABLE_TURN_PREDICATE}
             """,
             (conversation_id, self.min_inactive_seconds),
         )

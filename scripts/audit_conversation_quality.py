@@ -9,8 +9,15 @@ from __future__ import annotations
 
 import json
 import os
+import pathlib
 import sys
 from typing import Any
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from evaluation_store import REVIEWABLE_TURN_PREDICATE  # noqa: E402
 
 
 def _dependencies():
@@ -168,7 +175,7 @@ def run_audit(database_url: str) -> dict:
                 FROM conversation_turns GROUP BY prompt_policy_version
             ) AS d(dimension, value, count)
         """,
-        "evaluation": """
+        "evaluation": f"""
             SELECT
                 (SELECT COUNT(*) FROM evaluator_accounts)::INTEGER AS account_slots,
                 (SELECT COUNT(*) FROM evaluator_accounts WHERE claimed_at IS NOT NULL)::INTEGER
@@ -187,14 +194,7 @@ def run_audit(database_url: str) -> dict:
                           AND c.client_surface IN ('replica', 'wix')
                           AND c.expires_at > NOW()
                           AND c.last_turn_at <= NOW() - INTERVAL '60 seconds'
-                          AND t.status = 'complete'
-                          AND t.privacy_state = 'clear'
-                          AND t.review_state = 'ready'
-                          AND (
-                              SELECT COUNT(*)
-                              FROM conversation_messages AS m
-                              WHERE m.turn_id = t.id
-                          ) = 2
+                          AND {REVIEWABLE_TURN_PREDICATE}
                         GROUP BY c.id
                     ) AS eligible
                 )::INTEGER AS eligible_conversations,

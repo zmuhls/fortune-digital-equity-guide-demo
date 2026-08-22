@@ -95,6 +95,7 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertNotIn("synthetic", source)
 
     def test_failed_turn_does_not_hide_reviewable_turns_in_the_same_conversation(self):
+        predicate = evaluation_store.REVIEWABLE_TURN_PREDICATE
         eligible_source = evaluation_store.EvaluationStore._eligible_cte()
         current_version_source = inspect.getsource(
             evaluation_store.EvaluationStore._current_transcript_version
@@ -103,11 +104,16 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             evaluation_store.EvaluationStore.get_conversation
         )
 
-        for source in (eligible_source, current_version_source, detail_source):
-            self.assertIn("t.status = 'complete'", source)
-            self.assertIn("t.privacy_state = 'clear'", source)
-            self.assertIn("t.review_state = 'ready'", source)
-            self.assertIn("conversation_messages", source)
+        for clause in (
+            "t.status = 'complete'",
+            "t.privacy_state = 'clear'",
+            "t.review_state = 'ready'",
+            "conversation_messages",
+        ):
+            self.assertIn(clause, predicate)
+            self.assertIn(clause, eligible_source)
+        for source in (current_version_source, detail_source):
+            self.assertIn("REVIEWABLE_TURN_PREDICATE", source)
         self.assertNotIn("HAVING BOOL_AND", eligible_source)
         self.assertNotIn("HAVING BOOL_AND", current_version_source)
 
@@ -427,7 +433,17 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260821-open-conversation-1", html)
+        self.assertIn("20260821-persistent-refresh-1", html)
+
+    def test_conversation_queue_refreshes_when_reviewers_return_to_it(self):
+        javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
+
+        self.assertIn("WORKSPACE_REFRESH_INTERVAL_MS", javascript)
+        self.assertIn("async function refreshVisibleWorkspace", javascript)
+        self.assertIn('window.addEventListener("focus"', javascript)
+        self.assertIn('document.addEventListener("visibilitychange"', javascript)
+        self.assertIn("refreshVisibleWorkspace(true)", javascript)
+        self.assertNotIn("setInterval(", javascript)
 
     def test_reviewer_notes_and_annotations_are_reloaded_after_saving(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")

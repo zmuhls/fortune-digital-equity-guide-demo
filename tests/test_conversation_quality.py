@@ -1,6 +1,7 @@
 import pathlib
 import unittest
 
+import evaluation_store
 from scripts import audit_conversation_quality
 
 
@@ -28,7 +29,15 @@ class ConversationQualityAuditTests(unittest.TestCase):
         self.assertIn("AS nonhuman_ready_turns", source)
         self.assertNotIn("AS nonsynthetic_ready_turns", source)
         self.assertNotIn("HAVING BOOL_AND", source)
-        self.assertIn("t.review_state = 'ready'", source)
+        self.assertIn(
+            "from evaluation_store import REVIEWABLE_TURN_PREDICATE",
+            source,
+        )
+        self.assertIn("AND {REVIEWABLE_TURN_PREDICATE}", source)
+        self.assertEqual(
+            audit_conversation_quality.REVIEWABLE_TURN_PREDICATE,
+            evaluation_store.REVIEWABLE_TURN_PREDICATE,
+        )
 
     def test_json_values_are_bounded_for_operator_output(self):
         self.assertEqual(

@@ -59,6 +59,9 @@
   const viewKeyPrefix = "fortune-evaluation-view-v2";
   const defaultView = { visibility: "all", sort: "default", layout: "compact" };
   const UNREVIEWED_PAGE_SIZE = 8;
+  const WORKSPACE_REFRESH_INTERVAL_MS = 5000;
+  let lastWorkspaceRefreshAt = 0;
+  let workspaceRefreshPromise = null;
   const state = {
     session: null,
     csrf: "",
@@ -250,6 +253,20 @@
     renderPromptLab();
   }
 
+  async function refreshVisibleWorkspace(force = false) {
+    if (localPreview || !state.session || document.hidden) return;
+    if (!force && Date.now() - lastWorkspaceRefreshAt < WORKSPACE_REFRESH_INTERVAL_MS) return;
+    if (workspaceRefreshPromise) return workspaceRefreshPromise;
+    workspaceRefreshPromise = loadWorkspace()
+      .catch(() => {
+        moveStatus.textContent = "Could not refresh. Try again.";
+      })
+      .finally(() => {
+        workspaceRefreshPromise = null;
+      });
+    return workspaceRefreshPromise;
+  }
+
   function previewSave() {
     localStorage.setItem(previewKey, JSON.stringify({
       buckets: state.buckets,
@@ -272,6 +289,7 @@
     showWorkspace();
     renderBoard();
     renderPromptLab();
+    lastWorkspaceRefreshAt = Date.now();
   }
 
   function bucketColumns() {
@@ -1018,7 +1036,10 @@
     }
   }
 
-  conversationsTab.addEventListener("click", () => setWorkspaceView("conversations"));
+  conversationsTab.addEventListener("click", () => {
+    setWorkspaceView("conversations");
+    refreshVisibleWorkspace(true);
+  });
   promptLabTab.addEventListener("click", () => setWorkspaceView("prompt"));
   [conversationsTab, promptLabTab].forEach((tab, index, tabs) => {
     tab.addEventListener("keydown", event => {
@@ -1031,8 +1052,13 @@
       event.preventDefault();
       const nextTab = tabs[nextIndex];
       setWorkspaceView(nextTab === promptLabTab ? "prompt" : "conversations");
+      if (nextTab === conversationsTab) refreshVisibleWorkspace(true);
       nextTab.focus();
     });
+  });
+  window.addEventListener("focus", () => refreshVisibleWorkspace());
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshVisibleWorkspace(true);
   });
   newProposalButton.addEventListener("click", () => openPromptProposalDialog());
   promptProposalClose.addEventListener("click", () => {
