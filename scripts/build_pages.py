@@ -13,6 +13,7 @@ import re
 import shutil
 import tempfile
 import urllib.parse
+from html.parser import HTMLParser
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -36,7 +37,7 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
-REPLICA_SHELL_CSS_VERSION = "20260821-visible-faq-1"
+REPLICA_SHELL_CSS_VERSION = "20260821-linked-source-2"
 REPLICA_SHELL_JS_VERSION = "20260820-text-source-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
@@ -85,41 +86,344 @@ BOILERPLATE_PHRASES = (
     "loading days",
     "book now",
 )
-NAVIGATION_LABELS = {
-    "welcome!",
-    "to the fortune society",
-    "choose a service",
-    "explore learning paths",
-    "more about us",
-    "find a workshop",
-    "view calendar",
-    "get a device",
-    "internship",
-    "get support",
-    "explore tools",
-    "contact us",
-    "attend an open lab",
-    "more",
-    "explore more",
-    "other resources",
-    "volunteer",
-    "special events",
-    "donate",
-    "tech fair",
-    "program updates",
-    "media kit",
-    "hear from past participants",
-    "still not sure where to start?",
-}
-PRIMARY_NAVIGATION = (
-    ("Home", "/"),
-    ("Workshops", "/workshops"),
-    ("Calendar", "/calendar"),
-    ("Devices", "/devices"),
-    ("Support", "/support"),
-    ("Contact", "/contact"),
+TRANSIENT_SNAPSHOT_PATTERNS = (
+    re.compile(r"^no sessions in (?:the )?next \d+ days\.?$", re.I),
+    re.compile(r"^.+\([A-Z]{2,5}\) time zone: .+$", re.I),
 )
 FAQ_HEADING = "frequently asked questions"
+
+
+class _SnapshotSemanticParser(HTMLParser):
+    """Project inert, reviewed main-frame HTML into a small semantic tree.
+
+    Wix's layout is almost entirely ``div`` based, but its rendered captures
+    retain headings, lists, links, breadcrumbs, and the native disclosures
+    created by the capture step.  This parser deliberately ignores Wix classes
+    and ids so the projection follows the public document rather than a page
+    specific visual template.
+    """
+
+    _SKIP_TAGS = {"script", "style", "noscript", "svg", "template"}
+    _TEXT_TAGS = {
+        "address", "blockquote", "dd", "dt", "figcaption", "p",
+        "summary",
+    }
+    _SKIP_ATTRIBUTES = {
+        "data-replica-embed-placeholder",
+        "data-replica-static-preview-note",
+        "data-replica-static-preview",
+    }
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.nodes: list[dict] = []
+        self.footer_links: list[dict[str, str]] = []
+        self._containers: list[list[dict]] = [self.nodes]
+        self._main_depth = 0
+        self._skip_depth = 0
+        self._skip_roots: set[int] = set()
+        self._nav_depth = 0
+        self._list_stack: list[tuple[str, dict]] = []
+        self._item_stack: list[dict] = []
+        self._details_stack: list[dict] = []
+        self._text_frames: list[dict] = []
+        self._anchor_stack: list[dict] = []
+        self._div_frames: list[dict] = []
+        self._footer_depth = 0
+        self._footer_anchor_stack: list[dict] = []
+
+    @staticmethod
+    def _attributes(attrs: list[tuple[str, str | None]]) -> dict[str, str]:
+        return {name.casefold(): value or "" for name, value in attrs}
+
+    @staticmethod
+    def _is_main(tag: str, attrs: dict[str, str]) -> bool:
+        return tag == "main" and (
+            attrs.get("id") == "PAGES_CONTAINER"
+            or attrs.get("data-main-content", "").casefold() == "true"
+        )
+
+    def _append(self, node: dict) -> None:
+        self._containers[-1].append(node)
+
+    def _nearest_detail(self) -> dict | None:
+        return self._details_stack[-1] if self._details_stack else None
+
+    def _inside_summary(self) -> bool:
+        return any(frame["tag"] == "summary" for frame in self._text_frames)
+
+    def _mark_div_content(self) -> None:
+        if self._div_frames:
+            self._div_frames[-1]["has_content_child"] = True
+
+    def _start_text_frame(self, tag: str) -> None:
+        anchor = self._anchor_stack[-1] if self._anchor_stack else None
+        if anchor is not None:
+            anchor["has_semantic_child"] = True
+        self._text_frames.append({
+            "tag": tag,
+            "text": [],
+            "href": anchor["href"] if anchor else "",
+            "links": [],
+        })
+
+    def _finish_text_frame(self, tag: str) -> None:
+        if not self._text_frames:
+            return
+        frame = self._text_frames.pop()
+        if frame["tag"] != tag:
+            return
+        text = clean_source_fragment(" ".join(str(value) for value in frame["text"]))
+        if not text:
+            return
+        links = [link for link in frame["links"] if link.get("label")]
+        href = frame["href"]
+        if not href and len(links) == 1 and clean_link_label(links[0]["label"]) == text:
+            href = links[0]["href"]
+        if tag == "summary":
+            detail = self._nearest_detail()
+            if detail is not None:
+                detail["summary"] = text
+            return
+        node_type = "heading" if tag.startswith("h") else "paragraph"
+        node = {"type": node_type, "text": text, "href": href}
+        if node_type == "heading":
+            node["level"] = int(tag[1])
+        self._append(node)
+
+    def _finish_anchor(self) -> None:
+        if not self._anchor_stack:
+            return
+        anchor = self._anchor_stack.pop()
+        label = clean_link_label(" ".join(str(value) for value in anchor["text"]))
+        if not label:
+            label = clean_link_label(anchor["aria_label"])
+        if not label:
+            return
+        link = {"href": anchor["href"], "label": label}
+        for frame in self._text_frames:
+            frame["links"].append(link)
+        if (
+            not anchor["has_semantic_child"]
+            and not self._text_frames
+            and not self._inside_summary()
+        ):
+            self._append({"type": "link", "text": label, "href": anchor["href"]})
+
+    def _finish_footer_anchor(self) -> None:
+        if not self._footer_anchor_stack:
+            return
+        anchor = self._footer_anchor_stack.pop()
+        # Social icons and logo links only expose aria labels. Keep the public
+        # text links (for example the phone, email, and Media Kit) rather than
+        # recreating the visual footer controls in a text mirror.
+        label = clean_link_label(" ".join(str(value) for value in anchor["text"]))
+        if label:
+            self.footer_links.append({"href": str(anchor["href"]), "label": label})
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.casefold()
+        values = self._attributes(attrs)
+        if not self._main_depth:
+            if self._is_main(tag, values):
+                self._main_depth = 1
+            return
+
+        self._main_depth += 1
+        if self._footer_depth:
+            self._footer_depth += 1
+            if tag == "a":
+                self._footer_anchor_stack.append({"href": values.get("href", ""), "text": []})
+            return
+        if tag == "footer" or values.get("id", "").casefold() == "site_footer":
+            self._footer_depth = 1
+            return
+        if (
+            tag in self._SKIP_TAGS
+            or values.get("id", "").casefold() == "site_header"
+            or any(name in values for name in self._SKIP_ATTRIBUTES)
+            or values.get("data-replica-inert") == "form"
+        ):
+            self._skip_depth += 1
+            self._skip_roots.add(self._main_depth)
+            return
+        if self._skip_depth:
+            return
+
+        if tag == "div":
+            self._mark_div_content()
+            self._div_frames.append({"text": [], "has_content_child": False})
+            return
+        if tag == "nav":
+            self._nav_depth += 1
+        if tag == "a":
+            self._mark_div_content()
+            self._anchor_stack.append({
+                "href": values.get("href", ""),
+                "aria_label": values.get("aria-label", ""),
+                "text": [],
+                "has_semantic_child": False,
+            })
+            return
+        if tag == "details":
+            self._mark_div_content()
+            node = {"type": "details", "summary": "", "content": [], "open": "open" in values}
+            self._append(node)
+            self._details_stack.append(node)
+            self._containers.append(node["content"])
+            return
+        if tag in {"ul", "ol"}:
+            self._mark_div_content()
+            node = {
+                "type": "list",
+                "ordered": tag == "ol",
+                "breadcrumb": tag == "ol" and self._nav_depth > 0,
+                "items": [],
+            }
+            self._append(node)
+            self._list_stack.append((tag, node))
+            self._containers.append(node["items"])
+            return
+        if tag == "li" and self._list_stack:
+            self._mark_div_content()
+            node = {"type": "item", "content": [], "text": [], "links": []}
+            self._append(node)
+            self._item_stack.append(node)
+            self._containers.append(node["content"])
+            return
+        if tag in self._TEXT_TAGS or re.fullmatch(r"h[1-6]", tag):
+            self._mark_div_content()
+            self._start_text_frame(tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_starttag(tag, attrs)
+        if self._main_depth:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.casefold()
+        if not self._main_depth:
+            return
+        if self._footer_depth:
+            if tag == "a":
+                self._finish_footer_anchor()
+            self._footer_depth -= 1
+            self._main_depth -= 1
+            return
+        if self._main_depth in self._skip_roots:
+            self._skip_depth -= 1
+            self._skip_roots.remove(self._main_depth)
+            self._main_depth -= 1
+            return
+        if not self._skip_depth:
+            if tag == "a":
+                self._finish_anchor()
+            elif tag == "div" and self._div_frames:
+                frame = self._div_frames.pop()
+                if not frame["has_content_child"]:
+                    text = clean_source_fragment(" ".join(str(value) for value in frame["text"]))
+                    if text:
+                        self._append({"type": "paragraph", "text": text, "href": ""})
+            elif tag in self._TEXT_TAGS or re.fullmatch(r"h[1-6]", tag):
+                self._finish_text_frame(tag)
+            elif tag == "li" and self._item_stack:
+                item = self._item_stack.pop()
+                self._containers.pop()
+                if not item["content"]:
+                    text = clean_source_fragment(" ".join(str(value) for value in item["text"]))
+                    if text:
+                        self._append({"type": "paragraph", "text": text, "href": ""})
+            elif tag in {"ul", "ol"} and self._list_stack:
+                self._list_stack.pop()
+                self._containers.pop()
+            elif tag == "details" and self._details_stack:
+                self._details_stack.pop()
+                self._containers.pop()
+            elif tag == "nav" and self._nav_depth:
+                self._nav_depth -= 1
+        self._main_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._main_depth or self._skip_depth:
+            return
+        text = re.sub(r"\s+", " ", data).strip()
+        if not text:
+            return
+        if self._footer_depth:
+            if self._footer_anchor_stack:
+                self._footer_anchor_stack[-1]["text"].append(text)
+            return
+        for frame in self._text_frames:
+            frame["text"].append(text)
+        if self._anchor_stack:
+            self._anchor_stack[-1]["text"].append(text)
+        if self._item_stack:
+            self._item_stack[-1]["text"].append(text)
+        if self._div_frames:
+            self._div_frames[-1]["text"].append(text)
+
+
+class _HeaderNavigationParser(HTMLParser):
+    """Extract the public, captured site navigation without Wix controls."""
+
+    _STRUCTURAL_TAGS = {"nav", "ul", "ol", "li", "details", "summary", "a"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.navigation_roots: list[dict] = []
+        self._header_depth = 0
+        self._nav_depth = 0
+        self._stack: list[dict] = []
+
+    @staticmethod
+    def _attributes(attrs: list[tuple[str, str | None]]) -> dict[str, str]:
+        return {name.casefold(): value or "" for name, value in attrs}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.casefold()
+        values = self._attributes(attrs)
+        if not self._header_depth:
+            if values.get("id", "").casefold() == "site_header":
+                self._header_depth = 1
+            return
+
+        self._header_depth += 1
+        if tag == "nav" and not self._nav_depth:
+            self._nav_depth = 1
+        elif self._nav_depth:
+            self._nav_depth += 1
+        if not self._nav_depth or tag not in self._STRUCTURAL_TAGS:
+            return
+        node = {"tag": tag, "attrs": values, "text": [], "children": []}
+        if self._stack:
+            self._stack[-1]["children"].append(node)
+        else:
+            self.navigation_roots.append(node)
+        self._stack.append(node)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.casefold()
+        if not self._header_depth:
+            return
+        if self._nav_depth:
+            if tag in self._STRUCTURAL_TAGS and self._stack:
+                for index in range(len(self._stack) - 1, -1, -1):
+                    if self._stack[index]["tag"] == tag:
+                        self._stack = self._stack[:index]
+                        break
+            self._nav_depth -= 1
+        self._header_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._nav_depth:
+            return
+        text = re.sub(r"\s+", " ", data).strip()
+        if not text:
+            return
+        for node in reversed(self._stack):
+            if node["tag"] in {"a", "summary"}:
+                node["text"].append(text)
+                break
 
 
 class BuildError(RuntimeError):
@@ -288,6 +592,7 @@ def clean_source_fragment(value: object) -> str:
         or "©" in text
         or folded.startswith("copyright ")
         or any(phrase in folded for phrase in BOILERPLATE_PHRASES)
+        or any(pattern.fullmatch(text) for pattern in TRANSIENT_SNAPSHOT_PATTERNS)
         or any(pattern.search(text) for pattern in VISUAL_SCAFFOLD)
     ):
         return ""
@@ -313,8 +618,6 @@ def source_fragments(page: dict) -> list[tuple[str, bool]]:
             continue
         seen.add(key)
         is_heading = key in heading_keys
-        if key in NAVIGATION_LABELS:
-            continue
         if (
             text.isupper()
             and len(text.split()) <= 4
@@ -341,6 +644,552 @@ def static_href(asset_base: str, path: str) -> str:
     return f"{asset_base}{path.strip('/')}/"
 
 
+def clean_link_label(value: object) -> str:
+    """Keep a short, readable label captured from a public link."""
+
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not text or len(text) > 240:
+        return ""
+    return clean_source_fragment(text)
+
+
+def approved_route_path(value: object) -> str | None:
+    """Map an approved-origin link to the local route it represents."""
+
+    parsed = urllib.parse.urlsplit(str(value or "").strip())
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_HOSTS:
+        return None
+    canonical = urllib.parse.urlunsplit((
+        "https",
+        parsed.hostname,
+        parsed.path or "/",
+        "",
+        "",
+    ))
+    try:
+        return route_path(canonical)
+    except BuildError:
+        return None
+
+
+def source_outline_from_fragments(
+    fragments: list[tuple[str, bool]],
+) -> list[tuple[int, str, str]]:
+    """Give each captured heading a stable in-page destination."""
+
+    outline: list[tuple[int, str, str]] = []
+    section_number = 0
+    faq_number = 0
+    for index, (text, is_heading) in enumerate(fragments):
+        if not is_heading:
+            continue
+        if is_faq_heading(text):
+            faq_number += 1
+            target = f"source-faq-{faq_number}"
+        else:
+            section_number += 1
+            target = f"source-section-{section_number}"
+        outline.append((index, text, target))
+    return outline
+
+
+def render_source_outline(fragments: list[tuple[str, bool]]) -> str:
+    """Render captured headings as a compact reading index."""
+
+    outline = source_outline_from_fragments(fragments)
+    if not outline:
+        return ""
+    items = "\n".join(
+        f'        <li><a href="#{html.escape(target, quote=True)}">{html.escape(text)}</a></li>'
+        for _, text, target in outline
+    )
+    return (
+        '    <nav class="source-outline" aria-labelledby="source-outline-heading">\n'
+        '      <p class="source-outline__title" id="source-outline-heading">On this page</p>\n'
+        '      <ol>\n'
+        f"{items}\n"
+        '      </ol>\n'
+        '    </nav>'
+    )
+
+
+def snapshot_semantic_document(snapshot_html: str) -> tuple[list[dict], list[dict[str, str]]]:
+    """Read public page content and textual source-footer links from a snapshot."""
+
+    parser = _SnapshotSemanticParser()
+    try:
+        parser.feed(snapshot_html)
+        parser.close()
+    except Exception:
+        return [], []
+    return parser.nodes, parser.footer_links
+
+
+def snapshot_semantic_nodes(snapshot_html: str) -> list[dict]:
+    """Read only the public page body from a manifest-bound inert snapshot."""
+
+    nodes, _ = snapshot_semantic_document(snapshot_html)
+    return nodes
+
+
+def _direct_children(node: dict, tag: str) -> list[dict]:
+    return [child for child in node.get("children", []) if child.get("tag") == tag]
+
+
+def _first_descendant(node: dict, tag: str) -> dict | None:
+    for child in node.get("children", []):
+        if child.get("tag") == tag:
+            return child
+        nested = _first_descendant(child, tag)
+        if nested is not None:
+            return nested
+    return None
+
+
+def _header_node_text(node: dict) -> str:
+    return clean_link_label(" ".join(str(value) for value in node.get("text", [])))
+
+
+def _links_in_header_list(node: dict) -> list[dict[str, str]]:
+    links: list[dict[str, str]] = []
+    for item in _direct_children(node, "li"):
+        anchor = next(iter(_direct_children(item, "a")), None)
+        if anchor is None:
+            anchor = _first_descendant(item, "a")
+        if anchor is None:
+            continue
+        label = _header_node_text(anchor)
+        href = str(anchor.get("attrs", {}).get("href") or "")
+        if label and href:
+            links.append({"label": label, "href": href})
+    return links
+
+
+def source_navigation_groups(snapshot_html: str) -> list[dict]:
+    """Return the captured global navigation as links and always-visible groups."""
+
+    parser = _HeaderNavigationParser()
+    try:
+        parser.feed(snapshot_html)
+        parser.close()
+    except Exception:
+        return []
+    if not parser.navigation_roots:
+        return []
+    navigation = next(
+        (
+            node
+            for node in parser.navigation_roots
+            if node.get("attrs", {}).get("aria-label", "").casefold() == "site"
+        ),
+        parser.navigation_roots[0],
+    )
+    top_list = next(iter(_direct_children(navigation, "ul")), None)
+    if top_list is None:
+        top_list = _first_descendant(navigation, "ul")
+    if top_list is None:
+        return []
+
+    groups: list[dict] = []
+    for item in _direct_children(top_list, "li"):
+        anchor = next(iter(_direct_children(item, "a")), None)
+        if anchor is not None:
+            label = _header_node_text(anchor)
+            href = str(anchor.get("attrs", {}).get("href") or "")
+            if label and href:
+                groups.append({"label": label, "href": href, "items": []})
+            continue
+        details = next(iter(_direct_children(item, "details")), None)
+        if details is None:
+            continue
+        summary = next(iter(_direct_children(details, "summary")), None)
+        menu_list = next(iter(_direct_children(details, "ul")), None)
+        if summary is None or menu_list is None:
+            continue
+        label = _header_node_text(summary)
+        links = _links_in_header_list(menu_list)
+        if label and links:
+            groups.append({"label": label, "href": "", "items": links})
+    return groups
+
+
+def render_source_navigation(
+    snapshot_html: str | None,
+    asset_base: str,
+    routes: list[dict] | None,
+    current_path: str,
+) -> str:
+    """Render source navigation as plain lists, never as a recreated dropdown."""
+
+    if not snapshot_html or not routes:
+        return ""
+    routes_by_path = {route["path"]: route for route in routes}
+    entries: list[str] = []
+    for group in source_navigation_groups(snapshot_html):
+        label = str(group["label"])
+        href = str(group["href"])
+        children = group["items"]
+        if href:
+            markup = source_link_markup(label, href, asset_base, routes_by_path)
+            current = approved_route_path(href) == current_path
+            if current and markup.startswith("<a "):
+                markup = markup.replace("<a ", '<a aria-current="page" ', 1)
+            entries.append(f'        <li class="source-navigation__item">{markup}</li>')
+            continue
+        child_items: list[str] = []
+        for child in children:
+            child_label = str(child["label"])
+            child_href = str(child["href"])
+            markup = source_link_markup(child_label, child_href, asset_base, routes_by_path)
+            current = approved_route_path(child_href) == current_path
+            if current and markup.startswith("<a "):
+                markup = markup.replace("<a ", '<a aria-current="page" ', 1)
+            child_items.append(f"            <li>{markup}</li>")
+        if child_items:
+            children_markup = "\n".join(child_items)
+            entries.append(
+                '        <li class="source-navigation__group">\n'
+                f'          <span class="source-navigation__label">{html.escape(label)}</span>\n'
+                '          <ul>\n'
+                f"{children_markup}\n"
+                '          </ul>\n'
+                '        </li>'
+            )
+    if not entries:
+        return ""
+    body = "\n".join(entries)
+    return (
+        '      <nav class="source-navigation" aria-label="Site">\n'
+        '        <ul class="source-navigation__top">\n'
+        f"{body}\n"
+        '        </ul>\n'
+        '      </nav>'
+    )
+
+
+def safe_source_href(
+    value: object,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+) -> tuple[str, bool] | None:
+    """Return a safe local or outbound destination for a captured source link."""
+
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    parsed = urllib.parse.urlsplit(raw)
+    if not parsed.scheme and raw.startswith("/"):
+        raw = urllib.parse.urljoin("https://www.fortunedigitalequity.org/", raw)
+        parsed = urllib.parse.urlsplit(raw)
+    local_path = approved_route_path(raw)
+    if local_path and local_path in routes_by_path:
+        return static_href(asset_base, local_path), False
+    if parsed.scheme == "https":
+        return raw, True
+    if parsed.scheme in {"mailto", "tel"}:
+        return raw, False
+    return None
+
+
+def source_link_markup(
+    text: str,
+    href: object,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+) -> str:
+    """Render a text link only when the captured destination is safe."""
+
+    destination = safe_source_href(href, asset_base, routes_by_path)
+    escaped_text = html.escape(text)
+    if destination is None:
+        return escaped_text
+    target, external = destination
+    attributes = ' target="_blank" rel="noreferrer"' if external else ""
+    return f'<a href="{html.escape(target, quote=True)}"{attributes}>{escaped_text}</a>'
+
+
+def _walk_nodes(nodes: list[dict]):
+    for node in nodes:
+        yield node
+        if node.get("type") == "details":
+            yield from _walk_nodes(node.get("content", []))
+        elif node.get("type") == "list":
+            for item in node.get("items", []):
+                yield from _walk_nodes(item.get("content", []))
+
+
+def _walk_reading_sections(nodes: list[dict]):
+    """Walk headings in the prose flow, not card/list items."""
+
+    for node in nodes:
+        yield node
+        if node.get("type") == "details":
+            yield from _walk_reading_sections(node.get("content", []))
+
+
+def _heading_is_sentence(node: dict) -> bool:
+    text = str(node.get("text") or "")
+    return text.endswith(".") or len(text.split()) > 16
+
+
+def assign_snapshot_heading_ids(nodes: list[dict], title: str) -> list[tuple[str, str]]:
+    """Attach local anchors while preserving the source heading order."""
+
+    outline: list[tuple[str, str]] = []
+    section_number = 0
+    faq_number = 0
+    title_key = clean_source_fragment(title).casefold()
+    # The approved index may append a site name to the document title.  Match
+    # that metadata to an actually visible heading only when the captured
+    # heading is a clear title fragment; otherwise retain the first visible
+    # source heading rather than publishing the metadata itself.
+    title_variants = {
+        clean_source_fragment(part).casefold()
+        for part in re.split(r"\s+[|]\s+", title)
+        if clean_source_fragment(part)
+    }
+    headings = [
+        node
+        for node in _walk_reading_sections(nodes)
+        if node.get("type") == "heading" and not _heading_is_sentence(node)
+    ]
+    primary = next(
+        (
+            node
+            for node in headings
+            if clean_source_fragment(node.get("text")).casefold() in title_variants
+        ),
+        None,
+    )
+    if primary is None:
+        primary = next(
+            (
+                node
+                for node in headings
+                if (
+                    (heading_key := clean_source_fragment(node.get("text")).casefold())
+                    and len(heading_key) >= 4
+                    and heading_key in title_key
+                )
+            ),
+            headings[0] if headings else None,
+        )
+    if primary is not None:
+        primary["primary"] = True
+    for node in headings:
+        text = str(node.get("text") or "")
+        if is_faq_heading(text):
+            faq_number += 1
+            target = f"source-faq-{faq_number}"
+        else:
+            section_number += 1
+            target = f"source-section-{section_number}"
+        node["id"] = target
+        outline.append((text, target))
+    return outline
+
+
+def render_snapshot_outline(outline: list[tuple[str, str]]) -> str:
+    if not outline:
+        return ""
+    items = "\n".join(
+        f'        <li><a href="#{html.escape(target, quote=True)}">{html.escape(text)}</a></li>'
+        for text, target in outline
+    )
+    return (
+        '    <nav class="source-outline" aria-labelledby="source-outline-heading">\n'
+        '      <p class="source-outline__title" id="source-outline-heading">On this page</p>\n'
+        '      <ol>\n'
+        f"{items}\n"
+        '      </ol>\n'
+        '    </nav>'
+    )
+
+
+def snapshot_heading_base(nodes: list[dict]) -> int:
+    levels = [
+        int(node["level"])
+        for node in _walk_reading_sections(nodes)
+        if node.get("type") == "heading"
+        and not node.get("skip")
+        and not _heading_is_sentence(node)
+    ]
+    return min(levels) if levels else 2
+
+
+def render_snapshot_item(
+    item: dict,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+    heading_base: int,
+    *,
+    breadcrumb: bool,
+) -> str:
+    content = item.get("content", [])
+    rendered: list[str] = []
+    for node in content:
+        if node.get("type") in {"heading", "link"}:
+            text = str(node.get("text") or "")
+            if text:
+                rendered.append(source_link_markup(text, node.get("href"), asset_base, routes_by_path))
+        elif node.get("type") == "paragraph":
+            text = str(node.get("text") or "")
+            if text:
+                rendered.append(source_link_markup(text, node.get("href"), asset_base, routes_by_path))
+        elif node.get("type") == "list":
+            rendered.append(render_snapshot_list(node, asset_base, routes_by_path, heading_base))
+    if not rendered:
+        return ""
+    separator = "" if breadcrumb else "<br>"
+    return f"      <li>{separator.join(rendered)}</li>"
+
+
+def render_snapshot_list(
+    node: dict,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+    heading_base: int,
+) -> str:
+    items = [
+        render_snapshot_item(
+            item,
+            asset_base,
+            routes_by_path,
+            heading_base,
+            breadcrumb=bool(node.get("breadcrumb")),
+        )
+        for item in node.get("items", [])
+    ]
+    items = [item for item in items if item]
+    if not items:
+        return ""
+    tag = "ol" if node.get("ordered") else "ul"
+    class_name = "source-breadcrumb" if node.get("breadcrumb") else "source-list"
+    body = "\n".join(items)
+    if node.get("breadcrumb"):
+        return (
+            f'      <nav class="{class_name}" aria-label="Breadcrumb">\n'
+            f"        <{tag}>\n{body}\n        </{tag}>\n"
+            "      </nav>"
+        )
+    return f'      <{tag} class="{class_name}">\n{body}\n      </{tag}>'
+
+
+def render_snapshot_node(
+    node: dict,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+    heading_base: int,
+) -> str:
+    node_type = node.get("type")
+    text = str(node.get("text") or "")
+    if node_type == "heading":
+        if node.get("skip"):
+            return ""
+        linked = source_link_markup(text, node.get("href"), asset_base, routes_by_path)
+        if _heading_is_sentence(node):
+            return f"      <p>{linked}</p>"
+        level = 1 if node.get("primary") else min(
+            4,
+            max(2, int(node.get("level", heading_base)) - heading_base + 2),
+        )
+        identifier = f' id="{html.escape(str(node.get("id") or ""), quote=True)}"' if node.get("id") else ""
+        return f"      <h{level}{identifier}>{linked}</h{level}>"
+    if node_type in {"paragraph", "link"} and text:
+        linked = source_link_markup(text, node.get("href"), asset_base, routes_by_path)
+        class_name = ' class="source-standalone-link"' if node_type == "link" else ""
+        return f"      <p{class_name}>{linked}</p>"
+    if node_type == "list":
+        return render_snapshot_list(node, asset_base, routes_by_path, heading_base)
+    if node_type == "details":
+        summary = clean_source_fragment(node.get("summary"))
+        content = render_snapshot_nodes(node.get("content", []), asset_base, routes_by_path, heading_base)
+        if not summary or not content:
+            return content
+        return (
+            '      <section class="source-disclosure">\n'
+            f"        <h3>{html.escape(summary)}</h3>\n"
+            f"{content}\n"
+            "      </section>"
+        )
+    return ""
+
+
+def render_snapshot_nodes(
+    nodes: list[dict],
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+    heading_base: int,
+) -> str:
+    rendered = [
+        render_snapshot_node(node, asset_base, routes_by_path, heading_base)
+        for node in nodes
+    ]
+    return "\n".join(item for item in rendered if item)
+
+
+def render_snapshot_footer_links(
+    footer_links: list[dict[str, str]],
+    nodes: list[dict],
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+) -> str:
+    """Keep non-duplicated text links from Fortune's captured source footer."""
+
+    rendered_hrefs = {
+        str(node.get("href") or "")
+        for node in _walk_nodes(nodes)
+        if node.get("type") in {"heading", "link", "paragraph"}
+        and node.get("href")
+    }
+    seen = set(rendered_hrefs)
+    items: list[str] = []
+    for link in footer_links:
+        href = str(link.get("href") or "")
+        label = clean_link_label(link.get("label"))
+        if not href or not label or href in seen:
+            continue
+        seen.add(href)
+        markup = source_link_markup(label, href, asset_base, routes_by_path)
+        if markup != html.escape(label):
+            items.append(f"        <li>{markup}</li>")
+    if not items:
+        return ""
+    body = "\n".join(items)
+    return (
+        '      <nav class="source-footer-links" aria-label="Official contact links">\n'
+        '        <ul>\n'
+        f"{body}\n"
+        '        </ul>\n'
+        '      </nav>'
+    )
+
+
+def render_snapshot_source(
+    snapshot_html: str,
+    title: str,
+    asset_base: str,
+    routes: list[dict],
+) -> tuple[str, str, str] | None:
+    """Render a content-only, source-faithful projection of a reviewed snapshot."""
+
+    nodes, footer_links = snapshot_semantic_document(snapshot_html)
+    if not nodes:
+        return None
+    outline = assign_snapshot_heading_ids(nodes, title)
+    routes_by_path = {route["path"]: route for route in routes}
+    content = render_snapshot_nodes(
+        nodes,
+        asset_base,
+        routes_by_path,
+        snapshot_heading_base(nodes),
+    )
+    if not content:
+        return None
+    footer = render_snapshot_footer_links(footer_links, nodes, asset_base, routes_by_path)
+    return render_snapshot_outline(outline), content, footer
+
+
 def is_faq_heading(text: str) -> bool:
     """Recognize the captured FAQ heading without relying on route-specific copy."""
 
@@ -357,9 +1206,12 @@ def render_source_fragments(page: dict) -> str:
     """Render source text, grouping consecutive FAQ question-and-answer pairs semantically."""
 
     fragments = source_fragments(page)
+    heading_ids = {
+        index: target
+        for index, _, target in source_outline_from_fragments(fragments)
+    }
     content: list[str] = []
     index = 0
-    faq_number = 0
 
     while index < len(fragments):
         text, is_heading = fragments[index]
@@ -375,8 +1227,7 @@ def render_source_fragments(page: dict) -> str:
                 pair_index += 2
 
             if pairs:
-                faq_number += 1
-                heading_id = f"source-faq-{faq_number}"
+                heading_id = heading_ids[index]
                 content.append(
                     f'      <section class="source-faq" aria-labelledby="{heading_id}">'\
                     f'\n        <h2 id="{heading_id}">{html.escape(text)}</h2>'\
@@ -393,20 +1244,27 @@ def render_source_fragments(page: dict) -> str:
                 index = pair_index
                 continue
 
-        tag = "h2" if is_heading else "p"
-        content.append(f"      <{tag}>{html.escape(text)}</{tag}>")
+        if is_heading:
+            heading_id = heading_ids[index]
+            content.append(f'      <h2 id="{heading_id}">{html.escape(text)}</h2>')
+        else:
+            content.append(f"      <p>{html.escape(text)}</p>")
         index += 1
 
     return "\n".join(content)
 
 
-def render_text_page(route: dict, asset_base: str) -> str:
-    """Render the approved retrieval record as a small, text-only HTML page."""
+def render_text_page(
+    route: dict,
+    asset_base: str,
+    routes: list[dict] | None = None,
+    snapshot_html: str | None = None,
+    navigation_snapshot_html: str | None = None,
+) -> str:
+    """Render a small, text-only projection of the approved public page."""
 
     page = route.get("page") or {}
     title = clean_source_fragment(page.get("title")) or route["path"].strip("/") or "Home"
-    authority = str(page.get("authority") or "excluded")
-    is_answer_source = authority == "answer" and int(page.get("status") or 0) == 200
     escaped_title = html.escape(title)
     escaped_source = html.escape(route["sourceUrl"], quote=True)
     escaped_page_id = html.escape(route["pageId"], quote=True)
@@ -417,22 +1275,26 @@ def render_text_page(route: dict, asset_base: str) -> str:
     escaped_js = html.escape(
         f"{asset_base}replica-shell.js?v={REPLICA_SHELL_JS_VERSION}", quote=True
     )
-    navigation = "".join(
-        f'<a href="{html.escape(static_href(asset_base, path), quote=True)}"'
-        + (' aria-current="page"' if route["path"] == path else "")
-        + f">{html.escape(label)}</a>"
-        for label, path in PRIMARY_NAVIGATION
+    navigation = render_source_navigation(
+        navigation_snapshot_html,
+        asset_base,
+        routes,
+        route["path"],
     )
 
-    if is_answer_source:
-        source_content = render_source_fragments(page) or "      <p>No source text is available.</p>"
-        source_label = "Website Guide source text"
+    snapshot_projection = (
+        render_snapshot_source(snapshot_html, title, asset_base, routes)
+        if snapshot_html and routes
+        else None
+    )
+    if snapshot_projection is not None:
+        source_outline, source_content, source_footer_links = snapshot_projection
+        page_heading = ""
     else:
-        source_content = (
-            "      <p>This route is retained for navigation or reference. "
-            "It is not used by Website Guide as a current answer source.</p>"
-        )
-        source_label = "Not a current answer source"
+        source_content = render_source_fragments(page) or "      <p>No source text is available.</p>"
+        source_outline = render_source_outline(source_fragments(page))
+        source_footer_links = ""
+        page_heading = f"    <h1>{escaped_title}</h1>"
 
     lastmod = clean_source_fragment(page.get("lastmod"))
     updated = f" · site update {html.escape(lastmod)}" if lastmod else ""
@@ -453,16 +1315,18 @@ def render_text_page(route: dict, asset_base: str) -> str:
   <header class="site-header">
     <div class="site-header__inner">
       <a class="site-name" href="{html.escape(static_href(asset_base, '/'), quote=True)}">Fortune Society Digital Equity</a>
-      <nav aria-label="Source pages">{navigation}</nav>
+{navigation}
     </div>
   </header>
   <main id="source-text">
-    <p class="source-kind">{html.escape(source_label)}</p>
-    <h1>{escaped_title}</h1>
+{page_heading}
+{source_outline}
     <article class="source-document">
 {source_content}
     </article>
     <footer class="source-footer">
+{source_footer_links}
+      <p class="source-kind">Public source snapshot</p>
       <p>Source: <a href="{escaped_source}" target="_blank" rel="noreferrer">Fortune Society Digital Equity</a>{updated}</p>
     </footer>
   </main>
@@ -542,6 +1406,8 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
 
     temporary = pathlib.Path(tempfile.mkdtemp(prefix=".pages-build-", dir=ROOT))
     try:
+        root_route = next(route for route in routes if route["path"] == "/")
+        navigation_snapshot_html = snapshots[root_route["sourceUrl"]]["html"]
         for asset in SHARED_ASSETS:
             shutil.copyfile(ROOT / asset, temporary / asset)
         shutil.copyfile(SIDECAR_TEMPLATE_PATH, temporary / SIDECAR_OUTPUT)
@@ -552,7 +1418,13 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
             prefix = "../" * depth
             if route["sourceUrl"] not in snapshots:
                 raise BuildError(f"missing reviewed snapshot for {route['sourceUrl']}")
-            rendered = render_text_page(route, prefix)
+            rendered = render_text_page(
+                route,
+                prefix,
+                routes,
+                snapshots[route["sourceUrl"]]["html"],
+                navigation_snapshot_html,
+            )
             destination.write_text(rendered, encoding="utf-8")
         counts = validate_output(temporary, routes)
         if OUTPUT_PATH.exists():

@@ -106,6 +106,11 @@ class SnapshotRenderingTests(unittest.TestCase):
             shell_css,
             r"\.source-faq dd\s*\{[^}]*display:\s*block",
         )
+        self.assertIn(".source-outline", shell_css)
+        self.assertIn(".source-navigation", shell_css)
+        self.assertIn(".source-list", shell_css)
+        self.assertIn(".source-breadcrumb", shell_css)
+        self.assertIn(".source-disclosure", shell_css)
         self.assertIn("#fortune-sidecar-host", shell_css)
         self.assertNotIn("background-image", shell_css)
         self.assertNotIn("url(", shell_css)
@@ -201,7 +206,7 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn('<dd>Bring the information you need for the class.</dd>', shell)
         self.assertNotIn('<p>Can I attend a class without registering?</p>', shell)
         self.assertNotIn("<details", shell)
-        self.assertIn('<h2>More information</h2>', shell)
+        self.assertIn('<h2 id="source-section-1">More information</h2>', shell)
         self.assertIn('<p>This remains ordinary source text.</p>', shell)
 
     def test_current_home_and_contact_faqs_render_all_source_backed_answers(self):
@@ -233,7 +238,7 @@ class SnapshotRenderingTests(unittest.TestCase):
                     self.assertIn(f"<dt>{html.escape(question)}</dt>", shell)
                     self.assertIn(f"<dd>{html.escape(answer)}</dd>", shell)
 
-    def test_non_answer_route_does_not_publish_stale_source_blocks(self):
+    def test_public_reference_route_keeps_snapshot_text_outside_guide_retrieval(self):
         route = {
             **HOME_ROUTE,
             "page": {
@@ -244,8 +249,185 @@ class SnapshotRenderingTests(unittest.TestCase):
         }
         shell = build_pages.render_text_page(route, "")
 
-        self.assertIn("Not a current answer source", shell)
-        self.assertNotIn("stale class schedule", shell)
+        self.assertIn("Public source snapshot", shell)
+        self.assertIn("A stale class schedule that the model cannot retrieve.", shell)
+
+    @staticmethod
+    def _current_snapshot_route(path):
+        routes = build_pages.load_routes()
+        snapshots = build_pages.load_snapshots(routes)
+        route = next(route for route in routes if route["path"] == path)
+        return routes, route, snapshots[route["sourceUrl"]]["html"]
+
+    def test_current_home_snapshot_preserves_sections_faqs_and_all_21_text_links(self):
+        routes, route, snapshot_html = self._current_snapshot_route("/")
+        projection = build_pages.render_snapshot_source(
+            snapshot_html, route["page"]["title"], "", routes
+        )
+        self.assertIsNotNone(projection)
+        outline, content, footer = projection
+
+        headings = (
+            "WELCOME! TO THE FORTUNE SOCIETY DIGITAL EQUITY HUB",
+            "Choose A Service",
+            "Explore Learning Paths (coming soon)",
+            "Hear From Past Participants",
+            "Still Not Sure Where to Start?",
+            "Frequently Asked Questions",
+            "Explore More",
+        )
+        position = -1
+        for heading in headings:
+            position = content.find(heading, position + 1)
+            self.assertGreaterEqual(position, 0, heading)
+            self.assertIn(heading, outline)
+
+        questions_and_answers = (
+            (
+                "Do I need to attend all scheduled classes in a month?",
+                "Regularly scheduled Fortune Digital Equity classes have rolling attendance",
+            ),
+            (
+                "Do I need to register for a class in order to attend?",
+                "we allow walk-in attendance",
+            ),
+            (
+                "Can I get assistance with digital skills not listed in the class catalog",
+                "we'll schedule some one-on-one time with you",
+            ),
+            (
+                "Do I automatically qualify for a laptop as a Fortune Society participant?",
+                "Laptop access and supplies are limited",
+            ),
+        )
+        for question, answer in questions_and_answers:
+            self.assertIn(question, content)
+            self.assertIn(answer, html.unescape(content))
+
+        action_labels = (
+            "CHOOSE A SERVICE", "EXPLORE LEARNING PATHS", "MORE ABOUT US",
+            "FIND A WORKSHOP", "VIEW CALENDAR", "GET A DEVICE", "INTERNSHIP",
+            "GET SUPPORT", "EXPLORE TOOLS", "CONTACT US", "ATTEND AN OPEN LAB",
+            "MORE", "OTHER RESOURCES", "VOLUNTEER", "SPECIAL EVENTS", "DONATE",
+            "TECH FAIR", "PROGRAM UPDATES",
+        )
+        for label in action_labels:
+            self.assertIn(f">{label}</a>", content)
+        self.assertEqual(content.count('class="source-standalone-link"'), 18)
+        self.assertIn('href="mediakit/">Media Kit</a>', footer)
+        self.assertIn('href="tel:(212) 691-7554">(212) 691-7554</a>', footer)
+        self.assertIn('href="mailto:fstrain@fortunesociety.org">FSTrain@FortuneSociety.org</a>', footer)
+        self.assertEqual(footer.count("<li>"), 3)
+        self.assertNotIn("Facebook", footer)
+        self.assertNotIn("SITE_FOOTER", content)
+
+    def test_source_header_navigation_is_captured_grouped_and_localized(self):
+        routes, _, snapshot_html = self._current_snapshot_route("/")
+        navigation = build_pages.render_source_navigation(snapshot_html, "", routes, "/")
+
+        self.assertIn('<nav class="source-navigation" aria-label="Site">', navigation)
+        self.assertNotIn("<details", navigation)
+        self.assertNotIn("<summary", navigation)
+        self.assertIn('<a aria-current="page" href="index.html">HOME</a>', navigation)
+        self.assertIn('<a href="about/">ABOUT</a>', navigation)
+        self.assertIn('<span class="source-navigation__label">SERVICES</span>', navigation)
+        self.assertIn('<span class="source-navigation__label">RESOURCES</span>', navigation)
+        self.assertIn('<a href="calendar/">CALENDAR</a>', navigation)
+        self.assertIn('<a href="contact/">CONTACT</a>', navigation)
+
+        service_labels = (
+            "Regular Workshops", "Individual Support", "Special Events &amp; Sessions",
+            "Professional Digital Foundations", "Microsoft Certifications", "Tech Fair",
+        )
+        resource_labels = (
+            "Practice Your Skills", "Device Distribution", "Find Opportunities",
+            "Other Digital Resources",
+        )
+        for label in (*service_labels, *resource_labels):
+            self.assertIn(f">{label}</a>", navigation)
+        self.assertNotIn("fortunedigitalequity.org", navigation)
+
+        nested_navigation = build_pages.render_source_navigation(
+            snapshot_html, "../../", routes, "/workshops"
+        )
+        self.assertIn('<a href="../../index.html">HOME</a>', nested_navigation)
+        self.assertIn(
+            '<a aria-current="page" href="../../workshops/">Regular Workshops</a>',
+            nested_navigation,
+        )
+
+    def test_snapshot_primary_heading_is_one_visible_source_h1(self):
+        expected_headings = {
+            "/": "WELCOME! TO THE FORTUNE SOCIETY DIGITAL EQUITY HUB",
+            "/workshops": "Digital Skills Workshops",
+            "/service-page/intro-to-email": "Intro to Email",
+        }
+        routes = build_pages.load_routes()
+        snapshots = build_pages.load_snapshots(routes)
+        home_snapshot = snapshots[next(route["sourceUrl"] for route in routes if route["path"] == "/")]["html"]
+
+        for path, expected_heading in expected_headings.items():
+            with self.subTest(path=path):
+                route = next(route for route in routes if route["path"] == path)
+                depth = 0 if path == "/" else len(path.strip("/").split("/"))
+                shell = build_pages.render_text_page(
+                    route,
+                    "../" * depth,
+                    routes,
+                    snapshots[route["sourceUrl"]]["html"],
+                    home_snapshot,
+                )
+                self.assertEqual(shell.count("<h1"), 1)
+                self.assertIn(f">{expected_heading}</h1>", shell)
+                self.assertLess(shell.find(f">{expected_heading}</h1>"), shell.find("<footer"))
+
+    def test_current_workshops_snapshot_keeps_linked_category_and_course_lists(self):
+        routes, route, snapshot_html = self._current_snapshot_route("/workshops")
+        projection = build_pages.render_snapshot_source(
+            snapshot_html, route["page"]["title"], "", routes
+        )
+        self.assertIsNotNone(projection)
+        _, content, _ = projection
+
+        self.assertIn('<ul class="source-list">', content)
+        self.assertIn("All Services", content)
+        self.assertIn("Digital Knowledge Base", content)
+        self.assertEqual(content.count('<li><a href="service-page/'), 64)
+        self.assertIn(
+            '<li><a href="service-page/intro-to-email/">Intro to Email</a></li>',
+            content,
+        )
+        self.assertIn(
+            '<li><a href="service-page/excel-formulas-functions/">Excel - Formulas &amp; Functions</a></li>',
+            content,
+        )
+        self.assertNotIn('href="https://www.fortunedigitalequity.org/service-page/', content)
+
+    def test_current_service_snapshot_keeps_breadcrumb_and_visible_source_order(self):
+        routes, route, snapshot_html = self._current_snapshot_route("/service-page/intro-to-email")
+        projection = build_pages.render_snapshot_source(
+            snapshot_html, route["page"]["title"], "../../", routes
+        )
+        self.assertIsNotNone(projection)
+        _, content, _ = projection
+
+        expected_order = (
+            "Service Details",
+            'class="source-breadcrumb"',
+            "This service is not available, please contact for more information.",
+            "Intro to Email",
+            "Main Office (LIC) | SRP (Bronx) | Fortune Academy (Harlem)",
+            "Description",
+            "Upcoming Sessions",
+        )
+        position = -1
+        for value in expected_order:
+            position = content.find(value, position + 1)
+            self.assertGreaterEqual(position, 0, value)
+        self.assertIn('href="../../index.html">Home</a>', content)
+        self.assertIn('href="../../catalog/">Service list</a>', content)
+        self.assertNotIn("No sessions in the next", content)
+        self.assertNotIn("Time Zone:", content)
 
     def test_invalid_or_active_snapshot_markup_is_rejected_before_build(self):
         fixtures = (
