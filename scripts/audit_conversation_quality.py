@@ -187,17 +187,15 @@ def run_audit(database_url: str) -> dict:
                           AND c.client_surface IN ('replica', 'wix')
                           AND c.expires_at > NOW()
                           AND c.last_turn_at <= NOW() - INTERVAL '60 seconds'
+                          AND t.status = 'complete'
+                          AND t.privacy_state = 'clear'
+                          AND t.review_state = 'ready'
+                          AND (
+                              SELECT COUNT(*)
+                              FROM conversation_messages AS m
+                              WHERE m.turn_id = t.id
+                          ) = 2
                         GROUP BY c.id
-                        HAVING BOOL_AND(
-                            t.status = 'complete'
-                            AND t.privacy_state = 'clear'
-                            AND t.review_state = 'ready'
-                            AND (
-                                SELECT COUNT(*)
-                                FROM conversation_messages AS m
-                                WHERE m.turn_id = t.id
-                            ) = 2
-                        )
                     ) AS eligible
                 )::INTEGER AS eligible_conversations,
                 (

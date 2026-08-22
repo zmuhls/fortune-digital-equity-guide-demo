@@ -1288,13 +1288,14 @@ class EvaluationStore:
                   AND c.client_surface IN ('replica', 'wix')
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
+                  AND t.status = 'complete'
+                  AND t.privacy_state = 'clear'
+                  AND t.review_state = 'ready'
+                  AND (
+                      SELECT COUNT(*) FROM conversation_messages m
+                      WHERE m.turn_id = t.id
+                  ) = 2
                 GROUP BY c.id, c.last_turn_at, c.client_surface
-                HAVING BOOL_AND(
-                    t.status = 'complete'
-                    AND t.privacy_state = 'clear'
-                    AND t.review_state = 'ready'
-                    AND (SELECT COUNT(*) FROM conversation_messages m WHERE m.turn_id = t.id) = 2
-                )
             )
         """
 
@@ -1350,6 +1351,13 @@ class EvaluationStore:
                     FROM conversation_messages m
                     JOIN conversation_turns t ON t.id = m.turn_id
                     WHERE m.conversation_id = %s
+                      AND t.status = 'complete'
+                      AND t.privacy_state = 'clear'
+                      AND t.review_state = 'ready'
+                      AND (
+                          SELECT COUNT(*) FROM conversation_messages pair
+                          WHERE pair.turn_id = t.id
+                      ) = 2
                     ORDER BY t.sequence, m.ordinal
                     """,
                     (conversation_id,),
@@ -1380,11 +1388,13 @@ class EvaluationStore:
             WHERE c.id = %s AND c.capture_mode = 'transcript'
               AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-            HAVING BOOL_AND(
-                t.status = 'complete' AND t.privacy_state = 'clear'
-                AND t.review_state = 'ready'
-                AND (SELECT COUNT(*) FROM conversation_messages m WHERE m.turn_id = t.id) = 2
-            )
+              AND t.status = 'complete'
+              AND t.privacy_state = 'clear'
+              AND t.review_state = 'ready'
+              AND (
+                  SELECT COUNT(*) FROM conversation_messages m
+                  WHERE m.turn_id = t.id
+              ) = 2
             """,
             (conversation_id, self.min_inactive_seconds),
         )

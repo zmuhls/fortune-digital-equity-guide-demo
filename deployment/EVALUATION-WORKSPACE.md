@@ -54,10 +54,13 @@ Only a conversation satisfying every condition enters the shared review queue:
 - transcript capture mode;
 - public human surface: `client_surface IN ('replica', 'wix')`;
 - unexpired and inactive for the configured minimum;
-- every turn complete, privacy-clear, and ready;
-- exactly one user and one assistant message for every turn.
+- at least one turn complete, privacy-clear, and ready;
+- exactly one user and one assistant message for each displayed turn.
 
-Mixed or privacy-held conversations are withheld in full. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
+Failed, blocked, or message-less turns remain excluded, but they do not hide
+other review-ready turns from the same browser conversation.
+
+Privacy-held turns are withheld in full; their presence does not suppress other review-ready turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
 
 Automated suites and capture verification use `client_surface='benchmark'`.
 Those rows remain available to aggregate audits but never satisfy the shared

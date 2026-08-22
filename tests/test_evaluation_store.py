@@ -94,6 +94,23 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertNotIn("benchmark", source)
             self.assertNotIn("synthetic", source)
 
+    def test_failed_turn_does_not_hide_reviewable_turns_in_the_same_conversation(self):
+        eligible_source = evaluation_store.EvaluationStore._eligible_cte()
+        current_version_source = inspect.getsource(
+            evaluation_store.EvaluationStore._current_transcript_version
+        )
+        detail_source = inspect.getsource(
+            evaluation_store.EvaluationStore.get_conversation
+        )
+
+        for source in (eligible_source, current_version_source, detail_source):
+            self.assertIn("t.status = 'complete'", source)
+            self.assertIn("t.privacy_state = 'clear'", source)
+            self.assertIn("t.review_state = 'ready'", source)
+            self.assertIn("conversation_messages", source)
+        self.assertNotIn("HAVING BOOL_AND", eligible_source)
+        self.assertNotIn("HAVING BOOL_AND", current_version_source)
+
     def test_all_evaluators_use_one_shared_review_workspace(self):
         self.assertEqual(evaluation_store.SHARED_BUCKET_OWNER, "admin")
         for method_name in ("_bucket_set_id", "list_buckets", "list_conversations", "get_conversation"):

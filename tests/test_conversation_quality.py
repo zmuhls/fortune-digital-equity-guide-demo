@@ -27,6 +27,8 @@ class ConversationQualityAuditTests(unittest.TestCase):
         self.assertIn("client_surface NOT IN ('replica', 'wix')", source)
         self.assertIn("AS nonhuman_ready_turns", source)
         self.assertNotIn("AS nonsynthetic_ready_turns", source)
+        self.assertNotIn("HAVING BOOL_AND", source)
+        self.assertIn("t.review_state = 'ready'", source)
 
     def test_json_values_are_bounded_for_operator_output(self):
         self.assertEqual(
