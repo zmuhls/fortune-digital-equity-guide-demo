@@ -8,7 +8,7 @@ inventory but cannot become answer authority.
 """
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import gzip
 from html import unescape
 from html.parser import HTMLParser
@@ -318,6 +318,95 @@ def clean_blocks(blocks):
     return output
 
 
+CALENDAR_MONTHS = {
+    name.lower(): number
+    for number, name in enumerate(
+        (
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ),
+        start=1,
+    )
+}
+
+
+def _plain_snapshot_text(fragment):
+    value = re.sub(r"<[^>]+>", " ", str(fragment or ""))
+    return normalize_text(unescape(value))
+
+
+def calendar_events_from_snapshot(markup, captured_at=""):
+    """Keep each rendered Wix agenda row as one dated source record."""
+
+    try:
+        captured = datetime.fromisoformat(str(captured_at).replace("Z", "+00:00")).date()
+    except (TypeError, ValueError):
+        captured = date.today()
+    day_sections = re.findall(
+        r'<li\b[^>]*data-hook=["\']daily-agenda-day["\'][^>]*>(.*?)'
+        r'(?=<li\b[^>]*data-hook=["\']daily-agenda-day["\']|'
+        r'<p\b[^>]*data-replica-live-calendar-note|\Z)',
+        str(markup or ""),
+        flags=re.I | re.S,
+    )
+    events = []
+    previous_date = None
+    for section in day_sections:
+        day_match = re.search(
+            r'data-hook=["\']daily-agenda-day-date["\'][^>]*>(.*?)</span>',
+            section,
+            flags=re.I | re.S,
+        )
+        if not day_match:
+            continue
+        day_label = _plain_snapshot_text(day_match.group(1))
+        date_match = re.fullmatch(r"([A-Za-z]+)\s+(\d{1,2})", day_label)
+        if not date_match or date_match.group(1).lower() not in CALENDAR_MONTHS:
+            continue
+        month = CALENDAR_MONTHS[date_match.group(1).lower()]
+        day = int(date_match.group(2))
+        year = previous_date.year if previous_date else captured.year
+        try:
+            event_date = date(year, month, day)
+        except ValueError:
+            continue
+        if previous_date:
+            while event_date < previous_date:
+                year += 1
+                event_date = date(year, month, day)
+        else:
+            while event_date < captured - timedelta(days=2):
+                year += 1
+                event_date = date(year, month, day)
+        previous_date = event_date
+
+        slot_sections = re.findall(
+            r'<li\b[^>]*data-hook=["\']daily-agenda-slot["\'][^>]*>(.*?)</li>',
+            section,
+            flags=re.I | re.S,
+        )
+        for slot in slot_sections:
+            parts = [
+                _plain_snapshot_text(value)
+                for value in re.findall(
+                    r'<span\b[^>]*aria-hidden=["\']false["\'][^>]*>(.*?)</span>',
+                    slot,
+                    flags=re.I | re.S,
+                )
+            ]
+            parts = [value for value in parts if value and value != day_label]
+            if not parts:
+                continue
+            weekday = event_date.strftime("%A")
+            label = f"{weekday}, {event_date.strftime('%B')} {event_date.day}, {event_date.year}: "
+            label += " · ".join(parts)
+            events.append({
+                "date": event_date.isoformat(),
+                "label": label,
+            })
+    return events
+
+
 def internal_links(base_url, links):
     result = set()
     for raw in links:
@@ -441,7 +530,7 @@ def _snapshot_document(manifest_path):
     return document
 
 
-def _rendered_snapshot_content(page, manifest_page, snapshot_root):
+def _rendered_snapshot_content(page, manifest_page, snapshot_root, captured_at=""):
     """Return source fields extracted from one reviewed rendered snapshot.
 
     The raw Wix response can omit lazy-loaded and accordion text.  This path is
@@ -472,13 +561,14 @@ def _rendered_snapshot_content(page, manifest_page, snapshot_root):
     if hashlib.sha256(expanded).hexdigest() != manifest_page.get("source_sha256"):
         raise RuntimeError(f"rendered snapshot hash does not match manifest: {relative}")
 
+    markup = expanded.decode("utf-8", errors="strict")
     parser = PageExtractor()
-    parser.feed(expanded.decode("utf-8", errors="strict"))
+    parser.feed(markup)
     blocks = clean_blocks(parser.blocks)
     content_characters = sum(len(block) for block in blocks)
     if not blocks:
         raise RuntimeError(f"rendered snapshot has no public main-frame text: {page.get('url')}")
-    return {
+    result = {
         "title": normalize_text(" ".join(parser.title_parts)) or page.get("title", ""),
         "description": parser.description,
         "headings": clean_blocks(parser.headings)[:30],
@@ -492,6 +582,13 @@ def _rendered_snapshot_content(page, manifest_page, snapshot_root):
             "site_revision": manifest_page["site_revision"],
         },
     }
+    if urllib.parse.urlsplit(page.get("url", "")).path.rstrip("/") == "/calendar":
+        result["source_captured_at"] = captured_at or None
+        result["calendar_events"] = calendar_events_from_snapshot(
+            markup,
+            captured_at or page.get("lastmod", ""),
+        )
+    return result
 
 
 def rendered_snapshot_pages(index_document, manifest_document, snapshot_root):
@@ -518,7 +615,12 @@ def rendered_snapshot_pages(index_document, manifest_document, snapshot_root):
         if not isinstance(page, dict) or not page.get("url"):
             raise RuntimeError("site index contains an invalid page record")
         manifest_page = by_url[page["url"]]
-        content = _rendered_snapshot_content(page, manifest_page, snapshot_root)
+        content = _rendered_snapshot_content(
+            page,
+            manifest_page,
+            snapshot_root,
+            manifest_document.get("captured_at", ""),
+        )
         revisions.add(content["rendered_snapshot"]["site_revision"])
         record = dict(page)
         record.update(content)

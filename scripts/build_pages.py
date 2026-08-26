@@ -596,6 +596,22 @@ def clean_source_fragment(value: object) -> str:
         or any(pattern.search(text) for pattern in VISUAL_SCAFFOLD)
     ):
         return ""
+    text = text.replace(
+        "View the live calendar at Fortune.",
+        "View the live Digital Equity calendar.",
+    )
+    text = re.sub(
+        r"\bon Fortune(?:'s|’s) live site\b",
+        "on the Digital Equity site",
+        text,
+        flags=re.I,
+    )
+    text = re.sub(
+        r"\bon the live Fortune page\b",
+        "on the live Digital Equity page",
+        text,
+        flags=re.I,
+    )
     return text
 
 
@@ -650,6 +666,11 @@ def clean_link_label(value: object) -> str:
     text = re.sub(r"\s+", " ", str(value or "")).strip()
     if not text or len(text) > 240:
         return ""
+    text = {
+        "View the live calendar at Fortune.": "View the live Digital Equity calendar.",
+        "Continue on Fortune's live site": "Continue on the Digital Equity site",
+        "Continue on the live Fortune page": "Continue on the live Digital Equity page",
+    }.get(text, text)
     return clean_source_fragment(text)
 
 
@@ -1314,7 +1335,7 @@ def render_text_page(
   <a class="skip-link" href="#source-text">Skip to source text</a>
   <header class="site-header">
     <div class="site-header__inner">
-      <a class="site-name" href="{html.escape(static_href(asset_base, '/'), quote=True)}">Fortune Society Digital Equity</a>
+      <a class="site-name" href="{html.escape(static_href(asset_base, '/'), quote=True)}">Digital Equity</a>
 {navigation}
     </div>
   </header>
@@ -1327,7 +1348,7 @@ def render_text_page(
     <footer class="source-footer">
 {source_footer_links}
       <p class="source-kind">Public source snapshot</p>
-      <p>Source: <a href="{escaped_source}" target="_blank" rel="noreferrer">Fortune Society Digital Equity</a>{updated}</p>
+      <p>Source: <a href="{escaped_source}" target="_blank" rel="noreferrer">Digital Equity public site</a>{updated}</p>
     </footer>
   </main>
   <script src="{escaped_js}" data-source-url="{escaped_source}" data-page-id="{escaped_page_id}"></script>

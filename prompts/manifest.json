@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-21-v23",
+  "current_policy_id": "2026-08-26-v24",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "0a51ed6867b622d92c171c7d0ac6e7ac4d3a7085c51f619abf11ba2e3f1ada3a",
-  "current_compiled_prompt_sha256": "89053b0553df7e2d4730c2cad2214a7d2c5425dd57be848db62884eaf34a5b37",
+  "current_policy_source_sha256": "aeeab6fd4819e4c6721b8ef73b2009dc1ed48cad280cddbe1326f1381b650068",
+  "current_compiled_prompt_sha256": "eb0949820e821c3e6864d3033a190d9f3f390044c25e4230edbb012ea16ccc67",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -243,8 +243,20 @@
       "behavior_release": "infobot-open-conversation-grounded-facts",
       "artifact": "versions/2026-08-21-v23.md",
       "artifact_sha256": "9043f842c8e2b4dcbf93c8c30dfb7a682ed1079d11a5b1af6515723f63333151",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-21-v23-compiled.md",
       "compiled_prompt_artifact_sha256": "a86f3190e624cb63e236824bed508e0456a329a5ccc8901a203cb312b4d46a01"
+    },
+    {
+      "policy_id": "2026-08-26-v24",
+      "label": "Digital Equity identity and current-calendar prompt",
+      "reconstructed": false,
+      "source_state": "authored to identify the guide with the Digital Equity site and supply current public calendar evidence",
+      "source_date": "2026-08-26",
+      "behavior_release": "digital-equity-current-calendar",
+      "artifact": "versions/2026-08-26-v24.md",
+      "artifact_sha256": "8a909fa22a42bd4052f1c5e5f53fc5480113d5b26ed32395fc64d76852140c93",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "9ef72822811d129a31201518da4103484c7b5aa35f27bd2c5ae242eba1684ff8"
     }
   ]
 }

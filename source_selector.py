@@ -15,11 +15,14 @@ def build_prompt(
     records: list[dict],
     current_page_id: str = "",
     previous_answer: str = "",
+    current_date: str = "",
 ) -> str:
     """Build a grounded-answer prompt without raw participant history."""
 
     return (
         SYSTEM_PROMPT
+        + "\nCURRENT DATE:\n"
+        + json.dumps(current_date or None)
         + "\nCURRENT PAGE ID:\n"
         + json.dumps(current_page_id or None)
         + "\nPREVIOUS GUIDE ANSWER:\n"

@@ -433,7 +433,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260821-persistent-refresh-1", html)
+        self.assertIn("20260826-digital-equity-calendar-1", html)
 
     def test_conversation_queue_refreshes_when_reviewers_return_to_it(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -476,9 +476,10 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn('version: "2026-08-21-v23"', javascript)
+        self.assertIn("20260826-prompts-1", html)
+        self.assertIn('version: "2026-08-26-v24"', javascript)
         self.assertIn(
-            'behavior_release: "infobot-open-conversation-grounded-facts"', javascript
+            'behavior_release: "digital-equity-current-calendar"', javascript
         )
         self.assertIn(
             'current_variant: "open_conversation_or_blocking_ambiguity"',
@@ -488,6 +489,9 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("Production changes still require code review", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)
+        self.assertIn('class="compiled-prompt-card"', javascript)
+        self.assertIn("System prompt · read only", javascript)
+        self.assertIn("max-height: 360px", css)
         self.assertIn("Proposed", javascript)
         self.assertIn('api("/api/evaluation/prompt-lab")', javascript)
         self.assertIn('api("/api/evaluation/prompt-proposals"', javascript)

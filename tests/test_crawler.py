@@ -210,6 +210,40 @@ class RecordUtilityTests(NoNetworkTestCase):
 
 
 class RenderedSnapshotRefreshTests(NoNetworkTestCase):
+    def test_calendar_rows_keep_dates_attached_to_each_event(self):
+        markup = """
+        <li data-hook="daily-agenda-day">
+          <span data-hook="daily-agenda-day-date">August 21</span>
+          <li data-hook="daily-agenda-slot">
+            <span aria-hidden="false">Tech Time: Foundations</span>
+            <span aria-hidden="false">1:00 pm (1 hr)</span>
+            <span aria-hidden="false">Raysean Richardson</span>
+            <span aria-hidden="false">Main Office (LIC)</span>
+            <span aria-hidden="false">15 spots left</span>
+          </li>
+        </li>
+        <li data-hook="daily-agenda-day">
+          <span data-hook="daily-agenda-day-date">August 24</span>
+          <li data-hook="daily-agenda-slot">
+            <span aria-hidden="false">Open Computer Lab Session</span>
+            <span aria-hidden="false">1:30 pm (30 min)</span>
+            <span aria-hidden="false">Milo Jones</span>
+            <span aria-hidden="false">Main Office (LIC)</span>
+          </li>
+        </li>
+        """
+
+        events = crawler.calendar_events_from_snapshot(
+            markup,
+            "2026-08-20T21:47:14.793Z",
+        )
+
+        self.assertEqual([event["date"] for event in events], ["2026-08-21", "2026-08-24"])
+        self.assertIn("Tech Time: Foundations · 1:00 pm", events[0]["label"])
+        self.assertIn("Raysean Richardson · Main Office (LIC)", events[0]["label"])
+        self.assertIn("Open Computer Lab Session · 1:30 pm", events[1]["label"])
+        self.assertNotIn("Tech Time", events[1]["label"])
+
     def test_rendered_snapshot_refresh_uses_visible_full_text_not_thin_raw_blocks(self):
         page = {
             **row("/contact"),

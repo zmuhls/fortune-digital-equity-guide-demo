@@ -76,7 +76,7 @@ if ! curl -fsS "$DEMO_URL/health" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Fortune Digital Equity meeting demo"
+echo "Digital Equity Website Guide"
 echo "  $DEMO_URL"
 echo "  GLM-5.2 through Ollama Cloud; credential stays server-side"
 

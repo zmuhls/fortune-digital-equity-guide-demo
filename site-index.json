@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T21:47:24+00:00",
+  "generated_at": "2026-08-26T13:18:39+00:00",
   "generated_from": [
     "https://www.fortunedigitalequity.org/sitemap.xml",
     "https://www.fortunedigitalequity.org/blog-feed.xml",
@@ -430,7 +430,210 @@
         "file": "replica-snapshots/page-calendar-86824f99.html.gz",
         "source_sha256": "5762c4f41fb40fc66d928cc0ea3628c155485e46b05959e0627d8a97fb63080c",
         "site_revision": 2063
-      }
+      },
+      "source_captured_at": "2026-08-20T21:47:14.793Z",
+      "calendar_events": [
+        {
+          "date": "2026-08-21",
+          "label": "Friday, August 21, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-08-24",
+          "label": "Monday, August 24, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-08-28",
+          "label": "Friday, August 28, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-08-31",
+          "label": "Monday, August 31, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-01",
+          "label": "Tuesday, September 1, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-02",
+          "label": "Wednesday, September 2, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-03",
+          "label": "Thursday, September 3, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-04",
+          "label": "Friday, September 4, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-07",
+          "label": "Monday, September 7, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-08",
+          "label": "Tuesday, September 8, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-09",
+          "label": "Wednesday, September 9, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-10",
+          "label": "Thursday, September 10, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-11",
+          "label": "Friday, September 11, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-14",
+          "label": "Monday, September 14, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-15",
+          "label": "Tuesday, September 15, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-16",
+          "label": "Wednesday, September 16, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-17",
+          "label": "Thursday, September 17, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-18",
+          "label": "Friday, September 18, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-21",
+          "label": "Monday, September 21, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-22",
+          "label": "Tuesday, September 22, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-23",
+          "label": "Wednesday, September 23, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-24",
+          "label": "Thursday, September 24, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-25",
+          "label": "Friday, September 25, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-28",
+          "label": "Monday, September 28, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-29",
+          "label": "Tuesday, September 29, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-09-30",
+          "label": "Wednesday, September 30, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-01",
+          "label": "Thursday, October 1, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-02",
+          "label": "Friday, October 2, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-05",
+          "label": "Monday, October 5, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-06",
+          "label": "Tuesday, October 6, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-07",
+          "label": "Wednesday, October 7, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-08",
+          "label": "Thursday, October 8, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-09",
+          "label": "Friday, October 9, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-12",
+          "label": "Monday, October 12, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-13",
+          "label": "Tuesday, October 13, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-14",
+          "label": "Wednesday, October 14, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-15",
+          "label": "Thursday, October 15, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-16",
+          "label": "Friday, October 16, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-19",
+          "label": "Monday, October 19, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-20",
+          "label": "Tuesday, October 20, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-21",
+          "label": "Wednesday, October 21, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-22",
+          "label": "Thursday, October 22, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-23",
+          "label": "Friday, October 23, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-26",
+          "label": "Monday, October 26, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-27",
+          "label": "Tuesday, October 27, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-28",
+          "label": "Wednesday, October 28, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-29",
+          "label": "Thursday, October 29, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-10-30",
+          "label": "Friday, October 30, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Raysean Richardson · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-11-02",
+          "label": "Monday, November 2, 2026: Tech Time: Foundations · 1:00 pm (1 hr) · Milo Jones · Main Office (LIC) · 15 spots left"
+        },
+        {
+          "date": "2026-11-03",
+          "label": "Tuesday, November 3, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/catalog",

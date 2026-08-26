@@ -301,6 +301,15 @@ h1, h2, p { margin-top: 0; }
 .current-modules h4 { margin: 0 0 6px; }
 .current-modules p { margin-bottom: 8px; font-size: 14px; }
 .current-modules span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.current-modules .compiled-prompt-card { grid-column: 1 / -1; }
+.compiled-prompt-card summary { cursor: pointer; font-weight: 900; }
+.compiled-prompt-card pre {
+  max-height: 360px;
+  margin: 12px 0 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  font: 13px/1.55 var(--font);
+}
 .code-controlled { margin: 16px 0 0; color: var(--muted); font-size: 13px; }
 
 .proposal-heading { align-items: baseline; margin-bottom: 12px; }

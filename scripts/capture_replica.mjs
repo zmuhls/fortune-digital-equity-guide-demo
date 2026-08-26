@@ -657,7 +657,7 @@ export function replaceBoundedCalendarContinuationWithLiveLink() {
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   link.setAttribute("data-live-action", "true");
-  link.textContent = "View the live calendar at Fortune.";
+  link.textContent = "View the live Digital Equity calendar.";
   note.append(link);
   control.replaceWith(note);
   document.querySelectorAll("[data-replica-capture-collection-control]").forEach((element) => {
@@ -745,7 +745,7 @@ export async function materializeProgressiveCollections(page) {
           clicks: calendarClicks,
           limit: CALENDAR_STATIC_HORIZON_EXPANSIONS,
           continuation_removed: calendarContinuationRemoved,
-          policy: "volatile live agenda; continue on Fortune's live calendar",
+          policy: "volatile live agenda; continue on the live Digital Equity calendar",
         }
       : null,
     before,
@@ -1083,13 +1083,13 @@ export function sanitizeDocument() {
     link.rel = "noopener noreferrer";
     link.setAttribute("data-replica-live-action", "true");
     link.textContent = label
-      ? `${label} on Fortune's live site`
-      : "Continue on Fortune's live site";
+      ? `${label} on the Digital Equity site`
+      : "Continue on the Digital Equity site";
     link.setAttribute(
       "aria-label",
       label
-        ? `${label} on the live Fortune page`
-        : "Continue on the live Fortune page",
+        ? `${label} on the live Digital Equity page`
+        : "Continue on the live Digital Equity page",
     );
     return link;
   };
@@ -1212,7 +1212,7 @@ export function sanitizeDocument() {
       const note = document.createElement("p");
       note.setAttribute("data-replica-static-preview-note", "true");
       note.textContent = interactiveEmbed
-        ? "Interactive content is available on Fortune's live site."
+        ? "Interactive content is available on the live Digital Equity site."
         : "Static preview — use the link for the live content.";
       placeholder.append(note);
     } else {

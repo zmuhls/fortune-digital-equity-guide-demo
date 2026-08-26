@@ -150,6 +150,10 @@ class SnapshotRenderingTests(unittest.TestCase):
             shell,
         )
         self.assertIn(f'data-source-url="{route["sourceUrl"]}"', shell)
+        self.assertIn('class="site-name"', shell)
+        self.assertIn(">Digital Equity</a>", shell)
+        self.assertIn(">Digital Equity public site</a>", shell)
+        self.assertNotIn(">Fortune Society Digital Equity</a>", shell)
         self.assertEqual(shell.lower().count("<script"), 1)
         self.assertIn("Learn the basic parts of a computer", shell)
         self.assertIn("Identify hardware, software, storage", shell)
@@ -163,6 +167,16 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn("form-action &#x27;none&#x27;", shell)
         self.assertIn("img-src &#x27;none&#x27;", shell)
         self.assertIn('content="noindex,nofollow,noarchive"', shell)
+
+    def test_legacy_snapshot_action_labels_are_reframed_as_digital_equity(self):
+        self.assertEqual(
+            build_pages.clean_link_label("View the live calendar at Fortune."),
+            "View the live Digital Equity calendar.",
+        )
+        self.assertEqual(
+            build_pages.clean_source_fragment("REGISTER on Fortune's live site"),
+            "REGISTER on the Digital Equity site",
+        )
 
     def test_root_text_source_keeps_root_relative_assets(self):
         shell = build_pages.render_text_page(HOME_ROUTE, "")

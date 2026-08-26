@@ -126,6 +126,61 @@ class RetrievalTests(unittest.TestCase):
         self.assertEqual(scope, "site")
         self.assertEqual(sources[0]["id"], "calendar")
 
+    def test_snapshot_calendar_fallback_exposes_only_upcoming_atomic_rows(self):
+        source = {
+            "id": "calendar",
+            "source_captured_at": "2026-08-20T21:47:14Z",
+            "calendar_events": [
+                {"date": "2026-08-21", "label": "Friday, August 21, 2026: Past class"},
+                {"date": "2026-08-28", "label": "Friday, August 28, 2026: Tech Time: Foundations · 1:00 pm"},
+                {"date": "2026-09-01", "label": "Tuesday, September 1, 2026: Open Computer Lab Session · 1:30 pm"},
+            ],
+        }
+        blocks = server.calendar_evidence_blocks(
+            source,
+            "What classes are coming up?",
+            today=server.date(2026, 8, 26),
+        )
+        evidence = "\n".join(blocks)
+        self.assertNotIn("Past class", evidence)
+        self.assertIn("Tech Time: Foundations · 1:00 pm", evidence)
+        self.assertIn("Open Computer Lab Session · 1:30 pm", evidence)
+
+    def test_calendar_relative_date_filters_are_deterministic(self):
+        source = {
+            "id": "calendar",
+            "calendar_events": [
+                {"date": "2026-08-26", "label": "Wednesday event"},
+                {"date": "2026-08-27", "label": "Thursday event"},
+                {"date": "2026-08-31", "label": "Next Monday event"},
+                {"date": "2026-09-30", "label": "September 30 event"},
+            ],
+        }
+        blocks = server.calendar_evidence_blocks(
+            source,
+            "What is on tomorrow?",
+            today=server.date(2026, 8, 26),
+        )
+        self.assertIn("Thursday event", blocks)
+        self.assertNotIn("Wednesday event", blocks)
+        self.assertNotIn("Next Monday event", blocks)
+
+        exact = server.calendar_evidence_blocks(
+            source,
+            "What is on September 30?",
+            today=server.date(2026, 8, 26),
+        )
+        self.assertIn("September 30 event", exact)
+        self.assertNotIn("Thursday event", exact)
+
+    def test_retrieval_prompt_supplies_the_runtime_date(self):
+        prompt = server.retrieval_prompt(
+            "What is on the calendar?",
+            [server.SOURCE_BY_ID["calendar"]],
+            current_date="2026-08-26",
+        )
+        self.assertIn('CURRENT DATE:\n"2026-08-26"', prompt)
+
     def test_class_duration_does_not_route_to_the_calendar(self):
         expected = {
             "How many hours is Intro to Email?": server.INTRO_EMAIL_ID,
@@ -442,7 +497,7 @@ class StagedRetrievalTests(unittest.TestCase):
             model_calls[0][0]["content"],
         )
         self.assertIn(
-            "from anywhere in the supplied Fortune site evidence",
+            "from anywhere in the supplied Digital Equity site evidence",
             model_calls[0][0]["content"],
         )
 
@@ -1358,7 +1413,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(len(model_calls), 1)
 
     def test_no_evidence_uses_a_model_authored_clarification(self):
-        clarification = "What would you like help finding on Fortune's website?"
+        clarification = "What would you like help finding on the Digital Equity site?"
         captured, model_calls = self.dispatch_chat(
             "What is the zzyzx quasar permit policy?",
             "https://www.fortunedigitalequity.org/workshops",

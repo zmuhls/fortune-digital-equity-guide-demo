@@ -1,6 +1,6 @@
 {
   "reviewed_on": "2026-08-17",
-  "scope": "The Fortune Society Digital Equity public website",
+  "scope": "The Digital Equity public website",
   "source_mode": "live-site-index",
   "source_note": "These records preserve stable routing IDs and review provenance only. Participant-facing facts come from the matching current public page in site-index.json; compact factual strings do not override the live crawl.",
   "public_sources": [

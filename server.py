@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Source-bounded Fortune Digital Equity guide and local model proxy.
+"""Source-bounded Digital Equity Website Guide and local model proxy.
 
 The browser receives no provider credential. A complete public-site index is
 searched locally for each question, and only the most relevant approved
@@ -9,6 +9,7 @@ links so a visitor never reaches a terminal FAQ card.
 """
 
 import collections
+from datetime import date, datetime, timedelta, timezone
 import http.server
 import http.cookies
 import json
@@ -25,6 +26,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+
+from live_calendar import LiveCalendarCache
 
 from conversation_store import (
     CaptureUnavailable,
@@ -321,6 +324,29 @@ def warm_model_quietly():
         pass
 
 
+def warm_calendar_quietly():
+    calendar = SOURCE_BY_ID.get("calendar")
+    if calendar:
+        CALENDAR_CACHE.refresh(calendar)
+
+
+def calendar_static_blocks(blocks):
+    """Remove the flattened agenda; dated rows are retained separately."""
+
+    result = []
+    skipping_agenda = False
+    for block in blocks:
+        value = str(block or "").strip()
+        if value == "Regular Class Schedule":
+            skipping_agenda = True
+            continue
+        if skipping_agenda and value == "Downloads":
+            skipping_agenda = False
+        if not skipping_agenda:
+            result.append(block)
+    return result
+
+
 def build_sources():
     sources = {}
     id_by_url = {}
@@ -350,7 +376,12 @@ def build_sources():
             source = sources[reviewed_id]
             source["description"] = page.get("description", "")
             source["headings"] = page.get("headings", [])
-            source["blocks"] = list(source["blocks"]) + list(page.get("blocks", []))
+            page_blocks = list(page.get("blocks", []))
+            if reviewed_id == "calendar":
+                page_blocks = calendar_static_blocks(page_blocks)
+                source["calendar_events"] = list(page.get("calendar_events", []))
+                source["source_captured_at"] = page.get("source_captured_at")
+            source["blocks"] = list(source["blocks"]) + page_blocks
             source["internal_links"] = page.get("internal_links", [])
             source["lastmod"] = page.get("lastmod", "")
             source["site_index_id"] = page.get("id")
@@ -366,6 +397,14 @@ def build_sources():
 
 
 SOURCE_BY_ID, SOURCE_ID_BY_URL = build_sources()
+CALENDAR_CACHE = LiveCalendarCache(
+    ttl_seconds=bounded_env_int(
+        "FORTUNE_CALENDAR_REFRESH_SECONDS",
+        default=900,
+        minimum=60,
+        maximum=86400,
+    )
+)
 ANSWER_SOURCES = [
     source for source in SOURCE_BY_ID.values()
     if source.get("authority") == "answer" and source.get("status", 200) == 200
@@ -638,6 +677,11 @@ def searchable_text(source):
     values.extend(source.get("headings", []))
     values.extend(source.get("facts", []))
     values.extend(source.get("blocks", []))
+    values.extend(
+        event.get("label", "")
+        for event in source.get("calendar_events", [])
+        if isinstance(event, dict)
+    )
     template_contaminated = source_has_template_content(source)
     return " ".join(
         str(value)
@@ -1294,6 +1338,126 @@ def retrieve_sources(query, limit=MAX_RETRIEVED):
     return result
 
 
+_CALENDAR_MONTH_NAMES = {
+    name.lower(): number
+    for number, name in enumerate(
+        (
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ),
+        start=1,
+    )
+}
+
+
+def calendar_evidence_blocks(source, query, today=None):
+    """Prefer live schedule blocks or intact upcoming snapshot event rows."""
+
+    if source.get("id") != "calendar":
+        return []
+    current = today or datetime.now(timezone.utc).date()
+    if source.get("calendar_source") == "live_downloadable_calendar":
+        live_count = max(0, int(source.get("calendar_live_block_count") or 0))
+        return list(source.get("blocks", []))[:live_count]
+
+    blocks = [
+        str(block).strip()
+        for block in source.get("blocks", [])
+        if re.search(
+            r"(?:available classes|training schedule|tue, wed|\b2:00 pm to 3:30 pm\b|"
+            r"by request only)",
+            str(block or ""),
+            flags=re.I,
+        )
+    ]
+    events = []
+    for event in source.get("calendar_events", []):
+        if not isinstance(event, dict):
+            continue
+        try:
+            event_date = date.fromisoformat(str(event.get("date") or ""))
+        except ValueError:
+            continue
+        label = str(event.get("label") or "").strip()
+        if label and event_date >= current:
+            events.append((event_date, label))
+    events.sort(key=lambda row: (row[0], row[1]))
+
+    query_value = fold_text(semantic_question(query))
+    if "tomorrow" in query_value:
+        target = current + timedelta(days=1)
+        events = [row for row in events if row[0] == target]
+    elif re.search(r"\btoday\b", query_value):
+        events = [row for row in events if row[0] == current]
+    elif "next week" in query_value:
+        start = current + timedelta(days=7 - current.weekday())
+        end = start + timedelta(days=6)
+        events = [row for row in events if start <= row[0] <= end]
+    elif "this week" in query_value:
+        end = current + timedelta(days=6 - current.weekday())
+        events = [row for row in events if current <= row[0] <= end]
+    else:
+        exact_date = None
+        for name, number in _CALENDAR_MONTH_NAMES.items():
+            match = re.search(rf"\b{re.escape(name)}\s+(\d{{1,2}})\b", query_value)
+            if not match:
+                continue
+            try:
+                exact_date = date(current.year, number, int(match.group(1)))
+                if exact_date < current:
+                    exact_date = date(current.year + 1, number, int(match.group(1)))
+            except ValueError:
+                exact_date = None
+            break
+        numeric_date = re.search(r"\b(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?\b", query_value)
+        if not exact_date and numeric_date:
+            year = int(numeric_date.group(3) or current.year)
+            if year < 100:
+                year += 2000
+            try:
+                exact_date = date(year, int(numeric_date.group(1)), int(numeric_date.group(2)))
+            except ValueError:
+                exact_date = None
+        if exact_date:
+            events = [row for row in events if row[0] == exact_date]
+            blocks.extend(label for _, label in events[:4])
+            return blocks
+        requested_months = {
+            number
+            for name, number in _CALENDAR_MONTH_NAMES.items()
+            if re.search(rf"\b{re.escape(name)}\b", query_value)
+        }
+        if requested_months:
+            events = [row for row in events if row[0].month in requested_months]
+        else:
+            weekday_names = {
+                name.lower(): index
+                for index, name in enumerate(
+                    ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+                )
+            }
+            requested_weekdays = {
+                index
+                for name, index in weekday_names.items()
+                if re.search(rf"\b{re.escape(name)}\b", query_value)
+            }
+            if requested_weekdays:
+                events = [row for row in events if row[0].weekday() in requested_weekdays]
+            query_terms = expanded_query_terms(query).difference({
+                "calendar", "class", "classes", "date", "dates", "event", "events",
+                "next", "schedule", "scheduled", "today", "tomorrow", "upcoming",
+                "week", "when",
+            })
+            matching = [
+                row for row in events
+                if query_terms.intersection(expanded_query_terms(row[1]))
+            ]
+            if matching:
+                events = matching
+    blocks.extend(label for _, label in events[:4])
+    return blocks
+
+
 def source_excerpt(source, query, limit=1800):
     query_terms = expanded_query_terms(query)
     query_value = fold_text(semantic_question(query))
@@ -1309,13 +1473,17 @@ def source_excerpt(source, query, limit=1800):
         r"tomorrow|when)\b",
         query_value,
     ))
+    calendar_blocks = calendar_evidence_blocks(source, query)
     raw_blocks = (
-        [source.get("description", "")]
+        calendar_blocks
+        + [source.get("description", "")]
         + list(source.get("facts", []))
         + list(source.get("blocks", []))
     )
     cleaned_blocks = [clean_evidence_fragment(block) for block in raw_blocks]
     priorities = collections.defaultdict(float)
+    for index in range(len(calendar_blocks)):
+        priorities[index] = 180 - min(index, 60)
     headings = {
         fold_text(clean_evidence_fragment(value))
         for value in source.get("headings", [])
@@ -1374,13 +1542,18 @@ def source_excerpt(source, query, limit=1800):
     candidates = []
     template_contaminated = source_has_template_content(source)
     for index, block in enumerate(cleaned_blocks):
-        if matched_faq_indices and index not in matched_faq_indices:
+        if (
+            matched_faq_indices
+            and index not in matched_faq_indices
+            and index >= len(calendar_blocks)
+        ):
             continue
         if (
             not matched_faq_indices
             and matched_section_indices
             and index not in matched_section_indices
             and index != 0
+            and index >= len(calendar_blocks)
         ):
             continue
         if (
@@ -2100,10 +2273,11 @@ def retrieval_prompt(
     page_context=None,
     interaction=None,
     previous_answer="",
+    current_date="",
 ):
     records = []
     for source in sources:
-        records.append({
+        record = {
             "id": source["id"],
             "title": source["title"],
             "url": source["url"],
@@ -2114,12 +2288,21 @@ def retrieval_prompt(
                 query,
                 limit=MAX_MODEL_EXCERPT_CHARS,
             ),
-        })
+        }
+        if source.get("id") == "calendar":
+            record.update({
+                "calendar_source": source.get("calendar_source") or "rendered_snapshot",
+                "source_fetched_at": source.get("source_fetched_at"),
+                "source_captured_at": source.get("source_captured_at"),
+                "calendar_document_url": source.get("calendar_document_url"),
+            })
+        records.append(record)
     current = approved_current_page_source(page_context)
     return build_selector_prompt(
         records,
         current_page_id=current["id"] if current else "",
         previous_answer=clip_words(previous_answer, MAX_MESSAGE_WORDS),
+        current_date=current_date or datetime.now(timezone.utc).date().isoformat(),
     )
 
 
@@ -2127,7 +2310,7 @@ def clean_source_title(source):
     return re.sub(
         r"\s*[|·]\s*FS Digital Equity\s*$",
         "",
-        str(source.get("title") or "Fortune page"),
+        str(source.get("title") or "Digital Equity page"),
         flags=re.I,
     ).strip()
 
@@ -2782,7 +2965,7 @@ def parse_model_selection(
     reason = (
         "La respuesta viene de una página aprobada."
         if language_code == "es"
-        else "From an approved Fortune page."
+        else "From an approved Digital Equity page."
     )
     return response_contract(
         kind="answer",
@@ -3021,6 +3204,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     "cooldown_seconds": MODEL_WARMUP_COOLDOWN,
                     "keep_alive": MODEL_KEEP_ALIVE,
                 },
+                "calendar_source": CALENDAR_CACHE.status(),
                 "conversation_logging": {
                     "capture_mode": CONVERSATION_RECORDER.mode,
                     "database_configured": CONVERSATION_RECORDER.configured,
@@ -3237,7 +3421,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     headers={"Retry-After": "60"},
                 )
                 return
-            model_sources = retrieved
+            model_sources = [
+                CALENDAR_CACHE.source(source)
+                if source.get("id") == "calendar"
+                else source
+                for source in retrieved
+            ]
             messages = [{"role": "system", "content": retrieval_prompt(
                 routing_question,
                 model_sources,
@@ -3247,7 +3436,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             )}]
             model_question = semantic_question(question) or (
                 "Ask one short question about what the participant needs from "
-                "Fortune's website."
+                "the Digital Equity site."
             )
             messages.append({
                 "role": "user",
@@ -3911,7 +4100,7 @@ class ThreadingServer(socketserver.ThreadingTCPServer):
 if __name__ == "__main__":
     CONVERSATION_RECORDER.open()
     EVALUATION_STORE.open()
-    print("Fortune Digital Equity model demo")
+    print("Digital Equity Website Guide")
     print("  http://%s:%d" % (HOST, PORT))
     print("  model=%s  key=%s  indexed_pages=%d  answer_sources=%d" % (
         MODEL,
@@ -3924,6 +4113,11 @@ if __name__ == "__main__":
             threading.Thread(
                 target=warm_model_quietly,
                 name="fortune-model-warmup",
+                daemon=True,
+            ).start()
+            threading.Thread(
+                target=warm_calendar_quietly,
+                name="digital-equity-calendar-warmup",
                 daemon=True,
             ).start()
             server.serve_forever()

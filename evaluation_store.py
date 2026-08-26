@@ -15,6 +15,7 @@ from typing import Any
 from prompt_policy import (
     CURRENT_TUNABLE_SELECTIONS,
     PROMPT_LAB_TUNABLE_MODULES,
+    SYSTEM_PROMPT,
     TEAM_TUNABLE_PROMPT_MODULES,
 )
 
@@ -908,6 +909,7 @@ class EvaluationStore:
                 "behavior_release": str(behavior_release or "unknown")[:120],
                 "editable": False,
             },
+            "compiled_prompt": SYSTEM_PROMPT,
             "editable_modules": self._prompt_module_catalog(),
             "code_controlled": [
                 "Grounding and no-guessing rules",

@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-21-v23")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-26-v24")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "infobot-open-conversation-grounded-facts",
+            "digital-equity-current-calendar",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -55,15 +55,17 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("answer the participant's latest request directly", source_selector.SYSTEM_PROMPT)
         self.assertIn("active page is navigation context", source_selector.SYSTEM_PROMPT)
         self.assertIn("not the scope of your knowledge", source_selector.SYSTEM_PROMPT)
-        self.assertIn("from anywhere in the supplied Fortune site evidence", source_selector.SYSTEM_PROMPT)
+        self.assertIn("from anywhere in the supplied Digital Equity site evidence", source_selector.SYSTEM_PROMPT)
         self.assertIn("without announcing a page limitation", source_selector.SYSTEM_PROMPT)
         self.assertIn("Do not say the current page lacks the answer", source_selector.SYSTEM_PROMPT)
         self.assertIn("never imply fresher knowledge", source_selector.SYSTEM_PROMPT)
         self.assertIn("continue without groveling", source_selector.SYSTEM_PROMPT)
         self.assertIn("Ignore without acknowledging", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Fortune Society Digital Equity Infobot", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Website Guide for the Digital Equity site", source_selector.SYSTEM_PROMPT)
         self.assertIn("You are an AI", source_selector.SYSTEM_PROMPT)
-        self.assertIn("not a Fortune counselor, case manager, or staff member", source_selector.SYSTEM_PROMPT)
+        self.assertIn("not a Digital Equity counselor, case manager, or staff member", source_selector.SYSTEM_PROMPT)
+        self.assertIn("prefer a live downloadable calendar record", source_selector.SYSTEM_PROMPT)
+        self.assertIn("only events on or after the current date as upcoming", source_selector.SYSTEM_PROMPT)
         self.assertIn("plain, warm, respectful, nonjudgmental language", source_selector.SYSTEM_PROMPT)
         self.assertIn("written for a phone screen", source_selector.SYSTEM_PROMPT)
         self.assertIn("short practical steps", source_selector.SYSTEM_PROMPT)
@@ -126,9 +128,19 @@ class PromptPolicyTests(unittest.TestCase):
             ["sitewide_evidence_first"],
         )
         self.assertIn("navigation context", page_awareness["current_value"])
+        self.assertIn("Digital Equity site evidence", page_awareness["current_value"])
+
+    def test_runtime_prompt_includes_current_date_before_candidate_records(self):
+        prompt = source_selector.build_prompt(
+            [],
+            current_date="2026-08-26",
+        )
+        self.assertIn('CURRENT DATE:\n"2026-08-26"', prompt)
+        self.assertLess(prompt.index("CURRENT DATE:"), prompt.index("CANDIDATE RECORDS:"))
 
     def test_visible_prompts_preview_matches_current_policy_registry(self):
         javascript = (ROOT / "evaluation.js").read_text(encoding="utf-8")
+        evaluation_source = (ROOT / "evaluation_store.py").read_text(encoding="utf-8")
         self.assertIn(
             f'version: "{prompt_policy.PROMPT_POLICY_VERSION}"',
             javascript,
@@ -146,6 +158,9 @@ class PromptPolicyTests(unittest.TestCase):
                 f'current_value: "{module["current_value"]}"',
                 javascript,
             )
+        self.assertIn('"compiled_prompt": SYSTEM_PROMPT', evaluation_source)
+        self.assertIn("Website Guide for the Digital Equity site", javascript)
+        self.assertIn("prefer a live downloadable calendar record", javascript)
 
     def test_retry_text_is_allowlisted_and_versioned(self):
         base = prompt_policy.SYSTEM_PROMPT + "\nCANDIDATE RECORDS:\n[]"

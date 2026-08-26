@@ -1,6 +1,6 @@
-# Fortune Digital Equity page-aware guide
+# Digital Equity page-aware Website Guide
 
-This repository publishes text views of the public Fortune Digital Equity sources used by its informational sidecar. The August 17 inventory contains 138 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each published route is regenerated from the same approved title, description, and content blocks available to retrieval; image markup, visual captions, Wix styling, scripts, forms, tokens, trackers, and authenticated services are not published. The reviewed rendered captures remain private build inputs for source completeness and integrity checks.
+This repository publishes text views of the public Digital Equity sources used by its Website Guide. The August 17 inventory contains 138 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each published route is regenerated from the same approved title, description, and content blocks available to retrieval; image markup, visual captions, Wix styling, scripts, forms, tokens, trackers, and authenticated services are not published. The reviewed rendered captures remain private build inputs for source completeness and integrity checks.
 
 The source text remains readable when the model service is unavailable. In that state, the static GitHub Pages build uses the public index for page context and links visitors to source pages. The published Pages configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds the provider key, accepts the `https://zmuhls.github.io` browser origin, and applies per-client and shared daily model-call limits. The server preloads GLM-5.2 at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the model ready for 30 minutes.
 
@@ -13,7 +13,7 @@ The index is a public-site inventory, not a claim that every URL can support an 
 - 21 archived pages retained for provenance and historical navigation.
 - 9 navigation records that can lead to another page but cannot establish current service facts.
 
-Old posts, category archives, past Tech Fair pages, member surfaces, test pages, duplicate services, and archive-labelled classes do not support participant answers. Dates, locations, registration, availability, eligibility, and inventory can change. The guide sends visitors to the current Fortune page or staff for confirmation.
+Old posts, category archives, past Tech Fair pages, member surfaces, test pages, duplicate services, and archive-labelled classes do not support participant answers. Dates, locations, registration, availability, eligibility, and inventory can change. The guide refreshes the live downloadable calendar and sends visitors to the current Digital Equity page or staff when the source does not confirm a changing detail.
 
 Every index record carries its canonical URL, authority state, content hash, proposed content owner, and Fortune-review status. The crawler keeps excluded and archived records in the inventory so reviewers can see the full routing scope.
 
