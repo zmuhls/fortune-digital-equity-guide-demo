@@ -12,9 +12,9 @@ Capture modes are explicit:
 
 - `none`: default; no PostgreSQL conversation rows and no transcript database requirement.
 - `metadata`: IDs, page record, routing/result fields, model state, timing, and privacy/review state; no question or answer text.
-- `transcript`: the metadata above plus question and answer text only for turns classified `clear` by the automated privacy hold. Blocked or sensitive turns contain no message rows.
+- `transcript`: the metadata above plus question and answer text for completed turns classified `clear` by the automated privacy hold. If a clear request from a public human surface fails before an answer completes, the visitor question and failure metadata are retained without an assistant message. Blocked or sensitive turns contain no message rows.
 
-`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. Capture mode must not inject status or review copy into the compact participant interface. Only privacy-clear conversations from the public `replica` and `wix` surfaces become review-ready. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
+`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. Capture mode must not inject status or review copy into the compact participant interface. Privacy-clear conversations and failed attempts from the public `replica` and `wix` surfaces enter the shared queue. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
 
 Captured conversations receive `expires_at`; the server purges expired conversations at startup and at most hourly while serving capture traffic. The default is 90 days and can be shortened for a pilot.
 
@@ -67,7 +67,7 @@ A staging release is accepted only after all of these are true:
 6. Replaying its client event ID returns the same turn and response without another row.
 7. Reusing that event ID with different input returns `409`.
 8. A synthetic six-digit-ID sentinel produces an excluded turn and zero message rows; the sentinel is absent from all persisted JSON and text fields.
-9. Human `replica`/`wix` turns are review-ready; `benchmark`, `synthetic`, and direct API turns are not.
+9. Human `replica`/`wix` conversations are visible for review when they contain a complete clear turn or a clear failed attempt; `benchmark`, `synthetic`, direct API, blocked, and sensitive turns are not.
 10. `python3 scripts/audit_conversation_quality.py` passes without selecting message content.
 
 ## Dashboard migrations that come next
@@ -83,4 +83,4 @@ Seed the four accounts with expiring invitation links rather than checked-in pas
 
 ## Production approval record
 
-The August 21, 2026 owner instruction authorizes the production human-conversation review pilot, the shared evaluator workspace, and a reset baseline with no imported benchmark transcripts. The release uses the exact visible notice above, a 90-day retention period, private Railway networking, four bounded evaluator slots, and human-only queue eligibility. Blocked or sensitive turns store no message text. A later change to retention, reviewer identities, inclusion rules, export/deletion procedure, or pilot duration requires a new explicit owner decision and a documented deployment change.
+The August 21, 2026 owner instruction authorizes the production human-conversation review pilot, the shared evaluator workspace, and a reset baseline with no imported benchmark transcripts. The August 28 instruction to show all recent human conversations authorizes shared visibility for privacy-clear failed attempts and retention of the visitor question on future failed attempts. The release uses a 90-day retention period, private Railway networking, four bounded evaluator slots, and human-only queue eligibility. Blocked or sensitive turns store no message text. A later change to retention, reviewer identities, inclusion rules, export/deletion procedure, or pilot duration requires a new explicit owner decision and a documented deployment change.

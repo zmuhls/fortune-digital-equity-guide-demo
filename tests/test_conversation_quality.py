@@ -30,13 +30,19 @@ class ConversationQualityAuditTests(unittest.TestCase):
         self.assertNotIn("AS nonsynthetic_ready_turns", source)
         self.assertNotIn("HAVING BOOL_AND", source)
         self.assertIn(
-            "from evaluation_store import REVIEWABLE_TURN_PREDICATE",
+            "REVIEWABLE_TURN_PREDICATE,",
             source,
         )
         self.assertIn("AND {REVIEWABLE_TURN_PREDICATE}", source)
+        self.assertIn("VISIBLE_HUMAN_TURN_PREDICATE,", source)
+        self.assertIn("AND {VISIBLE_HUMAN_TURN_PREDICATE}", source)
         self.assertEqual(
             audit_conversation_quality.REVIEWABLE_TURN_PREDICATE,
             evaluation_store.REVIEWABLE_TURN_PREDICATE,
+        )
+        self.assertEqual(
+            audit_conversation_quality.VISIBLE_HUMAN_TURN_PREDICATE,
+            evaluation_store.VISIBLE_HUMAN_TURN_PREDICATE,
         )
 
     def test_json_values_are_bounded_for_operator_output(self):

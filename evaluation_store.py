@@ -44,6 +44,30 @@ REVIEWABLE_TURN_PREDICATE = """
         WHERE review_messages.turn_id = t.id
     ) = 2
 """.strip()
+FAILED_HUMAN_ATTEMPT_PREDICATE = """
+    t.status = 'failed'
+    AND t.privacy_state = 'clear'
+    AND t.review_state = 'excluded'
+    AND (
+        (
+            SELECT COUNT(*) FROM conversation_messages failed_messages
+            WHERE failed_messages.turn_id = t.id
+        ) = 0
+        OR (
+            SELECT COUNT(*) FROM conversation_messages failed_messages
+            WHERE failed_messages.turn_id = t.id
+        ) = 1
+        AND EXISTS (
+            SELECT 1 FROM conversation_messages failed_user
+            WHERE failed_user.turn_id = t.id
+              AND failed_user.ordinal = 0
+              AND failed_user.role = 'user'
+        )
+    )
+""".strip()
+VISIBLE_HUMAN_TURN_PREDICATE = (
+    f"(({REVIEWABLE_TURN_PREDICATE}) OR ({FAILED_HUMAN_ATTEMPT_PREDICATE}))"
+)
 
 
 class EvaluationUnavailable(RuntimeError):
@@ -1285,8 +1309,14 @@ class EvaluationStore:
     def _eligible_cte() -> str:
         return f"""
             WITH eligible AS (
-                SELECT c.id, c.last_turn_at, c.client_surface,
+                SELECT c.id,
+                       MAX(COALESCE(t.completed_at, t.created_at)) AS last_turn_at,
+                       c.client_surface,
                        COUNT(t.id)::INTEGER AS turn_count,
+                       COUNT(t.id) FILTER (WHERE t.status = 'complete')::INTEGER
+                         AS complete_turn_count,
+                       COUNT(t.id) FILTER (WHERE t.status = 'failed')::INTEGER
+                         AS failed_turn_count,
                        MAX(t.sequence)::BIGINT AS transcript_version,
                        (ARRAY_AGG(t.page_context ORDER BY t.sequence DESC))[1] AS page_context,
                        (ARRAY_AGG(t.app_version ORDER BY t.sequence DESC))[1]
@@ -1299,15 +1329,17 @@ class EvaluationStore:
                   AND c.client_surface IN ('replica', 'wix')
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-                  AND {REVIEWABLE_TURN_PREDICATE}
-                GROUP BY c.id, c.last_turn_at, c.client_surface
+                  AND {VISIBLE_HUMAN_TURN_PREDICATE}
+                GROUP BY c.id, c.client_surface
             )
         """
 
     def list_conversations(self, account_slot: str, limit: int = 100) -> list[dict]:
         limit = max(1, min(int(limit), 500))
         query = self._eligible_cte() + """
-            SELECT e.id, e.last_turn_at, e.turn_count, e.transcript_version,
+            SELECT e.id, e.last_turn_at, e.turn_count,
+                   e.complete_turn_count, e.failed_turn_count,
+                   e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    ce.bucket_id, COALESCE(ce.version, 0) AS evaluation_version
@@ -1327,7 +1359,9 @@ class EvaluationStore:
     def get_conversation(self, account_slot: str, conversation_value: Any) -> dict:
         conversation_id = _uuid(conversation_value, "conversation_id")
         query = self._eligible_cte() + """
-            SELECT e.id, e.last_turn_at, e.turn_count, e.transcript_version,
+            SELECT e.id, e.last_turn_at, e.turn_count,
+                   e.complete_turn_count, e.failed_turn_count,
+                   e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    s.id AS bucket_set_id, ce.bucket_id, ce.note,
@@ -1352,16 +1386,32 @@ class EvaluationStore:
                 cursor.execute(
                     f"""
                     SELECT m.id, m.turn_id, m.ordinal, m.role, m.content,
-                           m.created_at, t.app_version, t.prompt_policy_version
+                           m.created_at, t.sequence, t.status AS turn_status,
+                           t.error_code, t.app_version, t.prompt_policy_version
                     FROM conversation_messages m
                     JOIN conversation_turns t ON t.id = m.turn_id
                     WHERE m.conversation_id = %s
-                      AND {REVIEWABLE_TURN_PREDICATE}
+                      AND {VISIBLE_HUMAN_TURN_PREDICATE}
                     ORDER BY t.sequence, m.ordinal
                     """,
                     (conversation_id,),
                 )
                 messages = [dict(row) for row in cursor.fetchall()]
+                cursor.execute(
+                    f"""
+                    SELECT t.id, t.sequence, t.status, t.error_code,
+                           t.created_at, t.completed_at,
+                           COUNT(m.id)::INTEGER AS message_count
+                    FROM conversation_turns t
+                    LEFT JOIN conversation_messages m ON m.turn_id = t.id
+                    WHERE t.conversation_id = %s
+                      AND {VISIBLE_HUMAN_TURN_PREDICATE}
+                    GROUP BY t.id
+                    ORDER BY t.sequence
+                    """,
+                    (conversation_id,),
+                )
+                turns = [dict(row) for row in cursor.fetchall()]
                 cursor.execute(
                     """
                     SELECT message_id, category, note, transcript_version, version
@@ -1375,6 +1425,7 @@ class EvaluationStore:
         payload = dict(conversation)
         payload.pop("bucket_set_id", None)
         payload["messages"] = messages
+        payload["turns"] = turns
         payload["annotations"] = annotations
         return _json_value(payload)
 
@@ -1387,7 +1438,7 @@ class EvaluationStore:
             WHERE c.id = %s AND c.capture_mode = 'transcript'
               AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
-              AND {REVIEWABLE_TURN_PREDICATE}
+              AND {VISIBLE_HUMAN_TURN_PREDICATE}
             """,
             (conversation_id, self.min_inactive_seconds),
         )

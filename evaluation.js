@@ -25,6 +25,7 @@
   const bucketSort = document.querySelector("#bucket-sort");
   const bucketLayout = document.querySelector("#bucket-layout");
   const newBucketButton = document.querySelector("#new-bucket-button");
+  const queueSummary = document.querySelector("#queue-summary");
   const bucketDialog = document.querySelector("#bucket-dialog");
   const bucketForm = document.querySelector("#bucket-form");
   const bucketClose = document.querySelector("#bucket-close");
@@ -59,7 +60,7 @@
   const viewKeyPrefix = "fortune-evaluation-view-v2";
   const defaultView = { visibility: "all", sort: "default", layout: "compact" };
   const UNREVIEWED_PAGE_SIZE = 8;
-  const WORKSPACE_REFRESH_INTERVAL_MS = 5000;
+  const WORKSPACE_REFRESH_INTERVAL_MS = 10000;
   let lastWorkspaceRefreshAt = 0;
   let workspaceRefreshPromise = null;
   const state = {
@@ -111,7 +112,9 @@
     ["5c6d7e", "About the Program", 4, null],
     ["6d7e8f", "Frequently Asked Questions", 5, null],
   ].map(([id, page_title, turn_count, bucket_id]) => ({
-    id, page_title, turn_count, bucket_id, transcript_version: turn_count,
+    id, page_title, turn_count, bucket_id,
+    complete_turn_count: turn_count, failed_turn_count: 0,
+    transcript_version: turn_count,
     last_turn_at: "2026-08-08T14:30:00Z",
     app_version: "010d369846b09dcaccf8ab5d7955a56d3deaff26",
     prompt_policy_version: "2026-08-28-v30",
@@ -270,7 +273,7 @@
     if (localPreview || !state.session || document.hidden) return;
     if (!force && Date.now() - lastWorkspaceRefreshAt < WORKSPACE_REFRESH_INTERVAL_MS) return;
     if (workspaceRefreshPromise) return workspaceRefreshPromise;
-    workspaceRefreshPromise = loadWorkspace()
+    workspaceRefreshPromise = loadConversationWorkspace()
       .catch(() => {
         moveStatus.textContent = "Could not refresh. Try again.";
       })
@@ -278,6 +281,18 @@
         workspaceRefreshPromise = null;
       });
     return workspaceRefreshPromise;
+  }
+
+  async function loadConversationWorkspace() {
+    const [bucketPayload, conversationPayload] = await Promise.all([
+      api("/api/evaluation/buckets"),
+      api("/api/evaluation/conversations?limit=500"),
+    ]);
+    state.buckets = bucketPayload.buckets || [];
+    state.conversations = conversationPayload.conversations || [];
+    showWorkspace();
+    renderBoard();
+    lastWorkspaceRefreshAt = Date.now();
   }
 
   function previewSave() {
@@ -357,11 +372,15 @@
 
   function cardHtml(conversation) {
     const selected = state.selectedId === conversation.id;
+    const failed = Number(conversation.failed_turn_count || 0);
+    const turnLabel = `${Number(conversation.turn_count || 0)} ${Number(conversation.turn_count || 0) === 1 ? "turn" : "turns"}`;
+    const countLabel = failed ? `${turnLabel} · ${failed} failed` : turnLabel;
     return `
-      <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}, ${escapeHtml(versionLabel(conversation))}">
+      <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(countLabel)}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}, ${escapeHtml(versionLabel(conversation))}">
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <p class="conversation-id">${shortId(conversation.id)}</p>
         <p class="conversation-page">${escapeHtml(conversation.page_title || "Unknown page")}</p>
+        <p class="conversation-counts">${escapeHtml(countLabel)}</p>
         ${timeHtml(conversation.last_turn_at, "conversation-time")}
         <p class="conversation-version" title="${escapeHtml(versionLabel(conversation, true))}">${escapeHtml(versionLabel(conversation))}</p>
         ${selected ? `<div class="card-actions"><button class="open-transcript" type="button">Open transcript</button>${moveOptions(conversation)}</div>` : moveOptions(conversation)}
@@ -409,6 +428,10 @@
 
   function renderBoard() {
     const conversations = filteredConversations();
+    const totalTurns = state.conversations.reduce((sum, item) => sum + Number(item.turn_count || 0), 0);
+    const failedTurns = state.conversations.reduce((sum, item) => sum + Number(item.failed_turn_count || 0), 0);
+    const queueLabel = `${state.conversations.length} ${state.conversations.length === 1 ? "conversation" : "conversations"} · ${totalTurns} ${totalTurns === 1 ? "turn" : "turns"}`;
+    queueSummary.textContent = failedTurns ? `${queueLabel} · ${failedTurns} failed` : queueLabel;
     emptyState.hidden = conversations.length > 0;
     const counts = new Map(bucketColumns().map(bucket => [bucket.id, conversations.filter(item => (item.bucket_id || null) === bucket.id).length]));
     let columns = bucketColumns().filter(bucket => {
@@ -884,8 +907,43 @@
       </article>`;
   }
 
+  function failedAttemptHtml(turn) {
+    const label = {
+      usage_limit: "Request limit",
+      model_disabled: "Model unavailable",
+      model_response_rejected: "No usable response",
+      model_unavailable: "Model unavailable",
+    }[turn.error_code] || "Request failed";
+    const missingQuestion = Number(turn.message_count || 0) === 0
+      ? '<p class="failed-attempt-note">Visitor message unavailable from the earlier release.</p>'
+      : "";
+    return `
+      <article class="failed-attempt" data-turn-id="${escapeHtml(turn.id)}">
+        <div class="message-heading">
+          <p class="message-role">No guide response</p>
+          ${timeHtml(turn.completed_at || turn.created_at, "message-time")}
+        </div>
+        <p class="failed-attempt-label">${escapeHtml(label)}</p>
+        ${missingQuestion}
+      </article>`;
+  }
+
   function renderTranscriptMessages() {
-    transcript.innerHTML = (state.openConversation?.messages || []).map(transcriptMessageHtml).join("");
+    const messages = state.openConversation?.messages || [];
+    const turns = state.openConversation?.turns || [];
+    if (turns.length) {
+      const messagesByTurn = new Map();
+      messages.forEach(message => {
+        if (!messagesByTurn.has(message.turn_id)) messagesByTurn.set(message.turn_id, []);
+        messagesByTurn.get(message.turn_id).push(message);
+      });
+      transcript.innerHTML = turns.map(turn => {
+        const turnMessages = (messagesByTurn.get(turn.id) || []).map(transcriptMessageHtml).join("");
+        return `${turnMessages}${turn.status === "failed" ? failedAttemptHtml(turn) : ""}`;
+      }).join("");
+    } else {
+      transcript.innerHTML = messages.map(transcriptMessageHtml).join("");
+    }
     transcript.querySelectorAll(".message").forEach(message => {
       const messageId = message.dataset.messageId;
       const toggle = message.querySelector(".annotation-toggle");
@@ -1081,6 +1139,9 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshVisibleWorkspace(true);
   });
+  window.setInterval(() => {
+    if (!conversationsPanel.hidden) refreshVisibleWorkspace();
+  }, WORKSPACE_REFRESH_INTERVAL_MS);
   newProposalButton.addEventListener("click", () => openPromptProposalDialog());
   promptProposalClose.addEventListener("click", () => {
     promptProposalDialog.close();

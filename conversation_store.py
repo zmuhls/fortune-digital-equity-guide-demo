@@ -754,6 +754,7 @@ class ConversationRecorder:
         self,
         reservation: TurnReservation,
         *,
+        question: str = "",
         latency_ms: int,
         error_code: str,
         model: str,
@@ -762,17 +763,38 @@ class ConversationRecorder:
         privacy_state: str = "clear",
         interaction_context: dict | None = None,
     ) -> bool:
-        """Close a failed request without storing user or assistant message text."""
+        """Close a failed request and retain only a privacy-clear human question."""
 
         if not reservation.persisted:
             return False
         if not self.enabled:
             raise CaptureUnavailable("Required conversation capture is not ready")
         context = dict(interaction_context or {})
+        store_question = (
+            reservation.capture_mode == "transcript"
+            and privacy_state == "clear"
+            and reservation.client_surface in HUMAN_REVIEW_SURFACES
+            and bool(str(question).strip())
+        )
         try:
             with self._pool.connection() as connection:
                 with connection.transaction():
                     with connection.cursor() as cursor:
+                        if store_question:
+                            cursor.execute(
+                                """
+                                INSERT INTO conversation_messages (
+                                    id, conversation_id, turn_id, ordinal, role, content
+                                ) VALUES (%s, %s, %s, 0, 'user', %s)
+                                ON CONFLICT (id) DO NOTHING
+                                """,
+                                (
+                                    reservation.user_message_id,
+                                    reservation.conversation_id,
+                                    reservation.turn_id,
+                                    str(question)[:2000],
+                                ),
+                            )
                         cursor.execute(
                             """
                             UPDATE conversation_turns SET

@@ -54,13 +54,13 @@ Only a conversation satisfying every condition enters the shared review queue:
 - transcript capture mode;
 - public human surface: `client_surface IN ('replica', 'wix')`;
 - unexpired and inactive for the configured minimum;
-- at least one turn complete, privacy-clear, and ready;
-- exactly one user and one assistant message for each displayed turn.
+- at least one privacy-clear completed turn or failed attempt;
+- exactly one user and one assistant message for each completed turn;
+- zero or one visitor message for a failed attempt, with no assistant message.
 
-Failed, blocked, or message-less turns remain excluded, but they do not hide
-other review-ready turns from the same browser conversation.
+Clear failed attempts remain visible so a model or service failure cannot silently remove a human submission from review. Earlier failed attempts may have metadata only because prior releases did not retain their visitor message. New failed attempts retain the privacy-clear visitor question without an invented assistant response.
 
-Privacy-held turns are withheld in full; their presence does not suppress other review-ready turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
+Privacy-held turns are withheld in full; their presence does not suppress other visible turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards identify the number of turns grouped into each browser conversation, show failed-attempt counts, and refresh periodically from PostgreSQL. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
 
 Automated suites and capture verification use `client_surface='benchmark'`.
 Those rows remain available to aggregate audits but never satisfy the shared

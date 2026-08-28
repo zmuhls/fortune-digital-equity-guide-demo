@@ -258,6 +258,40 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertTrue(params[3])
         self.assertEqual(params[5], "model_response_rejected")
 
+    def test_failed_clear_human_turn_retains_only_the_visitor_question(self):
+        recorder = recording_recorder("transcript")
+        recorder.fail_turn(
+            persisted_reservation("transcript", "replica"),
+            question="CLEAR HUMAN QUESTION",
+            latency_ms=21,
+            error_code="model_unavailable",
+            model="test-model",
+            model_called=True,
+            retrieval_scope="site",
+            privacy_state="clear",
+        )
+        cursor = recorder._pool.cursor
+        insert_query, insert_params = cursor.calls[0]
+        self.assertIn("INSERT INTO conversation_messages", insert_query)
+        self.assertIn("'user'", insert_query)
+        self.assertEqual(insert_params[-1], "CLEAR HUMAN QUESTION")
+        self.assertNotIn("assistant", repr(insert_params))
+        self.assertIn("status = 'failed'", cursor.calls[1][0])
+
+    def test_failed_automated_turn_does_not_retain_question_text(self):
+        recorder = recording_recorder("transcript")
+        recorder.fail_turn(
+            persisted_reservation("transcript", "benchmark"),
+            question="BENCHMARK QUESTION",
+            latency_ms=22,
+            error_code="model_unavailable",
+            model="test-model",
+            model_called=True,
+            retrieval_scope="site",
+            privacy_state="clear",
+        )
+        self.assertNotIn("BENCHMARK QUESTION", repr(recorder._pool.cursor.calls))
+
     def test_failed_idempotent_turn_is_terminal_not_in_progress(self):
         source = (DEMO / "conversation_store.py").read_text(encoding="utf-8")
         self.assertIn('if existing["status"] == "failed":', source)

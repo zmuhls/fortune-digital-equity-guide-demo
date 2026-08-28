@@ -94,8 +94,10 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertNotIn("benchmark", source)
             self.assertNotIn("synthetic", source)
 
-    def test_failed_turn_does_not_hide_reviewable_turns_in_the_same_conversation(self):
+    def test_clear_failed_human_attempts_are_visible_without_weakening_boundaries(self):
         predicate = evaluation_store.REVIEWABLE_TURN_PREDICATE
+        failed_predicate = evaluation_store.FAILED_HUMAN_ATTEMPT_PREDICATE
+        visible_predicate = evaluation_store.VISIBLE_HUMAN_TURN_PREDICATE
         eligible_source = evaluation_store.EvaluationStore._eligible_cte()
         current_version_source = inspect.getsource(
             evaluation_store.EvaluationStore._current_transcript_version
@@ -113,7 +115,17 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertIn(clause, predicate)
             self.assertIn(clause, eligible_source)
         for source in (current_version_source, detail_source):
-            self.assertIn("REVIEWABLE_TURN_PREDICATE", source)
+            self.assertIn("VISIBLE_HUMAN_TURN_PREDICATE", source)
+        for clause in (
+            "t.status = 'failed'",
+            "t.privacy_state = 'clear'",
+            "t.review_state = 'excluded'",
+            "failed_user.role = 'user'",
+        ):
+            self.assertIn(clause, failed_predicate)
+            self.assertIn(clause, visible_predicate)
+            self.assertIn(clause, eligible_source)
+        self.assertNotIn("privacy_state = 'blocked'", failed_predicate)
         self.assertNotIn("HAVING BOOL_AND", eligible_source)
         self.assertNotIn("HAVING BOOL_AND", current_version_source)
 
@@ -433,7 +445,11 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260826-digital-equity-calendar-1", html)
+        self.assertIn("20260828-shared-queue-1", html)
+        self.assertIn('id="queue-summary"', html)
+        self.assertIn('class="conversation-counts"', javascript)
+        self.assertIn("failed_turn_count", javascript)
+        self.assertIn("function failedAttemptHtml", javascript)
 
     def test_conversation_queue_refreshes_when_reviewers_return_to_it(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -443,7 +459,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('window.addEventListener("focus"', javascript)
         self.assertIn('document.addEventListener("visibilitychange"', javascript)
         self.assertIn("refreshVisibleWorkspace(true)", javascript)
-        self.assertNotIn("setInterval(", javascript)
+        self.assertIn("window.setInterval(", javascript)
+        self.assertIn("loadConversationWorkspace()", javascript)
 
     def test_reviewer_notes_and_annotations_are_reloaded_after_saving(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -476,7 +493,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260826-prompts-1", html)
+        self.assertIn("20260828-shared-queue-1", html)
         self.assertIn('version: "2026-08-28-v30"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-model-first-one-sentence-identity"', javascript

@@ -17,7 +17,10 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from evaluation_store import REVIEWABLE_TURN_PREDICATE  # noqa: E402
+from evaluation_store import (  # noqa: E402
+    REVIEWABLE_TURN_PREDICATE,
+    VISIBLE_HUMAN_TURN_PREDICATE,
+)
 
 
 def _dependencies():
@@ -93,6 +96,7 @@ def run_audit(database_url: str) -> dict:
                 SELECT
                     t.id,
                     t.capture_mode,
+                    t.status,
                     t.privacy_state,
                     t.review_state,
                     c.client_surface,
@@ -112,12 +116,24 @@ def run_audit(database_url: str) -> dict:
             )
             SELECT
                 COUNT(*) FILTER (
-                    WHERE message_count NOT IN (0, 2)
+                    WHERE message_count NOT IN (0, 1, 2)
                 )::INTEGER AS invalid_message_count,
                 COUNT(*) FILTER (
                     WHERE message_count = 2
                       AND (valid_user <> 1 OR valid_assistant <> 1)
                 )::INTEGER AS invalid_role_order,
+                COUNT(*) FILTER (
+                    WHERE message_count = 1
+                      AND NOT (
+                          status = 'failed'
+                          AND capture_mode = 'transcript'
+                          AND privacy_state = 'clear'
+                          AND review_state = 'excluded'
+                          AND client_surface IN ('replica', 'wix')
+                          AND valid_user = 1
+                          AND valid_assistant = 0
+                      )
+                )::INTEGER AS unsafe_single_message_turns,
                 COALESCE(SUM(empty_messages), 0)::INTEGER AS empty_messages,
                 COUNT(*) FILTER (
                     WHERE message_count > 0 AND privacy_state <> 'clear'
@@ -198,6 +214,19 @@ def run_audit(database_url: str) -> dict:
                         GROUP BY c.id
                     ) AS eligible
                 )::INTEGER AS eligible_conversations,
+                (
+                    SELECT COUNT(*) FROM (
+                        SELECT c.id
+                        FROM conversations AS c
+                        JOIN conversation_turns AS t ON t.conversation_id = c.id
+                        WHERE c.capture_mode = 'transcript'
+                          AND c.client_surface IN ('replica', 'wix')
+                          AND c.expires_at > NOW()
+                          AND c.last_turn_at <= NOW() - INTERVAL '60 seconds'
+                          AND {VISIBLE_HUMAN_TURN_PREDICATE}
+                        GROUP BY c.id
+                    ) AS visible
+                )::INTEGER AS visible_human_conversations,
                 (
                     SELECT COUNT(*) FROM conversation_evaluations AS e
                     LEFT JOIN evaluation_buckets AS b
