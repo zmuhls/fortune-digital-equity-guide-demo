@@ -2162,9 +2162,10 @@ class ResponseContractTests(unittest.TestCase):
             "¿Cómo me registro?", retrieved, None, interaction
         )
         self.assertIn(
-            '{"pick":"<candidate ID or ASK>","answer":"<grounded answer or brief natural follow-up>"}',
+            '{"pick":"<candidate ID or ASK>","answer":"<direct response>"}',
             prompt,
         )
+        self.assertIn("ASK is only the no-source routing value", prompt)
         self.assertIn("Use the candidate records below", prompt)
         self.assertIn("Otherwise answer the request directly", prompt)
         self.assertIn("When there are no candidates", prompt)
