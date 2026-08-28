@@ -8,8 +8,8 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
-PROMPT_POLICY_VERSION = "2026-08-28-v25"
-PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first"
+PROMPT_POLICY_VERSION = "2026-08-28-v26"
+PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-plain-text"
 
 
 # These modules are server-owned invariants. They are deliberately unavailable
@@ -94,7 +94,8 @@ TEAM_TUNABLE_PROMPT_MODULES = {
             "Use plain, conversational language for a phone screen. Usually answer in "
             "one or two short sentences. Use more space only when the participant asks "
             "for a list, schedule, comparison, or steps. Start with the answer. Avoid "
-            "filler, slogans, generic invitations, and repeated information."
+            "filler, slogans, generic invitations, and repeated information. Return "
+            "plain text without Markdown formatting."
         ),
     },
     "clarification": {

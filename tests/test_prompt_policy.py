@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v25")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v26")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "digital-equity-model-first",
+            "digital-equity-model-first-plain-text",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -58,6 +58,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("do not invent an event", source_selector.SYSTEM_PROMPT)
         self.assertIn("Use plain, conversational language", source_selector.SYSTEM_PROMPT)
         self.assertIn("list, schedule, comparison, or steps", source_selector.SYSTEM_PROMPT)
+        self.assertIn("plain text without Markdown formatting", source_selector.SYSTEM_PROMPT)
         self.assertEqual(
             set(prompt_policy.RETRY_INSTRUCTIONS),
             {"invalid response", "personal detail request", "resolved source can answer"},
