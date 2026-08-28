@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-28-v26",
+  "current_policy_id": "2026-08-28-v27",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "d768ce55b2da5ed7b48021c783f3a268edf5d84887dd5da8568668e3e9936c9d",
-  "current_compiled_prompt_sha256": "667730077f46d3e1703df818fb02d61f2659437c50c28adc298db5a2108dde9c",
+  "current_policy_source_sha256": "69993f7023f908357184e748709c3955e6a9653c72ae8d00fdf30f08c588b04d",
+  "current_compiled_prompt_sha256": "97aeace9dcb476ac23147dea5af0622d0a46f36c4d6d4f5a95b8acafdfa07b03",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -279,8 +279,20 @@
       "behavior_release": "digital-equity-model-first-plain-text",
       "artifact": "versions/2026-08-28-v26.md",
       "artifact_sha256": "3574938c6a03d712bfe8733659552c4b0b2c9d9e3b48a69c24ff18e67d108ce7",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-28-v26-compiled.md",
       "compiled_prompt_artifact_sha256": "79646ff7a94934324389e1f67851950616f1f55e8875e2c2bb8538b95abb3257"
+    },
+    {
+      "policy_id": "2026-08-28-v27",
+      "label": "Digital Equity model-first readable-schedule prompt",
+      "reconstructed": false,
+      "source_state": "authored after live v26 evaluation omitted one recurring calendar row and compressed the schedule into a paragraph",
+      "source_date": "2026-08-28",
+      "behavior_release": "digital-equity-model-first-readable-schedules",
+      "artifact": "versions/2026-08-28-v27.md",
+      "artifact_sha256": "f11aa9aed77b752ee65588079fa572cedbc554ad6886116150239e0accc12ee9",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "b41b266e0cd7ad35ca9dedce23382d3a4c3a4d3b73737d6b184ef466a6c59f73"
     }
   ]
 }
