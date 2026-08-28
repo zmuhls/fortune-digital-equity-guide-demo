@@ -1756,6 +1756,31 @@ class ResponseContractTests(unittest.TestCase):
         self.assertIsNone(server.parse_selector_response('{"pick":"one"}', allowed))
         self.assertIsNone(server.parse_selector_response("one", allowed))
 
+    def test_selector_parser_preserves_complete_line_separated_schedules(self):
+        schedule = "\n".join(
+            f"- September {day}: supported calendar event with its time and location"
+            for day in range(1, 25)
+        )
+        self.assertGreater(len(schedule), 1200)
+        parsed = server.parse_selector_response(
+            json.dumps({"pick": "calendar", "answer": schedule}),
+            {"calendar"},
+        )
+        self.assertEqual(parsed, {"pick": "calendar", "answer": schedule})
+        result = server.parse_model_selection(
+            json.dumps({"pick": "calendar", "answer": schedule}),
+            "What is on the calendar?",
+            [server.SOURCE_BY_ID["calendar"]],
+        )
+        self.assertEqual(result["message"], schedule)
+
+    def test_pages_guide_renders_model_line_breaks(self):
+        stylesheet = (DEMO / "styles.css").read_text(encoding="utf-8")
+        self.assertRegex(
+            stylesheet,
+            r"\.chat-copy\s*\{[^}]*white-space:\s*pre-wrap",
+        )
+
     def test_every_answer_has_source_related_route_handoff_and_continuation(self):
         retrieved = server.retrieve_sources("free laptop")
         raw = model_response(retrieved[0], "free laptop")

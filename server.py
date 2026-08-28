@@ -55,6 +55,7 @@ from prompt_policy import (
 from source_selector import ASK as SELECTOR_ASK
 from source_selector import SYSTEM_PROMPT as SELECTOR_SYSTEM_PROMPT
 from source_selector import build_prompt as build_selector_prompt
+from source_selector import normalize_answer
 from source_selector import parse_response as parse_selector_response
 
 
@@ -2260,10 +2261,9 @@ def response_contract(
         retrieval_scope = "staff" if kind in {"privacy", "handoff"} else "site"
     return {
         "kind": kind,
-        # Provider responses are already bounded by source_selector.parse_response.
-        # Preserve the model's complete sentence or requested list instead of
-        # silently chopping it at a fixed word count.
-        "message": re.sub(r"\s+", " ", str(message or "")).strip(),
+        # Preserve the model's complete sentence or requested list, including
+        # meaningful line breaks, instead of applying a fixed length gate.
+        "message": normalize_answer(message),
         "reason": clip_words(reason, MAX_REASON_WORDS),
         "sources": source_payload(sources[:3]),
         "related": related_links(question, sources),
@@ -2916,7 +2916,7 @@ def parse_model_selection(
     # full candidate record, and the system prompt forbids outside facts. A
     # second lexical classifier rejected valid paraphrases in production, so
     # participant-facing prose now passes through intact.
-    message = re.sub(r"\s+", " ", str(answer_text or "")).strip()
+    message = str(answer_text or "").strip()
     reason = (
         "La respuesta viene de una página aprobada."
         if language_code == "es"

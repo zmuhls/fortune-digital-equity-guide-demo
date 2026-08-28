@@ -11,6 +11,17 @@ from prompt_policy import SYSTEM_PROMPT
 ASK = "ASK"
 
 
+def normalize_answer(value: object) -> str:
+    """Normalize inline whitespace while retaining meaningful line breaks."""
+
+    answer = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
+    answer = "\n".join(
+        re.sub(r"[^\S\n]+", " ", line).strip()
+        for line in answer.split("\n")
+    )
+    return re.sub(r"\n{2,}", "\n", answer).strip()
+
+
 def build_prompt(
     records: list[dict],
     current_page_id: str = "",
@@ -33,7 +44,7 @@ def build_prompt(
 
 
 def parse_response(raw: str, allowed_ids):
-    """Return one allowed record and bounded answer; malformed output abstains."""
+    """Return one allowed record and complete answer; malformed output abstains."""
 
     allowed = {str(value) for value in allowed_ids}
     text = str(raw or "").strip()
@@ -47,8 +58,8 @@ def parse_response(raw: str, allowed_ids):
     if not isinstance(parsed, dict) or set(parsed) != {"pick", "answer"}:
         return None
     pick = str(parsed.get("pick") or "").strip()
-    answer = re.sub(r"\s+", " ", str(parsed.get("answer") or "")).strip()
-    if not answer or len(answer) > 1200:
+    answer = normalize_answer(parsed.get("answer"))
+    if not answer:
         return None
     if pick != ASK and pick not in allowed:
         return None
