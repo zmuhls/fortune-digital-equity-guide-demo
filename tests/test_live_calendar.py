@@ -92,7 +92,22 @@ class LiveCalendarTests(unittest.TestCase):
                 "application/pdf; charset=binary",
             ),
         ]
-        schedule = "August 28\nTech Time: Foundations\n1:00 PM\nMain Office (LIC)\n15 spots left"
+        schedule = """DIGITAL EQUITY PROGRAM LIC Training Schedule
+September 2026
+AI AWARENESS MONTH
+LIC: MAIN SERVICE CENTER
+29-76 NORTHERN BLVD, ROOM 133
+TIME: 2:00 PM - 3:30 PM (UNLESS STATED OTHERWISE)
+What Is AI? (1:30 PM)
+Communicating With AI
+Tech Time Focused & Foundations sessions available by appointment only
+TUE
+WED
+| SEP 1
+| SEP 2
+For more info or to register:
+Visit the Digital Equity site
+"""
         with mock.patch.object(
             live_calendar, "fetch_public_bytes", side_effect=responses
         ) as fetch, mock.patch.object(live_calendar, "extract_pdf_text", return_value=schedule):
@@ -100,7 +115,16 @@ class LiveCalendarTests(unittest.TestCase):
 
         self.assertEqual(source["calendar_source"], "live_downloadable_calendar")
         self.assertEqual(source["blocks"][-1], "Class Locations")
-        self.assertIn("Tech Time: Foundations", source["blocks"][0])
+        self.assertIn("DIGITAL EQUITY PROGRAM", source["blocks"][0])
+        self.assertEqual(len(source["calendar_schedule"]["events"]), 2)
+        self.assertEqual(
+            source["calendar_schedule"]["events"][0],
+            {"date": "2026-09-01", "date_label": "Tue | Sep 1", "title": "What Is AI? (1:30 PM)"},
+        )
+        self.assertIn("Tuesday, September 1, 2026", source["calendar_events"][0]["label"])
+        self.assertIn("Starts 1:30 PM", source["calendar_events"][0]["label"])
+        self.assertNotIn("2:00 PM - 3:30 PM", source["calendar_events"][0]["label"])
+        self.assertIn("2:00 PM - 3:30 PM", source["calendar_events"][1]["label"])
         self.assertEqual(source["calendar_document_url"], responses[1][1])
         self.assertEqual(
             source["calendar_document_source_url"],

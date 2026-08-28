@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-26-v24")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v25")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "digital-equity-current-calendar",
+            "digital-equity-model-first",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -43,44 +43,24 @@ class PromptPolicyTests(unittest.TestCase):
 
     def test_selector_uses_compiled_reviewed_policy(self):
         self.assertEqual(source_selector.SYSTEM_PROMPT, prompt_policy.SYSTEM_PROMPT)
-        self.assertIn("full supplied candidate set", source_selector.SYSTEM_PROMPT)
-        self.assertIn("strongest relevant evidence", source_selector.SYSTEM_PROMPT)
-        self.assertIn("entirely in that chosen record", source_selector.SYSTEM_PROMPT)
-        self.assertIn("rather than blending facts", source_selector.SYSTEM_PROMPT)
-        self.assertIn("respond naturally to the participant", source_selector.SYSTEM_PROMPT)
-        self.assertIn("When candidate records are empty", source_selector.SYSTEM_PROMPT)
-        self.assertIn("respond naturally to the participant", source_selector.SYSTEM_PROMPT)
-        self.assertIn("open conversational turn", source_selector.SYSTEM_PROMPT)
-        self.assertIn("protect privacy and source fidelity", source_selector.SYSTEM_PROMPT)
-        self.assertIn("answer the participant's latest request directly", source_selector.SYSTEM_PROMPT)
-        self.assertIn("active page is navigation context", source_selector.SYSTEM_PROMPT)
-        self.assertIn("not the scope of your knowledge", source_selector.SYSTEM_PROMPT)
-        self.assertIn("from anywhere in the supplied Digital Equity site evidence", source_selector.SYSTEM_PROMPT)
-        self.assertIn("without announcing a page limitation", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Do not say the current page lacks the answer", source_selector.SYSTEM_PROMPT)
-        self.assertIn("never imply fresher knowledge", source_selector.SYSTEM_PROMPT)
-        self.assertIn("continue without groveling", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Ignore without acknowledging", source_selector.SYSTEM_PROMPT)
+        self.assertIn("only evidence for factual claims", source_selector.SYSTEM_PROMPT)
+        self.assertIn("choose the record that best answers", source_selector.SYSTEM_PROMPT)
+        self.assertIn("answer in your own words", source_selector.SYSTEM_PROMPT)
+        self.assertIn("without making claims about Digital Equity", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Answer the participant's latest message naturally", source_selector.SYSTEM_PROMPT)
+        self.assertIn("active page is context, not a boundary", source_selector.SYSTEM_PROMPT)
+        self.assertIn("anywhere on the Digital Equity site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Do not produce a stock refusal", source_selector.SYSTEM_PROMPT)
         self.assertIn("Website Guide for the Digital Equity site", source_selector.SYSTEM_PROMPT)
-        self.assertIn("You are an AI", source_selector.SYSTEM_PROMPT)
-        self.assertIn("not a Digital Equity counselor, case manager, or staff member", source_selector.SYSTEM_PROMPT)
-        self.assertIn("prefer a live downloadable calendar record", source_selector.SYSTEM_PROMPT)
-        self.assertIn("only events on or after the current date as upcoming", source_selector.SYSTEM_PROMPT)
-        self.assertIn("plain, warm, respectful, nonjudgmental language", source_selector.SYSTEM_PROMPT)
-        self.assertIn("written for a phone screen", source_selector.SYSTEM_PROMPT)
-        self.assertIn("short practical steps", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Avoid jargon, blame, assumptions, and scripted filler", source_selector.SYSTEM_PROMPT)
-        self.assertIn("asks to confirm, restate, or explain", source_selector.SYSTEM_PROMPT)
-        self.assertIn("preserve that status", source_selector.SYSTEM_PROMPT)
-        self.assertIn("do not rewrite the service as currently offered or available", source_selector.SYSTEM_PROMPT)
-        self.assertIn("status contradiction", prompt_policy.RETRY_INSTRUCTIONS)
-        self.assertIn(
-            "State the affected service's negative status first",
-            prompt_policy.RETRY_INSTRUCTIONS["status contradiction"],
-        )
-        self.assertIn(
-            "Do not blend facts from multiple candidates",
-            prompt_policy.RETRY_INSTRUCTIONS["unsupported factual wording"],
+        self.assertIn("You are an AI guide", source_selector.SYSTEM_PROMPT)
+        self.assertIn("do not call it the Fortune Society site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("live calendar candidate", source_selector.SYSTEM_PROMPT)
+        self.assertIn("do not invent an event", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Use plain, conversational language", source_selector.SYSTEM_PROMPT)
+        self.assertIn("list, schedule, comparison, or steps", source_selector.SYSTEM_PROMPT)
+        self.assertEqual(
+            set(prompt_policy.RETRY_INSTRUCTIONS),
+            {"invalid response", "personal detail request", "resolved source can answer"},
         )
         self.assertNotIn("conversation logs are recorded", source_selector.SYSTEM_PROMPT.lower())
         self.assertNotIn("988", source_selector.SYSTEM_PROMPT)
@@ -106,29 +86,28 @@ class PromptPolicyTests(unittest.TestCase):
         clarification = catalog["clarification"]
         self.assertEqual(
             clarification["current_variant"],
-            "open_conversation_or_blocking_ambiguity",
+            "ask_only_when_blocked",
         )
         self.assertEqual(
             clarification["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["clarification"]
-            ["open_conversation_or_blocking_ambiguity"],
+            ["ask_only_when_blocked"],
         )
-        self.assertIn("candidate records are empty", clarification["current_value"])
-        self.assertIn("respond naturally", clarification["current_value"])
-        self.assertIn("evidence-backed answer", clarification["current_value"])
+        self.assertIn("missing information changes", clarification["current_value"])
+        self.assertIn("answer the request directly", clarification["current_value"])
 
         page_awareness = catalog["page_awareness"]
         self.assertEqual(
             page_awareness["current_variant"],
-            "sitewide_evidence_first",
+            "sitewide_candidates",
         )
         self.assertEqual(
             page_awareness["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["page_awareness"]
-            ["sitewide_evidence_first"],
+            ["sitewide_candidates"],
         )
-        self.assertIn("navigation context", page_awareness["current_value"])
-        self.assertIn("Digital Equity site evidence", page_awareness["current_value"])
+        self.assertIn("anywhere on the Digital Equity site", page_awareness["current_value"])
+        self.assertIn("active page as a hint", page_awareness["current_value"])
 
     def test_runtime_prompt_includes_current_date_before_candidate_records(self):
         prompt = source_selector.build_prompt(
@@ -160,12 +139,12 @@ class PromptPolicyTests(unittest.TestCase):
             )
         self.assertIn('"compiled_prompt": SYSTEM_PROMPT', evaluation_source)
         self.assertIn("Website Guide for the Digital Equity site", javascript)
-        self.assertIn("prefer a live downloadable calendar record", javascript)
+        self.assertIn("live calendar candidate", javascript)
 
     def test_retry_text_is_allowlisted_and_versioned(self):
         base = prompt_policy.SYSTEM_PROMPT + "\nCANDIDATE RECORDS:\n[]"
-        retry = prompt_policy.build_retry_prompt(base, "unsupported factual wording")
-        self.assertIn(prompt_policy.RETRY_INSTRUCTIONS["unsupported factual wording"], retry)
+        retry = prompt_policy.build_retry_prompt(base, "invalid response")
+        self.assertIn(prompt_policy.RETRY_INSTRUCTIONS["invalid response"], retry)
         resolved = prompt_policy.build_retry_prompt(base, "resolved source can answer")
         self.assertIn(prompt_policy.RETRY_INSTRUCTIONS["resolved source can answer"], resolved)
         self.assertIn("Return that page ID, not ASK", resolved)
@@ -173,10 +152,8 @@ class PromptPolicyTests(unittest.TestCase):
             prompt_policy.build_retry_prompt(base, "participant supplied text"),
             base,
         )
-        self.assertNotIn(
-            "one or two",
-            " ".join(prompt_policy.RETRY_INSTRUCTIONS.values()),
-        )
+        self.assertNotIn("response too long", prompt_policy.RETRY_INSTRUCTIONS)
+        self.assertNotIn("unsupported factual wording", prompt_policy.RETRY_INSTRUCTIONS)
 
     def test_manifest_artifact_hashes_and_current_prompt_hash(self):
         manifest_path = ROOT / "prompts" / "manifest.json"

@@ -477,15 +477,15 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
         self.assertIn("20260826-prompts-1", html)
-        self.assertIn('version: "2026-08-26-v24"', javascript)
+        self.assertIn('version: "2026-08-28-v25"', javascript)
         self.assertIn(
-            'behavior_release: "digital-equity-current-calendar"', javascript
+            'behavior_release: "digital-equity-model-first"', javascript
         )
         self.assertIn(
-            'current_variant: "open_conversation_or_blocking_ambiguity"',
+            'current_variant: "ask_only_when_blocked"',
             javascript,
         )
-        self.assertIn('current_variant: "sitewide_evidence_first"', javascript)
+        self.assertIn('current_variant: "sitewide_candidates"', javascript)
         self.assertIn("Production changes still require code review", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)

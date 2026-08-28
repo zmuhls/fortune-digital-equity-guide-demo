@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-26-v24",
+  "current_policy_id": "2026-08-28-v25",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "aeeab6fd4819e4c6721b8ef73b2009dc1ed48cad280cddbe1326f1381b650068",
-  "current_compiled_prompt_sha256": "eb0949820e821c3e6864d3033a190d9f3f390044c25e4230edbb012ea16ccc67",
+  "current_policy_source_sha256": "397cc17ae6aa1bd7429130a2cdb0a24fcc610091cf2f20d35031cdd2efdd0fcc",
+  "current_compiled_prompt_sha256": "bb867e6fc950742fe35a03a8463c0ea54ea187a5c10fd976cd892d298388a751",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -255,8 +255,20 @@
       "behavior_release": "digital-equity-current-calendar",
       "artifact": "versions/2026-08-26-v24.md",
       "artifact_sha256": "8a909fa22a42bd4052f1c5e5f53fc5480113d5b26ed32395fc64d76852140c93",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-26-v24-compiled.md",
       "compiled_prompt_artifact_sha256": "9ef72822811d129a31201518da4103484c7b5aa35f27bd2c5ae242eba1684ff8"
+    },
+    {
+      "policy_id": "2026-08-28-v25",
+      "label": "Digital Equity model-first prompt",
+      "reconstructed": false,
+      "source_state": "authored after production rejected valid provider answers through lexical and fixed-length validation",
+      "source_date": "2026-08-28",
+      "behavior_release": "digital-equity-model-first",
+      "artifact": "versions/2026-08-28-v25.md",
+      "artifact_sha256": "47a2c79aa1d7ab2198217f5549db672c983e1486f246a0b740c78d0fa3c12592",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "9b6a2e8206e6d74e7ed6b8ea3eb393b815d34e9d3174ea0fc415125660700f44"
     }
   ]
 }

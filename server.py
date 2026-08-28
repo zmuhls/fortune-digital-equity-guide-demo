@@ -3,9 +3,8 @@
 
 The browser receives no provider credential. A complete public-site index is
 searched locally for each question, and only the most relevant approved
-records are sent to Ollama Cloud. Model-selected sources and grounded answers
-are validated on the server. Every response also receives deterministic next
-links so a visitor never reaches a terminal FAQ card.
+records are sent to Ollama Cloud. The server validates the model's source ID,
+JSON contract, and privacy boundary, then preserves the model-authored answer.
 """
 
 import collections
@@ -1356,20 +1355,36 @@ def calendar_evidence_blocks(source, query, today=None):
     if source.get("id") != "calendar":
         return []
     current = today or datetime.now(timezone.utc).date()
+    blocks = []
     if source.get("calendar_source") == "live_downloadable_calendar":
-        live_count = max(0, int(source.get("calendar_live_block_count") or 0))
-        return list(source.get("blocks", []))[:live_count]
-
-    blocks = [
-        str(block).strip()
-        for block in source.get("blocks", [])
-        if re.search(
-            r"(?:available classes|training schedule|tue, wed|\b2:00 pm to 3:30 pm\b|"
-            r"by request only)",
-            str(block or ""),
-            flags=re.I,
+        schedule = source.get("calendar_schedule") or {}
+        location = schedule.get("location") or {}
+        blocks.extend(
+            value
+            for value in (
+                str(schedule.get("month") or "").strip(),
+                str(schedule.get("theme") or "").strip(),
+                str(schedule.get("default_hours") or "").strip(),
+                str(location.get("name") or "").strip(),
+                str(location.get("address") or "").strip(),
+                *[str(value).strip() for value in schedule.get("support", [])],
+            )
+            if value
         )
-    ]
+        if not source.get("calendar_events"):
+            live_count = max(0, int(source.get("calendar_live_block_count") or 0))
+            return list(source.get("blocks", []))[:live_count]
+    else:
+        blocks = [
+            str(block).strip()
+            for block in source.get("blocks", [])
+            if re.search(
+                r"(?:available classes|training schedule|tue, wed|\b2:00 pm to 3:30 pm\b|"
+                r"by request only)",
+                str(block or ""),
+                flags=re.I,
+            )
+        ]
     events = []
     for event in source.get("calendar_events", []):
         if not isinstance(event, dict):
@@ -1419,8 +1434,13 @@ def calendar_evidence_blocks(source, query, today=None):
             except ValueError:
                 exact_date = None
         if exact_date:
-            events = [row for row in events if row[0] == exact_date]
-            blocks.extend(label for _, label in events[:4])
+            if re.search(r"\bafter\b", query_value):
+                events = [row for row in events if row[0] > exact_date]
+            elif re.search(r"\b(?:from|starting|since|on or after)\b", query_value):
+                events = [row for row in events if row[0] >= exact_date]
+            else:
+                events = [row for row in events if row[0] == exact_date]
+            blocks.extend(label for _, label in events[:24])
             return blocks
         requested_months = {
             number
@@ -1454,7 +1474,7 @@ def calendar_evidence_blocks(source, query, today=None):
             ]
             if matching:
                 events = matching
-    blocks.extend(label for _, label in events[:4])
+    blocks.extend(label for _, label in events[:24])
     return blocks
 
 
@@ -2240,7 +2260,10 @@ def response_contract(
         retrieval_scope = "staff" if kind in {"privacy", "handoff"} else "site"
     return {
         "kind": kind,
-        "message": clip_words(message, MAX_MESSAGE_WORDS),
+        # Provider responses are already bounded by source_selector.parse_response.
+        # Preserve the model's complete sentence or requested list instead of
+        # silently chopping it at a fixed word count.
+        "message": re.sub(r"\s+", " ", str(message or "")).strip(),
         "reason": clip_words(reason, MAX_REASON_WORDS),
         "sources": source_payload(sources[:3]),
         "related": related_links(question, sources),
@@ -2286,7 +2309,7 @@ def retrieval_prompt(
             "content": source_excerpt(
                 source,
                 query,
-                limit=MAX_MODEL_EXCERPT_CHARS,
+                limit=(3000 if source.get("id") == "calendar" else MAX_MODEL_EXCERPT_CHARS),
             ),
         }
         if source.get("id") == "calendar":
@@ -2301,7 +2324,7 @@ def retrieval_prompt(
     return build_selector_prompt(
         records,
         current_page_id=current["id"] if current else "",
-        previous_answer=clip_words(previous_answer, MAX_MESSAGE_WORDS),
+        previous_answer=re.sub(r"\s+", " ", str(previous_answer or "")).strip(),
         current_date=current_date or datetime.now(timezone.utc).date().isoformat(),
     )
 
@@ -2328,7 +2351,6 @@ def model_clarification_response(
     folded = fold_text(message).lstrip("¿").strip()
     if (
         not message
-        or len(message.split()) > MAX_MESSAGE_WORDS
         or re.search(r"https?://|www\.", message, flags=re.I)
         or re.search(
             r"\b(?:system|developer|hidden).{0,32}(?:prompt|message|instruction|rules|safety)|"
@@ -2810,7 +2832,7 @@ def question_requests_prior_detail(question, prior_answer):
 
 
 def model_answer_is_grounded(answer, source, question=""):
-    """Reject unsupported factual anchors after a model uses one approved record."""
+    """Offline evaluation diagnostic; never a participant-facing response gate."""
 
     answer = clip_words(re.sub(r"<[^>]+>", " ", str(answer or "")), MAX_MESSAGE_WORDS)
     if not answer or re.search(r"https?://|www\.", answer, flags=re.I):
@@ -2860,22 +2882,6 @@ def model_answer_is_grounded(answer, source, question=""):
     return True
 
 
-def grounded_candidate_for_answer(answer, selected, candidates, question=""):
-    """Return the one supplied page that supports the model's answer."""
-
-    ordered = [selected] + [
-        source for source in candidates if source.get("id") != selected.get("id")
-    ]
-    matches = [
-        source
-        for source in ordered
-        if model_answer_is_grounded(answer, source, question)
-    ]
-    if matches and matches[0].get("id") == selected.get("id"):
-        return selected
-    return matches[0] if len(matches) == 1 else None
-
-
 def parse_model_selection(
     raw,
     question,
@@ -2903,65 +2909,14 @@ def parse_model_selection(
             retrieval_scope,
         )
     selected = allowed[selected_id]
-    grounding_question = routing_question or question
     answer_text = parsed["answer"]
     if model_requests_personal_details(answer_text):
         raise ModelResponseRejected("The model asked for participant information")
-    grounded_source = grounded_candidate_for_answer(
-        answer_text,
-        selected,
-        retrieved,
-        grounding_question,
-    )
-    if grounded_source:
-        selected = grounded_source
-    source_claim_text = (
-        source_excerpt(
-            selected,
-            grounding_question,
-            limit=MAX_MODEL_EXCERPT_CHARS,
-        )
-        or searchable_text(selected)
-    )
-    if not grounded_source and _answer_conflicts_with_negative_status(
-        answer_text, source_claim_text
-    ):
-        grounded_status = next(
-            (
-                sentence.strip()
-                for sentence in re.findall(
-                    r"[^.!?]+(?:[.!?]+|$)",
-                    str(answer_text or ""),
-                )
-                if _NEGATIVE_STATUS_PATTERN.search(sentence)
-                and model_answer_is_grounded(
-                    sentence.strip(),
-                    selected,
-                    grounding_question,
-                )
-            ),
-            "",
-        )
-        if not grounded_status:
-            raise ModelResponseRejected("The answer contradicted the source status")
-        answer_text = grounded_status
-    if len(answer_text.split()) > MAX_MESSAGE_WORDS:
-        raise ModelResponseRejected("The model answer exceeded the response limit")
-    message = clip_words(
-        _negative_status_sentence_first(answer_text, source_claim_text),
-        MAX_MESSAGE_WORDS,
-    )
-    if not grounded_source and not model_answer_is_grounded(
-        message, selected, grounding_question
-    ):
-        raise ModelResponseRejected("The answer was not grounded in the selected source")
-    if (
-        interaction.get("chat_stage") == "follow_up"
-        and prior_answer
-        and answers_near_duplicate(message, prior_answer)
-        and not question_requests_prior_detail(question, prior_answer)
-    ):
-        raise ModelResponseRejected("The answer repeated the prior response")
+    # The selected ID is the grounding contract. The model has already seen the
+    # full candidate record, and the system prompt forbids outside facts. A
+    # second lexical classifier rejected valid paraphrases in production, so
+    # participant-facing prose now passes through intact.
+    message = re.sub(r"\s+", " ", str(answer_text or "")).strip()
     reason = (
         "La respuesta viene de una página aprobada."
         if language_code == "es"
@@ -2987,7 +2942,14 @@ def model_selection_retry_reason(
     routing_question="",
     require_answer=False,
 ):
-    """Return the one recoverable validation failure that merits a model retry."""
+    """Validate only the provider contract and participant privacy boundary.
+
+    The model is responsible for reading the supplied records and writing the
+    answer.  Do not run its prose through a second lexical classifier: natural
+    paraphrases and complete calendar answers must not become operational
+    failures merely because they use different words or exceed an arbitrary
+    word count.
+    """
 
     interaction = dict(interaction or {})
     allowed = {source["id"]: source for source in retrieved}
@@ -3004,51 +2966,8 @@ def model_selection_retry_reason(
                 return "personal detail request"
             return "invalid response"
         return ""
-    selected = allowed[parsed["pick"]]
     if model_requests_personal_details(parsed["answer"]):
         return "personal detail request"
-    if len(parsed["answer"].split()) > MAX_MESSAGE_WORDS:
-        return "response too long"
-    grounding_question = routing_question or question
-    grounded_source = grounded_candidate_for_answer(
-        parsed["answer"],
-        selected,
-        retrieved,
-        grounding_question,
-    )
-    if grounded_source:
-        selected = grounded_source
-    source_claim_text = (
-        source_excerpt(
-            selected,
-            grounding_question,
-            limit=MAX_MODEL_EXCERPT_CHARS,
-        )
-        or searchable_text(selected)
-    )
-    if not grounded_source and _answer_conflicts_with_negative_status(
-        parsed["answer"], source_claim_text
-    ):
-        return "status contradiction"
-    message = clip_words(
-        _negative_status_sentence_first(parsed["answer"], source_claim_text),
-        MAX_MESSAGE_WORDS,
-    )
-    if not grounded_source and not model_answer_is_grounded(
-        message, selected, grounding_question
-    ):
-        return (
-            "resolved source can answer"
-            if len(retrieved) == 1
-            else "unsupported factual wording"
-        )
-    if (
-        interaction.get("chat_stage") == "follow_up"
-        and prior_answer
-        and answers_near_duplicate(message, prior_answer)
-        and not question_requests_prior_detail(question, prior_answer)
-    ):
-        return "repeated prior answer"
     return ""
 
 

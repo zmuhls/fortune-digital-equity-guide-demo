@@ -129,6 +129,9 @@ class RetrievalTests(unittest.TestCase):
     def test_snapshot_calendar_fallback_exposes_only_upcoming_atomic_rows(self):
         source = {
             "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "volatile": True,
             "source_captured_at": "2026-08-20T21:47:14Z",
             "calendar_events": [
                 {"date": "2026-08-21", "label": "Friday, August 21, 2026: Past class"},
@@ -172,6 +175,48 @@ class RetrievalTests(unittest.TestCase):
         )
         self.assertIn("September 30 event", exact)
         self.assertNotIn("Thursday event", exact)
+
+    def test_live_calendar_keeps_all_requested_dated_rows_after_a_date(self):
+        events = [
+            {
+                "date": f"2026-09-{day:02d}",
+                "label": f"September {day}, 2026 · Class {day} · 2:00 PM - 3:30 PM",
+            }
+            for day in range(1, 13)
+        ]
+        source = {
+            "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "volatile": True,
+            "calendar_source": "live_downloadable_calendar",
+            "calendar_schedule": {
+                "month": "September 2026",
+                "theme": "AI Awareness Month",
+                "default_hours": "2:00 PM - 3:30 PM",
+                "location": {"name": "LIC Main Service Center", "address": "Room 133"},
+                "support": [],
+            },
+            "calendar_events": events,
+        }
+        blocks = server.calendar_evidence_blocks(
+            source,
+            "What classes are listed after August 28, 2026?",
+            today=server.date(2026, 8, 28),
+        )
+        evidence = "\n".join(blocks)
+        self.assertIn("September 1, 2026", evidence)
+        self.assertIn("September 12, 2026", evidence)
+        self.assertEqual(sum("Class " in block for block in blocks), 12)
+
+        prompt = server.retrieval_prompt(
+            "What classes are listed after August 28, 2026?",
+            [source],
+            current_date="2026-08-28",
+        )
+        records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
+        self.assertIn("September 1, 2026", records[0]["content"])
+        self.assertIn("September 12, 2026", records[0]["content"])
 
     def test_retrieval_prompt_supplies_the_runtime_date(self):
         prompt = server.retrieval_prompt(
@@ -344,7 +389,8 @@ class RetrievalTests(unittest.TestCase):
                 prompt = server.retrieval_prompt(question, [source], {"url": server.ROOT_URL})
                 records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
                 content = records[0]["content"]
-                self.assertLessEqual(len(content), server.MAX_MODEL_EXCERPT_CHARS)
+                expected_limit = 3000 if source_id == "calendar" else server.MAX_MODEL_EXCERPT_CHARS
+                self.assertLessEqual(len(content), expected_limit)
                 for fragment in expected_fragments:
                     self.assertIn(fragment.lower(), content.lower())
                 self.assertNotRegex(content, r"(?:^|\s)\S{1,3}…(?:\s|$)")
@@ -493,11 +539,11 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
         self.assertIn(
-            "active page is navigation context",
+            "active page is context, not a boundary",
             model_calls[0][0]["content"],
         )
         self.assertIn(
-            "from anywhere in the supplied Digital Equity site evidence",
+            "anywhere on the Digital Equity site",
             model_calls[0][0]["content"],
         )
 
@@ -746,7 +792,11 @@ class StagedRetrievalTests(unittest.TestCase):
                     server.source_excerpt(
                         source,
                         question,
-                        limit=server.MAX_MODEL_EXCERPT_CHARS,
+                        limit=(
+                            3000
+                            if source.get("id") == "calendar"
+                            else server.MAX_MODEL_EXCERPT_CHARS
+                        ),
                     ),
                 )
                 for grounded_line in records[0]["content"].splitlines():
@@ -785,7 +835,7 @@ class StagedRetrievalTests(unittest.TestCase):
         records = self.retrieval_records(model_calls)
         self.assertIn(source_id, [record["id"] for record in records])
 
-    def test_follow_up_uses_only_latest_answer_and_retries_repetition_once(self):
+    def test_follow_up_supplies_only_latest_answer_without_a_prose_classifier(self):
         source_id = server.INTRO_EMAIL_ID
         prior = (
             "Email is part of everything from appointments and applications to work "
@@ -805,16 +855,16 @@ class StagedRetrievalTests(unittest.TestCase):
                 {"role": "user", "content": "Which beginner email class fits?"},
                 {"role": "assistant", "content": prior},
             ],
-            model_answers=[prior, advanced],
+            model_answers=[advanced],
         )
         self.assertEqual(captured["payload"]["kind"], "answer")
         self.assertEqual(captured["payload"]["message"], advanced)
-        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(len(model_calls), 1)
         first_prompt = model_calls[0][0]["content"]
         self.assertIn(prior, first_prompt)
         self.assertNotIn("This older answer must not be reused.", first_prompt)
 
-    def test_repeated_retry_fails_without_fabricating_a_guide_turn(self):
+    def test_model_authored_follow_up_is_not_rejected_by_a_repetition_classifier(self):
         source_id = server.INTRO_EMAIL_ID
         prior = (
             "Email is part of everything from appointments and applications to work "
@@ -828,12 +878,12 @@ class StagedRetrievalTests(unittest.TestCase):
                 {"role": "user", "content": "Which beginner email class fits?"},
                 {"role": "assistant", "content": prior},
             ],
-            model_answers=[prior, prior],
+            model_answers=[prior],
         )
-        self.assertEqual(captured["status"], 502)
+        self.assertEqual(captured["status"], 200)
         self.assertTrue(captured["payload"]["model_called"])
-        self.assertNotIn("message", captured["payload"])
-        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(captured["payload"]["message"], prior)
+        self.assertEqual(len(model_calls), 1)
 
     def test_follow_up_can_confirm_a_grounded_detail_already_in_the_prior_answer(self):
         source = server.SOURCE_BY_ID["home"]
@@ -889,7 +939,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(captured["payload"]["sources"][0]["id"], source_id)
         self.assertEqual(len(model_calls), 1)
 
-    def test_request_for_additional_class_coverage_still_has_to_advance(self):
+    def test_request_for_additional_class_coverage_uses_prompt_not_server_veto(self):
         source_id = server.INTRO_EMAIL_ID
         prior = (
             "Intro to Email covers creating an account, navigating the inbox, and "
@@ -909,17 +959,17 @@ class StagedRetrievalTests(unittest.TestCase):
                 {"role": "user", "content": "I want to learn email from the beginning."},
                 {"role": "assistant", "content": prior},
             ],
-            model_answers=[repeated, repeated],
+            model_answers=[repeated],
         )
         self.assertFalse(
             server.question_requests_prior_detail(
                 "What else does that class cover?", prior
             )
         )
-        self.assertEqual(captured["status"], 502)
+        self.assertEqual(captured["status"], 200)
         self.assertTrue(captured["payload"]["model_called"])
-        self.assertNotIn("message", captured["payload"])
-        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(captured["payload"]["message"], repeated)
+        self.assertEqual(len(model_calls), 1)
 
     def test_single_resolved_source_may_ask_without_server_override(self):
         clarification = "Which eligibility detail do you need help with?"
@@ -991,7 +1041,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(result["kind"], "answer")
         self.assertEqual(result["sources"][0]["id"], "devices")
 
-    def test_one_source_unsupported_draft_retries_without_ask(self):
+    def test_selected_source_answer_has_no_lexical_retry_gate(self):
         canva = [server.SOURCE_BY_ID["service-service-page-canva-design-tools-61911b2b"]]
         raw = json.dumps({
             "pick": canva[0]["id"],
@@ -1005,10 +1055,10 @@ class StagedRetrievalTests(unittest.TestCase):
                 "",
                 "Is Intro to Canva still a current class?",
             ),
-            "resolved source can answer",
+            "",
         )
 
-    def test_grounded_answer_can_recover_the_matching_supplied_candidate(self):
+    def test_server_keeps_the_model_selected_supplied_candidate(self):
         question = "Do I need an email address before the class?"
         answer = "You do not need an email address before Intro to Email."
         intro_email = server.SOURCE_BY_ID[server.INTRO_EMAIL_ID]
@@ -1043,7 +1093,7 @@ class StagedRetrievalTests(unittest.TestCase):
             prior_answer="Intro to Email is a beginner class.",
         )
         self.assertEqual(result["kind"], "answer")
-        self.assertEqual(result["sources"][0]["id"], server.INTRO_EMAIL_ID)
+        self.assertEqual(result["sources"][0]["id"], "devices")
 
     def test_pronominal_one_is_not_misread_as_a_session_count(self):
         question = "Do I need an email address before the class?"
@@ -1101,60 +1151,36 @@ class StagedRetrievalTests(unittest.TestCase):
             )
         )
 
-    def test_current_canva_status_recovers_from_an_unsupported_first_draft(self):
+    def test_current_canva_answer_uses_one_model_call_without_lexical_retry(self):
         canva_id = "service-service-page-canva-design-tools-61911b2b"
+        answer = "The Canva Design Tools class is currently listed as not available."
         captured, model_calls = self.dispatch_chat(
             "Is Intro to Canva still a current class?",
             server.ROOT_URL,
             model_source_id=canva_id,
-            model_raws=[
-                json.dumps({
-                    "pick": canva_id,
-                    "answer": "This class is guaranteed to be available tomorrow.",
-                }),
-                json.dumps({
-                    "pick": canva_id,
-                    "answer": (
-                        "The Canva Design Tools class is currently listed as not "
-                        "available. Contact Fortune for more information."
-                    ),
-                }),
-            ],
+            model_raws=[json.dumps({"pick": canva_id, "answer": answer})],
         )
         self.assertEqual(captured["payload"]["kind"], "answer")
         self.assertEqual(captured["payload"]["sources"][0]["id"], canva_id)
-        self.assertIn("not available", captured["payload"]["message"])
-        self.assertEqual(len(model_calls), 2)
-        self.assertIn(
-            server.RETRY_INSTRUCTIONS["unsupported factual wording"],
-            model_calls[1][0]["content"],
-        )
+        self.assertEqual(captured["payload"]["message"], answer)
+        self.assertEqual(len(model_calls), 1)
 
-    def test_overlong_model_draft_retries_instead_of_being_cut_off(self):
+    def test_complete_model_draft_is_not_cut_off_or_retried(self):
         source_id = "devices"
         long_answer = " ".join([
             "Free refurbished laptops are available through Computers 4 People,"
         ] * 10)
-        complete_answer = (
-            "Free refurbished laptops are available through Computers 4 People. "
-            "Participants need at least 5 Digital Equity Program workshops, and "
-            "supply is limited."
-        )
         captured, model_calls = self.dispatch_chat(
             "How can I qualify for a refurbished laptop?",
             server.ROOT_URL,
             model_source_id=source_id,
-            model_answers=[long_answer, complete_answer],
+            model_answers=[long_answer],
         )
 
         self.assertEqual(captured["status"], 200)
-        self.assertEqual(captured["payload"]["message"], complete_answer)
+        self.assertEqual(captured["payload"]["message"], long_answer)
         self.assertFalse(captured["payload"]["message"].endswith("…"))
-        self.assertEqual(len(model_calls), 2)
-        self.assertIn(
-            server.RETRY_INSTRUCTIONS["response too long"],
-            model_calls[1][0]["content"],
-        )
+        self.assertEqual(len(model_calls), 1)
 
     def test_negative_source_status_cannot_be_rewritten_as_a_current_offering(self):
         question = "I want to learn about the device distribution programs."
@@ -1193,11 +1219,7 @@ class StagedRetrievalTests(unittest.TestCase):
             "site",
         )
         self.assertEqual(parsed["kind"], "answer")
-        self.assertTrue(
-            parsed["message"].lower().startswith(
-                "smartphone distribution is currently on hold"
-            )
-        )
+        self.assertEqual(parsed["message"], informational)
         self.assertTrue(server.model_answer_is_grounded(grounded, source, question))
         mixed = (
             unsafe
@@ -1211,11 +1233,7 @@ class StagedRetrievalTests(unittest.TestCase):
             "site",
         )
         self.assertEqual(recovered["kind"], "answer")
-        self.assertTrue(
-            recovered["message"].lower().startswith(
-                "smartphone distribution is currently on hold"
-            )
-        )
+        self.assertEqual(recovered["message"], mixed)
         self.assertEqual(
             server.model_selection_retry_reason(
                 json.dumps({"pick": "devices", "answer": unsafe}),
@@ -1225,10 +1243,10 @@ class StagedRetrievalTests(unittest.TestCase):
                 question,
                 question,
             ),
-            "status contradiction",
+            "",
         )
 
-    def test_negative_source_status_retries_to_a_grounded_dynamic_answer(self):
+    def test_negative_source_status_is_model_authored_in_one_call(self):
         question = "I want to learn about the device distribution programs."
         unsafe = (
             "The Fortune Society Digital Equity Program offers free smartphones "
@@ -1242,20 +1260,13 @@ class StagedRetrievalTests(unittest.TestCase):
         captured, model_calls = self.dispatch_chat(
             question,
             server.ROOT_URL,
-            model_raws=[
-                json.dumps({"pick": "devices", "answer": unsafe}),
-                json.dumps({"pick": "devices", "answer": grounded}),
-            ],
+            model_raws=[json.dumps({"pick": "devices", "answer": grounded})],
         )
 
         self.assertEqual(captured["payload"]["kind"], "answer")
         self.assertEqual(captured["payload"]["message"], grounded)
         self.assertEqual(captured["payload"]["sources"][0]["id"], "devices")
-        self.assertEqual(len(model_calls), 2)
-        self.assertIn(
-            server.RETRY_INSTRUCTIONS["status contradiction"],
-            model_calls[1][0]["content"],
-        )
+        self.assertEqual(len(model_calls), 1)
 
     def test_negative_status_guard_follows_the_approved_record(self):
         question = "What device distribution programs are available?"
@@ -1814,16 +1825,20 @@ class ResponseContractTests(unittest.TestCase):
             server.PARTNERS_ID,
         )
 
-    def test_model_prose_cannot_become_an_unsupported_factual_claim(self):
+    def test_model_prose_is_not_run_through_a_second_lexical_classifier(self):
         retrieved = server.retrieve_sources("free laptop")
         raw = json.dumps({
             "pick": "devices",
             "answer": "Free laptops are definitely available within 2 days.",
         })
-        with self.assertRaises(server.ModelResponseRejected):
-            server.parse_model_selection(raw, "free laptop", retrieved, "page")
+        result = server.parse_model_selection(raw, "free laptop", retrieved, "page")
+        self.assertEqual(result["sources"][0]["id"], "devices")
+        self.assertEqual(
+            result["message"],
+            "Free laptops are definitely available within 2 days.",
+        )
 
-    def test_grounding_guard_rejects_unsupported_numbers_entities_and_absolutes_in_both_languages(self):
+    def test_legacy_grounding_diagnostic_is_not_a_runtime_prose_gate(self):
         source = server.SOURCE_BY_ID["devices"]
         unsupported = (
             "Free laptops are available to everyone within two days.",
@@ -1835,13 +1850,13 @@ class ResponseContractTests(unittest.TestCase):
         for answer in unsupported:
             with self.subTest(answer=answer):
                 self.assertFalse(server.model_answer_is_grounded(answer, source))
-                with self.assertRaises(server.ModelResponseRejected):
-                    server.parse_model_selection(
-                        model_response(source, "Can I get a laptop?", answer),
-                        "Can I get a laptop?",
-                        [source],
-                        "site",
-                    )
+                result = server.parse_model_selection(
+                    model_response(source, "Can I get a laptop?", answer),
+                    "Can I get a laptop?",
+                    [source],
+                    "site",
+                )
+                self.assertEqual(result["message"], answer)
 
         timed = copy.deepcopy(source)
         timed["description"] = "The workshop lasts 2 months."
@@ -2125,9 +2140,9 @@ class ResponseContractTests(unittest.TestCase):
             '{"pick":"<candidate ID or ASK>","answer":"<grounded answer or brief natural follow-up>"}',
             prompt,
         )
-        self.assertIn("Use the approved candidate records", prompt)
-        self.assertIn("answer instead of clarifying", prompt)
-        self.assertIn("If the candidate set is empty", prompt)
+        self.assertIn("Use the candidate records below", prompt)
+        self.assertIn("Otherwise answer the request directly", prompt)
+        self.assertIn("When there are no candidates", prompt)
         self.assertNotIn("rebuilding routines", prompt)
         self.assertNotIn("request_kind", prompt)
         records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
@@ -2181,10 +2196,7 @@ class ResponseContractTests(unittest.TestCase):
         for question in accepted:
             with self.subTest(question=question):
                 result = server.model_clarification_response("Help me", question)
-                self.assertEqual(
-                    result["message"],
-                    server.clip_words(question, server.MAX_MESSAGE_WORDS),
-                )
+                self.assertEqual(result["message"], question)
                 self.assertTrue(result["model_called"])
 
         rejected = (
@@ -2210,8 +2222,8 @@ class ResponseContractTests(unittest.TestCase):
                     server.model_clarification_response("Help me", question)
 
         overlong = " ".join(["natural"] * (server.MAX_MESSAGE_WORDS + 1))
-        with self.assertRaises(server.ModelResponseRejected):
-            server.model_clarification_response("Help me", overlong)
+        result = server.model_clarification_response("Help me", overlong)
+        self.assertEqual(result["message"], overlong)
 
     def test_clarification_retry_uses_the_same_minimal_safety_contract(self):
         sources = []
@@ -2362,7 +2374,7 @@ class ResponseContractTests(unittest.TestCase):
                 "Please check the device page.", "free laptop", retrieved
             )
 
-    def test_answer_length_is_capped(self):
+    def test_complete_answer_is_preserved_without_a_word_count_gate(self):
         retrieved = server.retrieve_sources("computer class")
         grounded = server.source_excerpt(retrieved[0], "computer class").splitlines()[0]
         raw = model_response(retrieved[0], "computer class", " ".join([grounded] * 4))
@@ -2375,10 +2387,13 @@ class ResponseContractTests(unittest.TestCase):
                 "computer class",
                 "computer class",
             ),
-            "response too long",
+            "",
         )
-        with self.assertRaises(server.ModelResponseRejected):
-            server.parse_model_selection(raw, "computer class", retrieved)
+        result = server.parse_model_selection(raw, "computer class", retrieved)
+        self.assertEqual(
+            result["message"],
+            " ".join([grounded] * 4),
+        )
 
     def test_long_answers_prefer_a_complete_sentence_boundary(self):
         text = ("A useful first sentence has enough words to carry a complete participant-facing instruction clearly. "

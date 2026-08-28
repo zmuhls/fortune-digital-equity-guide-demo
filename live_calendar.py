@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from html import unescape
 import hashlib
 import io
@@ -22,10 +22,160 @@ MAX_PAGE_BYTES = 5 * 1024 * 1024
 MAX_PDF_BYTES = 12 * 1024 * 1024
 MAX_PDF_PAGES = 12
 MAX_EXTRACTED_CHARACTERS = 60_000
+MONTH_NUMBERS = {
+    "JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6,
+    "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10, "NOV": 11, "DEC": 12,
+}
+MONTH_NAMES = {
+    "JANUARY": 1, "FEBRUARY": 2, "MARCH": 3, "APRIL": 4,
+    "MAY": 5, "JUNE": 6, "JULY": 7, "AUGUST": 8,
+    "SEPTEMBER": 9, "OCTOBER": 10, "NOVEMBER": 11, "DECEMBER": 12,
+}
+PDF_MONTH_PATTERN = re.compile(r"^([A-Z]+)\s+(20\d{2})$")
+PDF_EVENT_PATTERN = re.compile(
+    r"^(MON|TUE|WED|THU|FRI|SAT|SUN)\s*\|\s*([A-Z]{3})\s*(\d{1,2})\s+(.+)$"
+)
 
 
 class CalendarRefreshError(RuntimeError):
     """The live public calendar could not be refreshed safely."""
+
+
+def normalized_lines(value: str) -> list[str]:
+    """Preserve PDF source order while removing extraction-only whitespace."""
+
+    return [
+        re.sub(r"\s+", " ", line).strip()
+        for line in str(value or "").splitlines()
+        if line.strip()
+    ]
+
+
+def calendar_pdf_schedule(source: dict[str, object]) -> dict[str, object]:
+    """Pair class titles with the dates printed in the current public PDF."""
+
+    blocks = source.get("blocks")
+    if not isinstance(blocks, list):
+        raise ValueError("live calendar did not provide readable PDF source blocks")
+    lines = normalized_lines("\n".join(str(block) for block in blocks))
+    month_index = next(
+        (
+            index
+            for index, line in enumerate(lines)
+            if PDF_MONTH_PATTERN.fullmatch(line.upper())
+        ),
+        None,
+    )
+    if month_index is None:
+        raise ValueError("downloadable calendar has no readable month and year")
+
+    month_match = PDF_MONTH_PATTERN.fullmatch(lines[month_index].upper())
+    assert month_match is not None
+    month_name, year_text = month_match.groups()
+    year = int(year_text)
+    time_index = next(
+        (
+            index
+            for index, line in enumerate(lines[month_index + 1 :], start=month_index + 1)
+            if line.upper().startswith("TIME:")
+        ),
+        None,
+    )
+    if time_index is None:
+        raise ValueError("downloadable calendar has no readable default class time")
+    location_lines = lines[month_index + 1 : time_index]
+    if len(location_lines) < 2:
+        raise ValueError("downloadable calendar has no readable class location")
+
+    events: list[dict[str, str]] = []
+    first_event_index = next(
+        (
+            index
+            for index, line in enumerate(lines[time_index + 1 :], start=time_index + 1)
+            if PDF_EVENT_PATTERN.fullmatch(line.upper())
+        ),
+        None,
+    )
+    event_end = first_event_index or time_index + 1
+    for index, line in enumerate(lines[event_end:], start=event_end):
+        event_match = PDF_EVENT_PATTERN.fullmatch(line.upper())
+        if event_match is None:
+            event_end = index
+            break
+        weekday, event_month, day_text, _ = event_match.groups()
+        titled_match = PDF_EVENT_PATTERN.fullmatch(line)
+        assert titled_match is not None
+        event_date = date(year, MONTH_NUMBERS[event_month], int(day_text))
+        events.append({
+            "date": event_date.isoformat(),
+            "date_label": f"{weekday.title()} | {event_month.title()} {int(day_text)}",
+            "title": titled_match.group(4).strip(),
+        })
+        event_end = index + 1
+
+    if not events:
+        # Canva exposes titles in layout order and may place its date column in
+        # linear-text order. Pair the two complete source columns only when
+        # their lengths match; otherwise leave the raw PDF text as the fallback.
+        support_index = next(
+            (
+                index
+                for index, line in enumerate(lines[time_index + 1 :], start=time_index + 1)
+                if line.casefold().startswith("tech time")
+            ),
+            None,
+        )
+        if support_index is None:
+            raise ValueError("downloadable calendar has no readable dated class rows")
+        title_lines = lines[time_index + 1 : support_index]
+        weekdays = [
+            line.upper()
+            for line in lines
+            if line.upper() in {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+        ]
+        dates = [
+            re.fullmatch(r"\|\s*([A-Z]{3})\s*(\d{1,2})", line.upper())
+            for line in lines
+        ]
+        date_parts = [match.groups() for match in dates if match is not None]
+        if (
+            not title_lines
+            or len(weekdays) != len(date_parts)
+            or len(title_lines) != len(date_parts)
+        ):
+            raise ValueError("downloadable calendar has no readable dated class rows")
+        for title, weekday, (event_month, day_text) in zip(
+            title_lines, weekdays, date_parts
+        ):
+            event_date = date(year, MONTH_NUMBERS[event_month], int(day_text))
+            events.append({
+                "date": event_date.isoformat(),
+                "date_label": f"{weekday.title()} | {event_month.title()} {int(day_text)}",
+                "title": title,
+            })
+        event_end = support_index
+
+    registration_index = next(
+        (
+            index
+            for index, line in enumerate(lines[event_end:], start=event_end)
+            if line.casefold().startswith("for more info or to register")
+        ),
+        len(lines),
+    )
+    return {
+        "title": " ".join(lines[:month_index]).strip(),
+        "month": f"{month_name.title()} {year}",
+        "theme": location_lines[0] if len(location_lines) == 3 else "",
+        "location": {
+            "name": location_lines[-2],
+            "address": location_lines[-1],
+        },
+        "default_hours": lines[time_index][len("TIME:") :].strip(),
+        "events": events,
+        "support": lines[event_end:registration_index],
+        "registration_note": " ".join(lines[registration_index : registration_index + 2]).strip(),
+    }
 
 
 def _allowed_url(url: str, hosts: set[str], *, pdf: bool = False) -> bool:
@@ -239,6 +389,47 @@ def fetch_live_calendar_source(base_source: dict, timeout: float = 8.0) -> dict:
     source["calendar_document_sha256"] = hashlib.sha256(pdf_bytes).hexdigest()
     source["calendar_extracted_characters"] = sum(len(block) for block in blocks)
     source["calendar_live_block_count"] = len(blocks)
+    try:
+        schedule = calendar_pdf_schedule(source)
+    except ValueError:
+        schedule = None
+    if schedule:
+        default_hours = str(schedule.get("default_hours") or "").strip()
+        location = schedule.get("location") or {}
+        location_text = " · ".join(
+            value
+            for value in (
+                str(location.get("name") or "").strip(),
+                str(location.get("address") or "").strip(),
+            )
+            if value
+        )
+        calendar_events = []
+        for event in schedule.get("events", []):
+            event_date = date.fromisoformat(str(event["date"]))
+            title = str(event.get("title") or "").strip()
+            specific_time = re.search(
+                r"\((\d{1,2}:\d{2}\s*[AP]M)\)",
+                title,
+                flags=re.I,
+            )
+            event_hours = (
+                f"Starts {specific_time.group(1)}"
+                if specific_time
+                else default_hours
+            )
+            details = [
+                f"{event_date.strftime('%A, %B')} {event_date.day}, {event_date.year}",
+                title,
+                event_hours,
+                location_text,
+            ]
+            calendar_events.append({
+                "date": event_date.isoformat(),
+                "label": " · ".join(value for value in details if value),
+            })
+        source["calendar_schedule"] = schedule
+        source["calendar_events"] = calendar_events
     return source
 
 
@@ -298,6 +489,7 @@ class LiveCalendarCache:
                 "status": "live" if source else ("refreshing" if self._refreshing else "snapshot"),
                 "source_fetched_at": source.get("source_fetched_at"),
                 "extracted_characters": source.get("calendar_extracted_characters", 0),
+                "structured_events": len(source.get("calendar_events", [])),
                 "refresh_interval_seconds": self.ttl_seconds,
                 "last_error": self._last_error or None,
             }
