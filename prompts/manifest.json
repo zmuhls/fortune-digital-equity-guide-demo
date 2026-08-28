@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-28-v29",
+  "current_policy_id": "2026-08-28-v30",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "cf7bb3d077efe7886fe4f6a572acdc8603d8d0ee6a4d9f096ce76cdb210c8376",
-  "current_compiled_prompt_sha256": "1abccee775ce17e0766f33e06417a87dc8e55675ca09e32c3a65848061e40b8e",
+  "current_policy_source_sha256": "0f3ff2aeda24cb72e18079993790b4c0c11c9149d5af8d24a98cbf579cfdadb1",
+  "current_compiled_prompt_sha256": "7bec5a374d941cd420b7e4f937cf4207d5c68ce04a4b29a3ab4185424b1a2bd1",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -315,8 +315,20 @@
       "behavior_release": "digital-equity-model-first-simple-routing",
       "artifact": "versions/2026-08-28-v29.md",
       "artifact_sha256": "46d068d9efc5f9187700bd4aa93c075a1997b5f4f69c69998990db6f13dc8570",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-28-v29-compiled.md",
       "compiled_prompt_artifact_sha256": "7b776cd7d77a6fbaeb9eea4cb855c0813fdf041c701ef156c06a28f339d2f424"
+    },
+    {
+      "policy_id": "2026-08-28-v30",
+      "label": "Digital Equity model-first one-sentence identity prompt",
+      "reconstructed": false,
+      "source_state": "authored after repeated live v29 identity turns showed intermittent generic invitations",
+      "source_date": "2026-08-28",
+      "behavior_release": "digital-equity-model-first-one-sentence-identity",
+      "artifact": "versions/2026-08-28-v30.md",
+      "artifact_sha256": "2a6a531515ae7b79e679374caa056341e65f3ec1de7ec61d3a9b4a5131422bf4",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "f4cba7897dea6332996cf16511d70e330af6bc70c93acf4fee13403dd5e8fda8"
     }
   ]
 }

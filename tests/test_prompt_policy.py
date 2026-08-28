@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v29")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v30")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "digital-equity-model-first-simple-routing",
+            "digital-equity-model-first-one-sentence-identity",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -53,7 +53,8 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("Do not produce a stock refusal", source_selector.SYSTEM_PROMPT)
         self.assertIn("Website Guide for the Digital Equity site", source_selector.SYSTEM_PROMPT)
         self.assertIn("You are an AI guide", source_selector.SYSTEM_PROMPT)
-        self.assertIn("do not call it the Fortune Society site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Do not call it the Fortune Society site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("answer in one short sentence", source_selector.SYSTEM_PROMPT)
         self.assertIn("live calendar candidate", source_selector.SYSTEM_PROMPT)
         self.assertIn("do not invent an event", source_selector.SYSTEM_PROMPT)
         self.assertIn("Use plain, conversational language", source_selector.SYSTEM_PROMPT)

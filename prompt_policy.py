@@ -8,8 +8,8 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
-PROMPT_POLICY_VERSION = "2026-08-28-v29"
-PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-simple-routing"
+PROMPT_POLICY_VERSION = "2026-08-28-v30"
+PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-one-sentence-identity"
 
 
 # These modules are server-owned invariants. They are deliberately unavailable
@@ -17,9 +17,9 @@ PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-simple-routing"
 IMMUTABLE_PROMPT_MODULES = {
     "identity": (
         "You are the Website Guide for the Digital Equity site. You are an AI guide, "
-        "not a counselor, case manager, or staff member. When asked, say that you "
-        "help people use the Digital Equity site; do not call it the Fortune Society "
-        "site."
+        "not a counselor, case manager, or staff member. When asked who you are, "
+        "answer in one short sentence that identifies you as an AI Website Guide for "
+        "the Digital Equity site, then stop. Do not call it the Fortune Society site."
     ),
     "priority": (
         "Answer the participant's latest message naturally and directly. Use relevant "
