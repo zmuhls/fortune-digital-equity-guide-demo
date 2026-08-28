@@ -50,6 +50,64 @@ def snapshot_document(label="Home"):
     )
 
 
+def calendar_source_fixture(source_url="https://www.fortunedigitalequity.org/calendar"):
+    return {
+        "source_url": source_url,
+        "captured_at": "2026-08-28T02:10:00Z",
+        "document": {
+            "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_current.pdf",
+            "label": "AI Month Class Schedule",
+            "sha256": "0" * 64,
+        },
+        "agenda": {
+            "captured_at": "2026-08-28T01:59:29.556Z",
+            "week": {
+                "label": "Week starting Sunday, August 23",
+                "days": [
+                    "Sun 23 Sunday, August 23, 2026",
+                    "Mon 24 Monday, August 24, 2026",
+                    "Tue 25 Tuesday, August 25, 2026",
+                    "Wed 26 Wednesday, August 26, 2026",
+                    "Thu 27 Thursday, August 27, 2026",
+                    "Fri 28 Friday, August 28, 2026",
+                    "Sat 29 Saturday, August 29, 2026",
+                ],
+                "selected": "Fri 28 Friday, August 28, 2026",
+            },
+            "events": [
+                {
+                    "date": "2026-08-28",
+                    "date_label": "Friday | August 28",
+                    "title": "Tech Time: Foundations",
+                    "time": "1:00 pm",
+                    "duration": "1 hr",
+                    "location": "Main Office (LIC)",
+                    "registration_url": source_url,
+                },
+            ],
+        },
+        "pdf_schedule": {
+            "title": "DIGITAL EQUITY PROGRAM LIC Training Schedule",
+            "month": "September 2026",
+            "theme": "AI AWARENESS MONTH",
+            "location": {
+                "name": "LIC: MAIN SERVICE CENTER",
+                "address": "29-76 NORTHERN BLVD, ROOM 133",
+            },
+            "default_hours": "2:00 PM - 3:30 PM (UNLESS STATED OTHERWISE)",
+            "events": [
+                {
+                    "date": "2026-09-01",
+                    "date_label": "Tue | Sep 1",
+                    "title": "What Is AI?",
+                },
+            ],
+            "support": ["Tech Time Focused & Foundations sessions available by Appointment ONLY"],
+            "registration_note": "For more info or to register: Visit FortuneDigitalEquity.org",
+        },
+    }
+
+
 class IndexRouteTests(unittest.TestCase):
     def test_real_index_loads_all_138_current_public_html_routes(self):
         routes = build_pages.load_routes()
@@ -100,7 +158,7 @@ class SnapshotRenderingTests(unittest.TestCase):
     def test_text_shell_css_is_small_and_contains_no_visual_assets(self):
         shell_css = (DEMO / "replica-shell.css").read_text(encoding="utf-8")
 
-        self.assertLess(len(shell_css.encode("utf-8")), 5000)
+        self.assertLess(len(shell_css.encode("utf-8")), 14000)
         self.assertIn(".source-document", shell_css)
         self.assertRegex(
             shell_css,
@@ -111,6 +169,8 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn(".source-list", shell_css)
         self.assertIn(".source-breadcrumb", shell_css)
         self.assertIn(".source-disclosure", shell_css)
+        self.assertIn(".calendar-agenda", shell_css)
+        self.assertIn(".calendar-week__days", shell_css)
         self.assertIn("#fortune-sidecar-host", shell_css)
         self.assertNotIn("background-image", shell_css)
         self.assertNotIn("url(", shell_css)
@@ -177,6 +237,116 @@ class SnapshotRenderingTests(unittest.TestCase):
             build_pages.clean_source_fragment("REGISTER on Fortune's live site"),
             "REGISTER on the Digital Equity site",
         )
+
+    def test_calendar_keeps_current_official_actions_and_omits_stale_agenda_rows(self):
+        route = {
+            "path": "/calendar",
+            "sourceUrl": "https://www.fortunedigitalequity.org/calendar",
+            "pageId": "page-calendar-fixture",
+            "page": {
+                "title": "Calendar | FS Digital Equity",
+                "authority": "answer",
+                "status": 200,
+            },
+        }
+        snapshot = """
+        <main data-main-content="true">
+          <h1>Upcoming Classes &amp; Events</h1>
+          <p>Current public events are captured in this static snapshot.
+            <a href="https://www.fortunedigitalequity.org/calendar"
+               data-replica-live-action="true">View the live Digital Equity calendar.</a>
+          </p>
+          <ul><li>August 28 Friday <a href="https://www.fortunedigitalequity.org/calendar"
+            data-replica-live-action="true">REGISTER on the Digital Equity site</a></li></ul>
+          <h2>Downloadable Calendar</h2>
+          <a href="https://www.fortunedigitalequity.org/_files/ugd/e58568_current.pdf">
+            <img alt="Download the current calendar">
+          </a>
+          <h2>Class Locations</h2><p>Main Office (LIC)</p>
+          <h2>Regular Class Hours</h2><p>Tuesday through Thursday</p>
+        </main>
+        """
+        routes = [HOME_ROUTE, route]
+        calendar_source = calendar_source_fixture(route["sourceUrl"])
+
+        projection = build_pages.render_snapshot_source(
+            snapshot, route["page"]["title"], "", routes
+        )
+        self.assertIsNotNone(projection)
+        _, generic_content, _ = projection
+        self.assertIn(
+            '<a href="https://www.fortunedigitalequity.org/calendar" target="_blank" rel="noreferrer">'
+            "View the live Digital Equity calendar.</a>",
+            generic_content,
+        )
+        self.assertIn(
+            '<a href="https://www.fortunedigitalequity.org/calendar" target="_blank" rel="noreferrer">'
+            "REGISTER on the Digital Equity site</a>",
+            generic_content,
+        )
+        self.assertIn(
+            '<a href="https://www.fortunedigitalequity.org/_files/ugd/e58568_current.pdf" '
+            'target="_blank" rel="noreferrer">Download the current calendar</a>',
+            generic_content,
+        )
+        self.assertNotIn('href="calendar/">REGISTER', generic_content)
+
+        shell = build_pages.render_text_page(
+            route,
+            "",
+            routes,
+            snapshot,
+            snapshot_document(),
+            calendar_source,
+        )
+        self.assertIn("<h1>Upcoming Classes &amp; Events</h1>", shell)
+        self.assertIn("Week starting Sunday, August 23", shell)
+        self.assertIn("Tech Time: Foundations", shell)
+        self.assertIn("What Is AI?", shell)
+        self.assertIn(calendar_source["document"]["url"], shell)
+        self.assertIn("AI Month Class Schedule", shell)
+        self.assertIn('href="https://www.fortunedigitalequity.org/calendar" target="_blank" rel="noreferrer">REGISTER', shell)
+        self.assertIn("Class Locations", shell)
+        self.assertIn("Regular Class Hours", shell)
+        self.assertNotIn('href="calendar/">REGISTER', shell)
+        self.assertNotIn("click a date to see available classes", shell)
+
+    def test_current_calendar_source_is_an_official_hashed_artifact(self):
+        calendar_source = build_pages.load_calendar_source()
+
+        self.assertEqual(calendar_source["source_url"], build_pages.CALENDAR_SOURCE_URL)
+        self.assertTrue(calendar_source["document"]["url"].startswith(
+            "https://www.fortunedigitalequity.org/_files/ugd/"
+        ))
+        self.assertRegex(calendar_source["document"]["sha256"], r"^[a-f0-9]{64}$")
+        self.assertGreaterEqual(len(calendar_source["agenda"]["events"]), 1)
+        self.assertGreaterEqual(len(calendar_source["pdf_schedule"]["events"]), 1)
+
+    def test_current_calendar_page_frontloads_real_actions_not_stale_agenda_copy(self):
+        routes, route, snapshot_html = self._current_snapshot_route("/calendar")
+        home_snapshot = next(
+            build_pages.load_snapshots(routes)[candidate["sourceUrl"]]["html"]
+            for candidate in routes
+            if candidate["path"] == "/"
+        )
+        calendar_source = build_pages.load_calendar_source()
+        shell = build_pages.render_text_page(
+            route,
+            "../",
+            routes,
+            snapshot_html,
+            home_snapshot,
+            calendar_source,
+        )
+
+        self.assertIn("Upcoming classes", shell)
+        self.assertIn(calendar_source["document"]["url"], shell)
+        self.assertIn("View all current classes on the Digital Equity site", shell)
+        self.assertNotIn("click a date to see available classes", shell)
+        self.assertNotIn("November 1, 2026", shell)
+        for event in calendar_source["agenda"]["events"]:
+            self.assertIn(event["title"], shell)
+            self.assertIn(event["registration_url"], shell)
 
     def test_root_text_source_keeps_root_relative_assets(self):
         shell = build_pages.render_text_page(HOME_ROUTE, "")

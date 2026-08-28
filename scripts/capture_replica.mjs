@@ -45,6 +45,7 @@ export const WIX_ACCORDION_HEADER_SELECTOR =
   'button[data-hook="accordion-item-header"][aria-controls]';
 export const MAX_PROGRESSIVE_COLLECTION_EXPANSIONS = 24;
 export const CALENDAR_STATIC_HORIZON_EXPANSIONS = 9;
+export const CALENDAR_POPUP_DISMISSAL_TIMEOUT_MS = 5_000;
 
 // This exists only while Firefox is collecting hidden panel content. It is
 // removed when the native static disclosure is written into the document.
@@ -667,11 +668,128 @@ export function replaceBoundedCalendarContinuationWithLiveLink() {
 }
 
 
+/**
+ * Calendar images can open a Wix lightbox in #POPUPS_ROOT while the page is
+ * hydrating. Mark only a visible popup and its explicit close control so the
+ * capture loop can remove that temporary obstruction without touching page
+ * content or unrelated overlays.
+ */
+export function markVisibleCalendarPopupDismissal() {
+  const root = document.querySelector("#POPUPS_ROOT");
+  if (!root) return { present: false, close_control: false };
+
+  const isVisible = (element) => {
+    if (!element?.isConnected || element.getClientRects().length === 0) return false;
+    const style = getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.opacity !== "0"
+    );
+  };
+  const popupSelector = [
+    '[role="dialog"]',
+    '[aria-modal="true"]',
+    '[data-hook*="popup" i]',
+    '[data-hook*="lightbox" i]',
+    '[data-testid*="popup" i]',
+    '[data-testid*="lightbox" i]',
+  ].join(",");
+  const popup = [
+    ...root.querySelectorAll(popupSelector),
+    ...root.children,
+  ].find(isVisible);
+  if (!popup) return { present: false, close_control: false };
+
+  popup.setAttribute("data-replica-capture-popup-root", "calendar");
+  const closeControl = [...popup.querySelectorAll(
+    'button,[role="button"],[aria-label],[title],[data-hook],[data-testid]',
+  )].find((candidate) => {
+    if (!isVisible(candidate)) return false;
+    const label = [
+      candidate.getAttribute("aria-label"),
+      candidate.getAttribute("title"),
+      candidate.getAttribute("data-hook"),
+      candidate.getAttribute("data-testid"),
+      candidate.textContent,
+    ].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+    return /(?:^|\b)(?:close|dismiss|exit)(?:\b|$)/i.test(label);
+  });
+  if (!closeControl) return { present: true, close_control: false };
+
+  closeControl.setAttribute("data-replica-capture-popup-dismiss", "calendar");
+  return { present: true, close_control: true };
+}
+
+
+/** This function is serialized into Firefox by page.waitForFunction. */
+export function markedCalendarPopupIsDismissed() {
+  const popup = document.querySelector('[data-replica-capture-popup-root="calendar"]');
+  if (!popup) return true;
+  if (!popup.isConnected || popup.getClientRects().length === 0) return true;
+  const style = getComputedStyle(popup);
+  return style.display === "none" || style.visibility === "hidden" || style.opacity === "0";
+}
+
+
+/** This function is passed directly to page.evaluate. */
+export function clickMarkedCalendarPopupDismissal() {
+  const control = document.querySelector('[data-replica-capture-popup-dismiss="calendar"]');
+  if (!control) return false;
+  control.click();
+  return true;
+}
+
+
+/** This function is passed directly to page.evaluate. */
+export function clearCalendarPopupDismissalMarkers() {
+  document.querySelectorAll(
+    '[data-replica-capture-popup-root],[data-replica-capture-popup-dismiss]',
+  ).forEach((element) => {
+    element.removeAttribute("data-replica-capture-popup-root");
+    element.removeAttribute("data-replica-capture-popup-dismiss");
+  });
+}
+
+
+export async function dismissBlockingCalendarPopup(page) {
+  const popup = await page.evaluate(markVisibleCalendarPopupDismissal);
+  if (!popup.present) {
+    return { detected: false, dismissed: false, method: null };
+  }
+
+  const waitForDismissal = () => page.waitForFunction(
+    markedCalendarPopupIsDismissed,
+    null,
+    { timeout: CALENDAR_POPUP_DISMISSAL_TIMEOUT_MS },
+  );
+  try {
+    if (popup.close_control && await page.evaluate(clickMarkedCalendarPopupDismissal)) {
+      try {
+        await waitForDismissal();
+        return { detected: true, dismissed: true, method: "close-control" };
+      } catch (_error) {
+        // Some Wix lightboxes install their close listener after the image has
+        // rendered. Escape is the documented fallback for that transient state.
+      }
+    }
+    await page.keyboard.press("Escape");
+    await waitForDismissal();
+    return { detected: true, dismissed: true, method: "escape" };
+  } catch (error) {
+    throw new CaptureError(`could not dismiss visible Calendar popup in #POPUPS_ROOT (${error.message})`);
+  } finally {
+    await page.evaluate(clearCalendarPopupDismissalMarkers);
+  }
+}
+
+
 export async function materializeProgressiveCollections(page) {
   const before = await page.evaluate(progressiveCollectionMetric);
   let clicks = 0;
   let retiredWithoutGrowth = 0;
   let calendarClicks = 0;
+  let calendarPopupDismissals = 0;
   let calendarHorizonReached = false;
   for (; clicks < MAX_PROGRESSIVE_COLLECTION_EXPANSIONS;) {
     const control = await page.evaluate(markNextProgressiveCollectionControl);
@@ -686,7 +804,15 @@ export async function materializeProgressiveCollections(page) {
     const beforeClick = await page.evaluate(progressiveCollectionMetric);
     const locator = page.locator(`[${CAPTURE_COLLECTION_ATTRIBUTE}="next"]`);
     try {
+      if (control.hook === "daily-agenda-load-more-button") {
+        const dismissal = await dismissBlockingCalendarPopup(page);
+        if (dismissal.dismissed) calendarPopupDismissals += 1;
+      }
       await locator.scrollIntoViewIfNeeded({ timeout: 10_000 });
+      if (control.hook === "daily-agenda-load-more-button") {
+        const dismissal = await dismissBlockingCalendarPopup(page);
+        if (dismissal.dismissed) calendarPopupDismissals += 1;
+      }
       await locator.click({ timeout: 10_000 });
       // A calendar button is briefly detached while Wix re-renders it after
       // every page. Detachment alone is a valid terminal signal for finite
@@ -748,6 +874,7 @@ export async function materializeProgressiveCollections(page) {
           policy: "volatile live agenda; continue on the live Digital Equity calendar",
         }
       : null,
+    calendar_popup_dismissals: calendarPopupDismissals,
     before,
     after,
   };

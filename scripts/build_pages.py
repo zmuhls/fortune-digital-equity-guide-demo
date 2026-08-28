@@ -13,6 +13,7 @@ import re
 import shutil
 import tempfile
 import urllib.parse
+from typing import Any
 from html.parser import HTMLParser
 
 
@@ -20,9 +21,12 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 INDEX_PATH = ROOT / "site-index.json"
 MANIFEST_PATH = ROOT / "replica-manifest.json"
 SNAPSHOT_ROOT = ROOT / "replica-snapshots"
+CALENDAR_SOURCE_PATH = ROOT / "calendar-source.json"
 SIDECAR_TEMPLATE_PATH = ROOT / "index.html"
 OUTPUT_PATH = ROOT / "_site"
 ALLOWED_HOSTS = {"fortunedigitalequity.org", "www.fortunedigitalequity.org"}
+CALENDAR_ROUTE_PATH = "/calendar"
+CALENDAR_SOURCE_URL = "https://www.fortunedigitalequity.org/calendar"
 SHARED_ASSETS = (
     "styles.css",
     "guide-core.js",
@@ -37,7 +41,7 @@ SHARED_ASSETS = (
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
-REPLICA_SHELL_CSS_VERSION = "20260821-linked-source-2"
+REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
 REPLICA_SHELL_JS_VERSION = "20260820-text-source-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
@@ -164,6 +168,7 @@ class _SnapshotSemanticParser(HTMLParser):
             "tag": tag,
             "text": [],
             "href": anchor["href"] if anchor else "",
+            "live_action": bool(anchor and anchor["live_action"]),
             "links": [],
         })
 
@@ -186,7 +191,13 @@ class _SnapshotSemanticParser(HTMLParser):
                 detail["summary"] = text
             return
         node_type = "heading" if tag.startswith("h") else "paragraph"
-        node = {"type": node_type, "text": text, "href": href}
+        node = {
+            "type": node_type,
+            "text": text,
+            "href": href,
+            "live_action": bool(frame["live_action"]),
+            "links": links,
+        }
         if node_type == "heading":
             node["level"] = int(tag[1])
         self._append(node)
@@ -200,7 +211,11 @@ class _SnapshotSemanticParser(HTMLParser):
             label = clean_link_label(anchor["aria_label"])
         if not label:
             return
-        link = {"href": anchor["href"], "label": label}
+        link = {
+            "href": anchor["href"],
+            "label": label,
+            "live_action": bool(anchor["live_action"]),
+        }
         for frame in self._text_frames:
             frame["links"].append(link)
         if (
@@ -208,7 +223,13 @@ class _SnapshotSemanticParser(HTMLParser):
             and not self._text_frames
             and not self._inside_summary()
         ):
-            self._append({"type": "link", "text": label, "href": anchor["href"]})
+            self._append({
+                "type": "link",
+                "text": label,
+                "href": anchor["href"],
+                "live_action": bool(anchor["live_action"]),
+                "links": [link],
+            })
 
     def _finish_footer_anchor(self) -> None:
         if not self._footer_anchor_stack:
@@ -263,7 +284,24 @@ class _SnapshotSemanticParser(HTMLParser):
                 "aria_label": values.get("aria-label", ""),
                 "text": [],
                 "has_semantic_child": False,
+                "live_action": values.get("data-replica-live-action", "").casefold() == "true",
             })
+            return
+        if tag == "img" and self._anchor_stack:
+            # The Calendar's official downloadable schedule is an image-only
+            # anchor. Preserve its meaningful alt text without turning ordinary
+            # decorative images into source prose.
+            anchor = self._anchor_stack[-1]
+            href = str(anchor["href"])
+            parsed = urllib.parse.urlsplit(href)
+            if (
+                parsed.scheme == "https"
+                and parsed.hostname in ALLOWED_HOSTS
+                and parsed.path.casefold().endswith(".pdf")
+            ):
+                label = clean_link_label(values.get("alt", ""))
+                if label:
+                    anchor["text"].append(label)
             return
         if tag == "details":
             self._mark_div_content()
@@ -485,6 +523,157 @@ def load_routes() -> list[dict]:
     if "/" not in seen_paths:
         raise BuildError("site-index.json does not contain the root route")
     return sorted(routes, key=lambda route: route["path"])
+
+
+def _calendar_string(value: object, field: str, maximum: int = 500) -> str:
+    """Return a bounded source string or stop the static build safely."""
+
+    result = clean_source_fragment(value)
+    if not result or len(result) > maximum:
+        raise BuildError(f"current calendar source has an invalid {field}")
+    return result
+
+
+def _calendar_event_list(value: object, field: str, *, agenda: bool) -> list[dict[str, str]]:
+    """Validate the normalized, source-captured event fields rendered in static HTML."""
+
+    if not isinstance(value, list) or not 1 <= len(value) <= 60:
+        raise BuildError(f"current calendar source has no usable {field}")
+    required = ("date", "date_label", "title")
+    if agenda:
+        required += ("time", "duration", "location", "registration_url")
+    result: list[dict[str, str]] = []
+    for item in value:
+        if not isinstance(item, dict):
+            raise BuildError(f"current calendar source has an invalid {field} entry")
+        entry = {
+            name: _calendar_string(item.get(name), f"{field} {name}")
+            for name in required
+        }
+        if not re.fullmatch(r"20\d{2}-\d{2}-\d{2}", entry["date"]):
+            raise BuildError(f"current calendar source has an invalid {field} date")
+        if agenda and entry["registration_url"] != CALENDAR_SOURCE_URL:
+            raise BuildError("current calendar registration must stay on the official calendar")
+        result.append(entry)
+    return result
+
+
+def load_calendar_source() -> dict[str, Any]:
+    """Load the reviewed current-calendar supplement used by the static view.
+
+    The main replica snapshot is intentionally static and can be older than a
+    calendar update. This small, versioned source record keeps Pages and the
+    Railway static mirror on the same reviewed official destinations without
+    fetching a changing schedule during either build.
+    """
+
+    try:
+        document = json.loads(CALENDAR_SOURCE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise BuildError(f"cannot read current calendar source: {error}") from error
+    if not isinstance(document, dict) or document.get("schema_version") != 3:
+        raise BuildError("current calendar source has an unsupported schema")
+
+    source_url = str(document.get("source_url") or "")
+    source_parts = urllib.parse.urlsplit(source_url)
+    if (
+        source_url != CALENDAR_SOURCE_URL
+        or source_parts.scheme != "https"
+        or source_parts.hostname not in ALLOWED_HOSTS
+        or source_parts.path.rstrip("/") != CALENDAR_ROUTE_PATH
+    ):
+        raise BuildError("current calendar source does not point to the official calendar")
+
+    download = document.get("document")
+    if not isinstance(download, dict):
+        raise BuildError("current calendar source has no downloadable schedule")
+    document_url = str(download.get("url") or "")
+    document_parts = urllib.parse.urlsplit(document_url)
+    if (
+        document_parts.scheme != "https"
+        or document_parts.hostname not in ALLOWED_HOSTS
+        or not document_parts.path.startswith("/_files/ugd/")
+        or not document_parts.path.casefold().endswith(".pdf")
+        or document_parts.username
+        or document_parts.password
+    ):
+        raise BuildError("current calendar download is not an approved official PDF")
+
+    captured_at = str(document.get("captured_at") or "")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", captured_at):
+        raise BuildError("current calendar source has an invalid capture timestamp")
+    content_sha256 = str(download.get("sha256") or "")
+    if not re.fullmatch(r"[a-f0-9]{64}", content_sha256):
+        raise BuildError("current calendar source has an invalid document hash")
+    label = clean_link_label(download.get("label"))
+    if not label:
+        raise BuildError("current calendar source is missing its public download label")
+
+    agenda = document.get("agenda")
+    if not isinstance(agenda, dict):
+        raise BuildError("current calendar source has no captured agenda")
+    agenda_captured_at = str(agenda.get("captured_at") or "")
+    if not re.fullmatch(r"20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z", agenda_captured_at):
+        raise BuildError("current calendar agenda has an invalid capture timestamp")
+    week = agenda.get("week")
+    if not isinstance(week, dict):
+        raise BuildError("current calendar agenda has no visible week")
+    week_label = _calendar_string(week.get("label"), "agenda week label")
+    week_selected = _calendar_string(week.get("selected"), "agenda selected day")
+    week_days = week.get("days")
+    if not isinstance(week_days, list) or len(week_days) != 7:
+        raise BuildError("current calendar agenda must contain seven visible days")
+    normalized_days = [_calendar_string(day, "agenda week day") for day in week_days]
+    agenda_events = _calendar_event_list(agenda.get("events"), "agenda events", agenda=True)
+
+    schedule = document.get("pdf_schedule")
+    if not isinstance(schedule, dict):
+        raise BuildError("current calendar source has no readable PDF schedule")
+    schedule_title = _calendar_string(schedule.get("title"), "PDF schedule title")
+    schedule_month = _calendar_string(schedule.get("month"), "PDF schedule month")
+    schedule_theme = clean_source_fragment(schedule.get("theme"))
+    default_hours = _calendar_string(schedule.get("default_hours"), "PDF schedule default hours")
+    location = schedule.get("location")
+    if not isinstance(location, dict):
+        raise BuildError("current calendar source has no PDF schedule location")
+    schedule_location = {
+        "name": _calendar_string(location.get("name"), "PDF schedule location name"),
+        "address": _calendar_string(location.get("address"), "PDF schedule location address"),
+    }
+    schedule_events = _calendar_event_list(schedule.get("events"), "PDF schedule events", agenda=False)
+    support = schedule.get("support")
+    if not isinstance(support, list) or not support:
+        raise BuildError("current calendar source has no PDF support schedule")
+    support_lines = [_calendar_string(line, "PDF support schedule") for line in support]
+    registration_note = _calendar_string(schedule.get("registration_note"), "PDF registration note")
+    return {
+        "source_url": source_url,
+        "captured_at": captured_at,
+        "document": {
+            "url": document_url,
+            "label": label,
+            "sha256": content_sha256,
+        },
+        "agenda": {
+            "captured_at": agenda_captured_at,
+            "week": {
+                "label": week_label,
+                "selected": week_selected,
+                "days": normalized_days,
+            },
+            "events": agenda_events,
+        },
+        "pdf_schedule": {
+            "title": schedule_title,
+            "month": schedule_month,
+            "theme": schedule_theme,
+            "location": schedule_location,
+            "default_hours": default_hours,
+            "events": schedule_events,
+            "support": support_lines,
+            "registration_note": registration_note,
+        },
+    }
 
 
 def _sha256(value: bytes) -> str:
@@ -892,6 +1081,8 @@ def safe_source_href(
     value: object,
     asset_base: str,
     routes_by_path: dict[str, dict],
+    *,
+    force_external: bool = False,
 ) -> tuple[str, bool] | None:
     """Return a safe local or outbound destination for a captured source link."""
 
@@ -902,6 +1093,8 @@ def safe_source_href(
     if not parsed.scheme and raw.startswith("/"):
         raw = urllib.parse.urljoin("https://www.fortunedigitalequity.org/", raw)
         parsed = urllib.parse.urlsplit(raw)
+    if force_external and parsed.scheme == "https":
+        return raw, True
     local_path = approved_route_path(raw)
     if local_path and local_path in routes_by_path:
         return static_href(asset_base, local_path), False
@@ -917,16 +1110,79 @@ def source_link_markup(
     href: object,
     asset_base: str,
     routes_by_path: dict[str, dict],
+    *,
+    force_external: bool = False,
 ) -> str:
     """Render a text link only when the captured destination is safe."""
 
-    destination = safe_source_href(href, asset_base, routes_by_path)
+    destination = safe_source_href(
+        href,
+        asset_base,
+        routes_by_path,
+        force_external=force_external,
+    )
     escaped_text = html.escape(text)
     if destination is None:
         return escaped_text
     target, external = destination
     attributes = ' target="_blank" rel="noreferrer"' if external else ""
     return f'<a href="{html.escape(target, quote=True)}"{attributes}>{escaped_text}</a>'
+
+
+def source_text_markup(
+    text: str,
+    links: object,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+) -> str:
+    """Render captured inline links without dropping their surrounding prose."""
+
+    if not isinstance(links, list):
+        return html.escape(text)
+    cursor = 0
+    rendered: list[str] = []
+    for link in links:
+        if not isinstance(link, dict):
+            continue
+        label = clean_link_label(link.get("label"))
+        if not label:
+            continue
+        position = text.find(label, cursor)
+        if position < 0:
+            continue
+        rendered.append(html.escape(text[cursor:position]))
+        rendered.append(source_link_markup(
+            label,
+            link.get("href"),
+            asset_base,
+            routes_by_path,
+            force_external=bool(link.get("live_action")),
+        ))
+        cursor = position + len(label)
+    if not rendered:
+        return html.escape(text)
+    rendered.append(html.escape(text[cursor:]))
+    return "".join(rendered)
+
+
+def render_snapshot_text(
+    node: dict,
+    asset_base: str,
+    routes_by_path: dict[str, dict],
+) -> str:
+    """Render a source node's text, retaining outbound live-action intent."""
+
+    text = str(node.get("text") or "")
+    href = node.get("href")
+    if href:
+        return source_link_markup(
+            text,
+            href,
+            asset_base,
+            routes_by_path,
+            force_external=bool(node.get("live_action")),
+        )
+    return source_text_markup(text, node.get("links"), asset_base, routes_by_path)
 
 
 def _walk_nodes(nodes: list[dict]):
@@ -953,7 +1209,12 @@ def _heading_is_sentence(node: dict) -> bool:
     return text.endswith(".") or len(text.split()) > 16
 
 
-def assign_snapshot_heading_ids(nodes: list[dict], title: str) -> list[tuple[str, str]]:
+def assign_snapshot_heading_ids(
+    nodes: list[dict],
+    title: str,
+    *,
+    primary_heading: bool = True,
+) -> list[tuple[str, str]]:
     """Attach local anchors while preserving the source heading order."""
 
     outline: list[tuple[str, str]] = []
@@ -995,7 +1256,7 @@ def assign_snapshot_heading_ids(nodes: list[dict], title: str) -> list[tuple[str
             ),
             headings[0] if headings else None,
         )
-    if primary is not None:
+    if primary is not None and primary_heading:
         primary["primary"] = True
     for node in headings:
         text = str(node.get("text") or "")
@@ -1052,11 +1313,11 @@ def render_snapshot_item(
         if node.get("type") in {"heading", "link"}:
             text = str(node.get("text") or "")
             if text:
-                rendered.append(source_link_markup(text, node.get("href"), asset_base, routes_by_path))
+                rendered.append(render_snapshot_text(node, asset_base, routes_by_path))
         elif node.get("type") == "paragraph":
             text = str(node.get("text") or "")
             if text:
-                rendered.append(source_link_markup(text, node.get("href"), asset_base, routes_by_path))
+                rendered.append(render_snapshot_text(node, asset_base, routes_by_path))
         elif node.get("type") == "list":
             rendered.append(render_snapshot_list(node, asset_base, routes_by_path, heading_base))
     if not rendered:
@@ -1107,7 +1368,7 @@ def render_snapshot_node(
     if node_type == "heading":
         if node.get("skip"):
             return ""
-        linked = source_link_markup(text, node.get("href"), asset_base, routes_by_path)
+        linked = render_snapshot_text(node, asset_base, routes_by_path)
         if _heading_is_sentence(node):
             return f"      <p>{linked}</p>"
         level = 1 if node.get("primary") else min(
@@ -1117,7 +1378,7 @@ def render_snapshot_node(
         identifier = f' id="{html.escape(str(node.get("id") or ""), quote=True)}"' if node.get("id") else ""
         return f"      <h{level}{identifier}>{linked}</h{level}>"
     if node_type in {"paragraph", "link"} and text:
-        linked = source_link_markup(text, node.get("href"), asset_base, routes_by_path)
+        linked = render_snapshot_text(node, asset_base, routes_by_path)
         class_name = ' class="source-standalone-link"' if node_type == "link" else ""
         return f"      <p{class_name}>{linked}</p>"
     if node_type == "list":
@@ -1163,6 +1424,13 @@ def render_snapshot_footer_links(
         if node.get("type") in {"heading", "link", "paragraph"}
         and node.get("href")
     }
+    rendered_hrefs.update(
+        str(link.get("href") or "")
+        for node in _walk_nodes(nodes)
+        if isinstance(node.get("links"), list)
+        for link in node["links"]
+        if isinstance(link, dict) and link.get("href")
+    )
     seen = set(rendered_hrefs)
     items: list[str] = []
     for link in footer_links:
@@ -1209,6 +1477,185 @@ def render_snapshot_source(
         return None
     footer = render_snapshot_footer_links(footer_links, nodes, asset_base, routes_by_path)
     return render_snapshot_outline(outline), content, footer
+
+
+def calendar_stable_nodes(nodes: list[dict]) -> list[dict]:
+    """Keep durable location and hours text, never a stale agenda projection."""
+
+    start = next(
+        (
+            index
+            for index, node in enumerate(nodes)
+            if node.get("type") == "heading"
+            and clean_source_fragment(node.get("text")).casefold() == "class locations"
+        ),
+        None,
+    )
+    return nodes[start:] if start is not None else []
+
+
+def calendar_snapshot_heading(snapshot_html: str, fallback: str) -> str:
+    """Use the public calendar hero rather than a generic route label."""
+
+    nodes, _ = snapshot_semantic_document(snapshot_html)
+    for node in nodes:
+        if node.get("type") != "heading":
+            continue
+        heading = clean_source_fragment(node.get("text"))
+        if heading:
+            return heading
+    return fallback
+
+
+def _calendar_day_short_label(value: str) -> str:
+    """Keep the compact day/date label while retaining the full source label in title."""
+
+    compact = re.match(r"^([A-Za-z]{3})\s+(\d{1,2})\b", value)
+    full = re.match(r"^([A-Za-z]{3})[A-Za-z]*,\s+[A-Za-z]+\s+(\d{1,2}),", value)
+    match = compact or full
+    return f"{match.group(1)} {match.group(2)}" if match else value
+
+
+def render_current_calendar_view(calendar_source: dict[str, Any]) -> str:
+    """Render the reviewed live agenda and official PDF schedule as a real calendar view.
+
+    The static page presents source-captured class information, but never
+    recreates the Wix booking flow.  Every registration action stays on the
+    official calendar where availability and personal-information collection
+    are current.
+    """
+
+    source_url = html.escape(calendar_source["source_url"], quote=True)
+    agenda = calendar_source["agenda"]
+    week = agenda["week"]
+    schedule = calendar_source["pdf_schedule"]
+    document = calendar_source["document"]
+    document_url = html.escape(document["url"], quote=True)
+    document_label = html.escape(document["label"])
+    agenda_captured_at = html.escape(agenda["captured_at"].replace("T", " ").removesuffix("Z") + " UTC")
+
+    week_days = []
+    for day in week["days"]:
+        is_selected = day == week["selected"]
+        selected = ' aria-current="date"' if is_selected else ""
+        class_name = "calendar-week__day calendar-week__day--selected" if is_selected else "calendar-week__day"
+        week_days.append(
+            f'          <li class="{class_name}" title="{html.escape(day, quote=True)}"{selected}>'
+            f"{html.escape(_calendar_day_short_label(day))}</li>"
+        )
+
+    agenda_rows = []
+    for event in agenda["events"]:
+        agenda_rows.append(
+            '          <li class="calendar-event">\n'
+            f'            <time class="calendar-event__date" datetime="{html.escape(event["date"], quote=True)}">{html.escape(event["date_label"])}</time>\n'
+            '            <div class="calendar-event__body">\n'
+            f'              <h3>{html.escape(event["title"])}</h3>\n'
+            f'              <p class="calendar-event__time">{html.escape(event["time"])} <span aria-hidden="true">·</span> {html.escape(event["duration"])}</p>\n'
+            f'              <p class="calendar-event__details">{html.escape(event["location"])}</p>\n'
+            "            </div>\n"
+            f'            <a class="calendar-event__register" href="{source_url}" target="_blank" rel="noreferrer">REGISTER<span class="visually-hidden"> for {html.escape(event["title"])}</span></a>\n'
+            "          </li>"
+        )
+
+    schedule_rows = []
+    for event in schedule["events"]:
+        schedule_rows.append(
+            '            <li class="calendar-pdf-event">\n'
+            f'              <time datetime="{html.escape(event["date"], quote=True)}">{html.escape(event["date_label"])}</time>\n'
+            f'              <span>{html.escape(event["title"])}</span>\n'
+            "            </li>"
+        )
+    support_lines = "\n".join(
+        f"            <li>{html.escape(line)}</li>" for line in schedule["support"]
+    )
+    theme = (
+        f'          <p class="calendar-pdf__theme">{html.escape(schedule["theme"])}</p>\n'
+        if schedule["theme"]
+        else ""
+    )
+    week_days_markup = "\n".join(week_days)
+    agenda_rows_markup = "\n".join(agenda_rows)
+    schedule_rows_markup = "\n".join(schedule_rows)
+    return (
+        '      <section class="calendar-agenda" aria-labelledby="calendar-agenda-heading">\n'
+        '        <header class="calendar-agenda__header">\n'
+        '          <p class="calendar-eyebrow">Class Signup</p>\n'
+        '          <h2 id="calendar-agenda-heading">Upcoming classes</h2>\n'
+        '          <p>Choose a class below to check current availability and register on the Digital Equity site.</p>\n'
+        '        </header>\n'
+        '        <div class="calendar-week" aria-label="Captured visible week">\n'
+        f'          <p class="calendar-week__label">{html.escape(week["label"])}</p>\n'
+        '          <ol class="calendar-week__days">\n'
+        f"{week_days_markup}\n"
+        '          </ol>\n'
+        '        </div>\n'
+        '        <ol class="calendar-events">\n'
+        f"{agenda_rows_markup}\n"
+        '        </ol>\n'
+        f'        <p class="calendar-agenda__continue"><a href="{source_url}" target="_blank" rel="noreferrer">View all current classes on the Digital Equity site</a></p>\n'
+        f'        <p class="calendar-agenda__note">Schedule captured {agenda_captured_at}; availability changes on the Digital Equity site.</p>\n'
+        '      </section>\n'
+        '      <section class="calendar-pdf" aria-labelledby="calendar-pdf-heading">\n'
+        '        <header class="calendar-pdf__header">\n'
+        '          <p class="calendar-eyebrow">Regular Class Schedule</p>\n'
+        f'          <h2 id="calendar-pdf-heading">{html.escape(schedule["month"])}</h2>\n'
+        f"{theme}"
+        f'          <p class="calendar-pdf__location">{html.escape(schedule["location"]["name"])}<br>{html.escape(schedule["location"]["address"])} </p>\n'
+        f'          <p class="calendar-pdf__hours">{html.escape(schedule["default_hours"])}</p>\n'
+        f'          <p><a class="calendar-pdf__download" href="{document_url}" target="_blank" rel="noreferrer">{document_label} <span aria-hidden="true">(PDF)</span></a></p>\n'
+        '        </header>\n'
+        '        <ol class="calendar-pdf-events">\n'
+        f"{schedule_rows_markup}\n"
+        '        </ol>\n'
+        '        <section class="calendar-support" aria-labelledby="calendar-support-heading">\n'
+        '          <h3 id="calendar-support-heading">Tech Time &amp; support</h3>\n'
+        '          <ul>\n'
+        f"{support_lines}\n"
+        '          </ul>\n'
+        f'          <p>{html.escape(schedule["registration_note"])}</p>\n'
+        '        </section>\n'
+        '      </section>'
+    )
+
+
+def render_calendar_snapshot_source(
+    snapshot_html: str,
+    title: str,
+    asset_base: str,
+    routes: list[dict],
+    calendar_source: dict[str, Any],
+) -> tuple[str, str, str] | None:
+    """Build a coherent static calendar view around current official actions.
+
+    Wix's agenda controls are live and change frequently. The historical
+    capture remains provenance for stable location and class-hours text, while
+    actual availability, registration, and the downloadable schedule remain
+    outbound actions on the official public site.
+    """
+
+    nodes, footer_links = snapshot_semantic_document(snapshot_html)
+    nodes = calendar_stable_nodes(nodes)
+    if not nodes:
+        return None
+    outline = assign_snapshot_heading_ids(nodes, title, primary_heading=False)
+    routes_by_path = {route["path"]: route for route in routes}
+    stable_content = render_snapshot_nodes(
+        nodes,
+        asset_base,
+        routes_by_path,
+        snapshot_heading_base(nodes),
+    )
+    if not stable_content:
+        return None
+    footer = render_snapshot_footer_links(footer_links, nodes, asset_base, routes_by_path)
+    content = (
+        f'{render_current_calendar_view(calendar_source)}\n'
+        f'      <section class="calendar-location-details">\n{stable_content}\n      </section>'
+    )
+    # The calendar has its own source-faithful hierarchy above; a generic
+    # outline is more visual noise than help here.
+    return "", content, footer
 
 
 def is_faq_heading(text: str) -> bool:
@@ -1281,6 +1728,7 @@ def render_text_page(
     routes: list[dict] | None = None,
     snapshot_html: str | None = None,
     navigation_snapshot_html: str | None = None,
+    calendar_source: dict[str, Any] | None = None,
 ) -> str:
     """Render a small, text-only projection of the approved public page."""
 
@@ -1303,14 +1751,33 @@ def render_text_page(
         route["path"],
     )
 
-    snapshot_projection = (
-        render_snapshot_source(snapshot_html, title, asset_base, routes)
-        if snapshot_html and routes
-        else None
-    )
+    if (
+        route["path"] == CALENDAR_ROUTE_PATH
+        and snapshot_html
+        and routes
+        and calendar_source
+    ):
+        snapshot_projection = render_calendar_snapshot_source(
+            snapshot_html,
+            title,
+            asset_base,
+            routes,
+            calendar_source,
+        )
+    else:
+        snapshot_projection = (
+            render_snapshot_source(snapshot_html, title, asset_base, routes)
+            if snapshot_html and routes
+            else None
+        )
     if snapshot_projection is not None:
         source_outline, source_content, source_footer_links = snapshot_projection
-        page_heading = ""
+        if route["path"] == CALENDAR_ROUTE_PATH and snapshot_html:
+            page_heading = (
+                f"    <h1>{html.escape(calendar_snapshot_heading(snapshot_html, 'Calendar'))}</h1>"
+            )
+        else:
+            page_heading = ""
     else:
         source_content = render_source_fragments(page) or "      <p>No source text is available.</p>"
         source_outline = render_source_outline(source_fragments(page))
@@ -1429,6 +1896,11 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
     try:
         root_route = next(route for route in routes if route["path"] == "/")
         navigation_snapshot_html = snapshots[root_route["sourceUrl"]]["html"]
+        calendar_source = (
+            load_calendar_source()
+            if any(route["path"] == CALENDAR_ROUTE_PATH for route in routes)
+            else None
+        )
         for asset in SHARED_ASSETS:
             shutil.copyfile(ROOT / asset, temporary / asset)
         shutil.copyfile(SIDECAR_TEMPLATE_PATH, temporary / SIDECAR_OUTPUT)
@@ -1445,6 +1917,7 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
                 routes,
                 snapshots[route["sourceUrl"]]["html"],
                 navigation_snapshot_html,
+                calendar_source,
             )
             destination.write_text(rendered, encoding="utf-8")
         counts = validate_output(temporary, routes)

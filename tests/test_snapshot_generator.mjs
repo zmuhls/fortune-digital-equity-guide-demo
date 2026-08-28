@@ -9,6 +9,7 @@ import test from "node:test";
 
 import {
   CaptureError,
+  CALENDAR_POPUP_DISMISSAL_TIMEOUT_MS,
   CALENDAR_STATIC_HORIZON_EXPANSIONS,
   MAX_PROGRESSIVE_COLLECTION_EXPANSIONS,
   MAX_TRANSIENT_NAVIGATION_ATTEMPTS,
@@ -16,6 +17,7 @@ import {
   assertSanitized,
   assertStaticContentMaterialized,
   collectionMetricAdvanced,
+  dismissBlockingCalendarPopup,
   isTransientNavigationFailure,
   atomicPublish,
   buildManifest,
@@ -227,6 +229,71 @@ test("collection capture uses an explicit finite static calendar horizon", () =>
   const baseline = { visible_text_characters: 748, links: 9, service_page_links: 0, images: 7 };
   assert.equal(collectionMetricAdvanced(baseline, { ...baseline, images: 55 }), true);
   assert.equal(collectionMetricAdvanced(baseline, baseline), false);
+});
+
+
+test("calendar collection capture dismisses only a marked popup before Load More", async () => {
+  const evaluations = [];
+  const waits = [];
+  const keypresses = [];
+  const page = {
+    evaluate: async (callback) => {
+      evaluations.push(callback.name);
+      if (callback.name === "markVisibleCalendarPopupDismissal") {
+        return { present: true, close_control: true };
+      }
+      if (callback.name === "clickMarkedCalendarPopupDismissal") return true;
+      if (callback.name === "clearCalendarPopupDismissalMarkers") return undefined;
+      throw new Error(`unexpected evaluate callback: ${callback.name}`);
+    },
+    waitForFunction: async (callback, argument, options) => {
+      waits.push({ callback: callback.name, argument, options });
+    },
+    keyboard: {
+      press: async (key) => keypresses.push(key),
+    },
+  };
+
+  const result = await dismissBlockingCalendarPopup(page);
+
+  assert.deepEqual(result, { detected: true, dismissed: true, method: "close-control" });
+  assert.deepEqual(evaluations, [
+    "markVisibleCalendarPopupDismissal",
+    "clickMarkedCalendarPopupDismissal",
+    "clearCalendarPopupDismissalMarkers",
+  ]);
+  assert.deepEqual(waits, [{
+    callback: "markedCalendarPopupIsDismissed",
+    argument: null,
+    options: { timeout: CALENDAR_POPUP_DISMISSAL_TIMEOUT_MS },
+  }]);
+  assert.deepEqual(keypresses, []);
+});
+
+
+test("calendar popup dismissal uses Escape only when no close control is exposed", async () => {
+  const keypresses = [];
+  let evaluations = 0;
+  const page = {
+    evaluate: async (callback) => {
+      evaluations += 1;
+      if (callback.name === "markVisibleCalendarPopupDismissal") {
+        return { present: true, close_control: false };
+      }
+      if (callback.name === "clearCalendarPopupDismissalMarkers") return undefined;
+      throw new Error(`unexpected evaluate callback: ${callback.name}`);
+    },
+    waitForFunction: async () => undefined,
+    keyboard: {
+      press: async (key) => keypresses.push(key),
+    },
+  };
+
+  const result = await dismissBlockingCalendarPopup(page);
+
+  assert.deepEqual(result, { detected: true, dismissed: true, method: "escape" });
+  assert.equal(evaluations, 2);
+  assert.deepEqual(keypresses, ["Escape"]);
 });
 
 

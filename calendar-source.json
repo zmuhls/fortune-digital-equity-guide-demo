@@ -1,0 +1,152 @@
+{
+  "schema_version": 3,
+  "source_url": "https://www.fortunedigitalequity.org/calendar",
+  "captured_at": "2026-08-28T02:15:17Z",
+  "agenda": {
+    "captured_at": "2026-08-28T02:12:29Z",
+    "week": {
+      "label": "August 2026",
+      "days": [
+        "Sunday, August 23, 2026",
+        "Monday, August 24, 2026",
+        "Tuesday, August 25, 2026",
+        "Wednesday, August 26, 2026",
+        "Thursday, August 27, 2026",
+        "Friday, August 28, 2026",
+        "Saturday, August 29, 2026"
+      ],
+      "selected": "Friday, August 28, 2026"
+    },
+    "events": [
+      {
+        "date": "2026-08-28",
+        "date_label": "Friday, August 28, 2026",
+        "title": "Tech Time: Foundations",
+        "time": "1:00 pm",
+        "duration": "1 hr",
+        "location": "Main Office (LIC)",
+        "registration_url": "https://www.fortunedigitalequity.org/calendar"
+      },
+      {
+        "date": "2026-08-31",
+        "date_label": "Monday, August 31, 2026",
+        "title": "Tech Time: Foundations",
+        "time": "1:00 pm",
+        "duration": "1 hr",
+        "location": "Main Office (LIC)",
+        "registration_url": "https://www.fortunedigitalequity.org/calendar"
+      },
+      {
+        "date": "2026-09-01",
+        "date_label": "Tuesday, September 1, 2026",
+        "title": "Open Computer Lab Session",
+        "time": "1:30 pm",
+        "duration": "30 min",
+        "location": "Main Office (LIC)",
+        "registration_url": "https://www.fortunedigitalequity.org/calendar"
+      },
+      {
+        "date": "2026-09-01",
+        "date_label": "Tuesday, September 1, 2026",
+        "title": "What Is AI?",
+        "time": "2:00 pm",
+        "duration": "1 hr 30 min",
+        "location": "Main Office (LIC)",
+        "registration_url": "https://www.fortunedigitalequity.org/calendar"
+      },
+      {
+        "date": "2026-09-02",
+        "date_label": "Wednesday, September 2, 2026",
+        "title": "Open Computer Lab Session",
+        "time": "1:30 pm",
+        "duration": "30 min",
+        "location": "Main Office (LIC)",
+        "registration_url": "https://www.fortunedigitalequity.org/calendar"
+      }
+    ]
+  },
+  "document": {
+    "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_9ba96e2dcd284a19afd0c0c0d71fe06c.pdf",
+    "label": "AI Month Class Schedule",
+    "sha256": "edb20dec45fc18c9599d7b4427d4aa2bde7687ca99c4a9da2c689042495b74bf"
+  },
+  "pdf_schedule": {
+    "title": "DIGITAL EQUITY PROGRAM LIC Training SchedulE",
+    "month": "September 2026",
+    "theme": "AI AWARENESS MONTH",
+    "location": {
+      "name": "LIC: MAIN SERVICE CENTER",
+      "address": "29-76 NORTHERN BLVD, ROOM 133"
+    },
+    "default_hours": "2:00 PM - 3:30 PM (UNLESS STATED OTHERWISE)",
+    "events": [
+      {
+        "date": "2026-09-01",
+        "date_label": "Tue | Sep 1",
+        "title": "What Is AI?"
+      },
+      {
+        "date": "2026-09-02",
+        "date_label": "Wed | Sep 2",
+        "title": "AI In Everyday Systems"
+      },
+      {
+        "date": "2026-09-03",
+        "date_label": "Thu | Sep 3",
+        "title": "How Does AI Think? (1:30 PM): feat. Catherine McCulloch"
+      },
+      {
+        "date": "2026-09-08",
+        "date_label": "Tue | Sep 8",
+        "title": "Communicating With AI"
+      },
+      {
+        "date": "2026-09-09",
+        "date_label": "Wed | Sep 9",
+        "title": "Digital Essentials: Keyboarding & Mousing"
+      },
+      {
+        "date": "2026-09-10",
+        "date_label": "Thu | Sep 10",
+        "title": "Choosing The Right Tool For The Job"
+      },
+      {
+        "date": "2026-09-15",
+        "date_label": "Tue | Sep 15",
+        "title": "AI Effects & Tradeoffs: details TBA"
+      },
+      {
+        "date": "2026-09-16",
+        "date_label": "Wed | Sep 16",
+        "title": "Digital Essentials: Intro to Email"
+      },
+      {
+        "date": "2026-09-17",
+        "date_label": "Thu | Sep 17",
+        "title": "Alternative, Open & Local AI Tools: feat. Offline Base"
+      },
+      {
+        "date": "2026-09-22",
+        "date_label": "Tue | Sep 22",
+        "title": "AI Safety In 2026: feat. the AI Safety Awareness Project"
+      },
+      {
+        "date": "2026-09-23",
+        "date_label": "Wed | Sep 23",
+        "title": "Capstone Activity Using NO AI: details TBA"
+      },
+      {
+        "date": "2026-09-24",
+        "date_label": "Thu | Sep 24",
+        "title": "Capstone Activity Using AI: details TBA"
+      }
+    ],
+    "support": [
+      "Tech Time Focused & Foundations (TTF) sessions available by Appointment ONLY",
+      "Focused (1-on-1): Mon, Tue, & Wed | 10 AM - 11:30 AM",
+      "Foundations (Practice): Mon & Fri | 1 - 2 PM | LIC Room 133",
+      "Support Desk Kiosk (SDK): Tues & Wed | 11:30 - 1:30 PM | LIC Cafeteria"
+    ],
+    "registration_note": "For more info or to register: Visit FortuneDigitalEquity.org (QR Code) or email FSTrain@FortuneSociety.org"
+  }
+}

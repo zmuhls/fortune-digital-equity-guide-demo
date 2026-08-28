@@ -76,7 +76,7 @@ Run the key-free tests and check that the index can produce all route shells:
 python3 scripts/build_pages.py --check-index
 ```
 
-The test launcher runs the Python unit suite across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive answer expansion, member access, styling safeguards, and Wix secret handling. It then runs 23 browser-core and bridge tests plus 13 snapshot-capture safety tests.
+The test launcher runs the Python unit suite across retrieval, API contracts, privacy, source authority, grounding, conversation persistence, the crawler, the Pages builder, production limits, warm-up behavior, responsive answer expansion, member access, styling safeguards, and Wix secret handling. It then runs browser-core, bridge, and snapshot-capture safety tests.
 
 The [Website Guide evaluation suite](evals/website-guide/README.md) adds a fixed 41-case synthetic benchmark across broad and specific intent, typos, multilingual requests, privacy, adversarial input, page awareness, follow-up context, and input boundaries. Its executable gates are stricter than the unit tests and produce a versioned run record for staff review.
 
@@ -88,6 +88,16 @@ python3 -m http.server 8791 --directory _site
 ```
 
 The build writes 138 human-readable, text-only `index.html` source routes under `_site/`, including the root route, and copies only the shared files that those views and the sidecar require.
+
+Refresh the reviewed current calendar before a calendar release:
+
+```bash
+node scripts/capture_calendar_agenda.mjs --output /tmp/fortune-calendar-agenda.json
+python3 scripts/refresh_calendar_source.py --agenda /tmp/fortune-calendar-agenda.json
+python3 scripts/build_pages.py
+```
+
+The capture records the public Daily Agenda's visible week and class rows, plus the visible downloadable-PDF action. The refresh validates that action against the newly downloaded official PDF, extracts the published monthly schedule, and writes one committed `calendar-source.json` record. Both static deployments consume that same record. The mirror never stores capacity, creates booking URLs, or proxies registration; each registration action opens Fortune's live calendar.
 
 Run the live local model demo:
 
