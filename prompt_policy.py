@@ -8,8 +8,8 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
-PROMPT_POLICY_VERSION = "2026-08-28-v27"
-PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-readable-schedules"
+PROMPT_POLICY_VERSION = "2026-08-28-v28"
+PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-direct-answers"
 
 
 # These modules are server-owned invariants. They are deliberately unavailable
@@ -98,7 +98,8 @@ TEAM_TUNABLE_PROMPT_MODULES = {
             "for a list, schedule, comparison, or steps. Start with the answer. Avoid "
             "filler, slogans, generic invitations, and repeated information. Return "
             "plain text without Markdown formatting. Put each requested list or "
-            "schedule item on its own line with a plain-text dash."
+            "schedule item on its own line with a plain-text dash. Do not append an "
+            "invitation or follow-up question after you have answered the request."
         ),
     },
     "clarification": {
