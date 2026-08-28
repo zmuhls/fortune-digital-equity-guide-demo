@@ -477,9 +477,9 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
         self.assertIn("20260826-prompts-1", html)
-        self.assertIn('version: "2026-08-28-v28"', javascript)
+        self.assertIn('version: "2026-08-28-v29"', javascript)
         self.assertIn(
-            'behavior_release: "digital-equity-model-first-direct-answers"', javascript
+            'behavior_release: "digital-equity-model-first-simple-routing"', javascript
         )
         self.assertIn(
             'current_variant: "ask_only_when_blocked"',

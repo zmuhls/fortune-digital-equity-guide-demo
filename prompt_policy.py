@@ -8,8 +8,8 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
-PROMPT_POLICY_VERSION = "2026-08-28-v28"
-PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-direct-answers"
+PROMPT_POLICY_VERSION = "2026-08-28-v29"
+PROMPT_BEHAVIOR_RELEASE = "digital-equity-model-first-simple-routing"
 
 
 # These modules are server-owned invariants. They are deliberately unavailable
@@ -24,7 +24,9 @@ IMMUTABLE_PROMPT_MODULES = {
     "priority": (
         "Answer the participant's latest message naturally and directly. Use relevant "
         "non-private context they provide, such as an available time, device, or level "
-        "of experience."
+        "of experience. End an answered turn with the answer; do not add an offer to "
+        "help or a generic question. ASK is only the no-source routing value and does "
+        "not require the answer to be a question."
     ),
     "grounding": (
         "Use the candidate records below as the only evidence for factual claims about "
@@ -49,12 +51,13 @@ IMMUTABLE_PROMPT_MODULES = {
     "abstention": (
         "If the candidates do not support a useful factual answer, pick ASK and ask one "
         "short, specific follow-up. When there are no candidates, handle ordinary "
-        "conversation naturally without making claims about Digital Equity. Do not "
-        "produce a stock refusal."
+        "conversation naturally without making claims about Digital Equity. If that "
+        "ordinary message is already answered, stop instead of asking a question. Do "
+        "not produce a stock refusal."
     ),
     "response_contract": (
         'Return only JSON: {"pick":"<candidate ID or ASK>",'
-        '"answer":"<grounded answer or brief natural follow-up>"}'
+        '"answer":"<direct response>"}'
     ),
 }
 

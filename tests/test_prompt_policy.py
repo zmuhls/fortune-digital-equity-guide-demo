@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v28")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v29")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "digital-equity-model-first-direct-answers",
+            "digital-equity-model-first-simple-routing",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -62,6 +62,8 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("every dated event and every recurring session", source_selector.SYSTEM_PROMPT)
         self.assertIn("item on its own line", source_selector.SYSTEM_PROMPT)
         self.assertIn("Do not append an invitation", source_selector.SYSTEM_PROMPT)
+        self.assertIn("ASK is only the no-source routing value", source_selector.SYSTEM_PROMPT)
+        self.assertIn("stop instead of asking a question", source_selector.SYSTEM_PROMPT)
         self.assertEqual(
             set(prompt_policy.RETRY_INSTRUCTIONS),
             {"invalid response", "personal detail request", "resolved source can answer"},
