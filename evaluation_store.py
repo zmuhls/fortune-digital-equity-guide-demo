@@ -698,7 +698,7 @@ class EvaluationStore:
                     UPDATE evaluator_accounts
                     SET email_normalized = COALESCE(%s, email_normalized),
                         display_name = CASE
-                            WHEN %s IS NULL THEN display_name
+                            WHEN %s THEN display_name
                             ELSE NULL
                         END,
                         password_hash = NULL,
@@ -714,7 +714,7 @@ class EvaluationStore:
                     WHERE slot_key = %s
                     """,
                     (
-                        normalized_email, normalized_email,
+                        normalized_email, normalized_email is None,
                         self._digest("invite", token),
                         self.invite_seconds,
                         slot_key,
