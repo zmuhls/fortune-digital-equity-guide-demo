@@ -7,8 +7,8 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#281a39">
   <title>Review conversations · Digital Equity</title>
-  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260831-shared-prompt-1">
-  <script src="/evaluation/assets/evaluation.js?v=20260831-shared-prompt-1" defer></script>
+  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260831-compact-review-1">
+  <script src="/evaluation/assets/evaluation.js?v=20260831-compact-review-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#evaluation-main">Skip to review workspace</a>
@@ -174,20 +174,48 @@
       </div>
       <button class="icon-button" id="transcript-close" type="button" aria-label="Close transcript">×</button>
     </div>
-    <form class="transcript-attribution-form" id="transcript-attribution-form">
-      <label for="transcript-evaluator">Evaluator</label>
-      <select id="transcript-evaluator"><option value="">Not attributed</option></select>
-      <button class="secondary-button" type="submit">Save evaluator</button>
-      <span class="save-status" id="transcript-attribution-status" role="status"></span>
-    </form>
-    <form class="review-note-form" id="review-note-form">
-      <label for="review-note">Shared reviewer note</label>
-      <textarea id="review-note" maxlength="1000" rows="3" placeholder="What worked or needs attention?"></textarea>
-      <div class="note-actions">
-        <button class="secondary-button" type="submit">Save note</button>
-        <span class="save-status" id="review-note-status" role="status"></span>
+    <div class="transcript-controls">
+      <form class="transcript-bucket-form" id="transcript-bucket-form">
+        <label for="transcript-bucket">Bucket</label>
+        <select id="transcript-bucket"></select>
+        <button class="secondary-button" type="submit">Move</button>
+        <span class="save-status" id="transcript-bucket-status" role="status"></span>
+      </form>
+      <div class="transcript-view-controls" aria-label="Transcript view controls">
+        <label for="transcript-turn-filter">Show
+          <select id="transcript-turn-filter">
+            <option value="all">All turns</option>
+            <option value="complete">Model responses</option>
+            <option value="failed">Failed attempts</option>
+          </select>
+        </label>
+        <label for="transcript-turn-order">Order
+          <select id="transcript-turn-order">
+            <option value="oldest">Oldest first</option>
+            <option value="newest">Newest first</option>
+          </select>
+        </label>
       </div>
-    </form>
+    </div>
+    <details class="transcript-review-details">
+      <summary>Evaluator and notes</summary>
+      <div class="transcript-review-body">
+        <form class="transcript-attribution-form" id="transcript-attribution-form">
+          <label for="transcript-evaluator">Evaluator</label>
+          <select id="transcript-evaluator"><option value="">Not attributed</option></select>
+          <button class="secondary-button" type="submit">Save evaluator</button>
+          <span class="save-status" id="transcript-attribution-status" role="status"></span>
+        </form>
+        <form class="review-note-form" id="review-note-form">
+          <label for="review-note">Shared reviewer note</label>
+          <textarea id="review-note" maxlength="1000" rows="3" placeholder="What worked or needs attention?"></textarea>
+          <div class="note-actions">
+            <button class="secondary-button" type="submit">Save note</button>
+            <span class="save-status" id="review-note-status" role="status"></span>
+          </div>
+        </form>
+      </div>
+    </details>
     <div class="transcript" id="transcript"></div>
   </dialog>
 

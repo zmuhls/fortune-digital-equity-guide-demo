@@ -66,8 +66,15 @@ HERE = pathlib.Path(__file__).parent
 PUBLIC_SITE_ROOT = HERE / "_site"
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8790"))
-MODEL = os.environ.get("FORTUNE_MODEL", os.environ.get("TOOLKIT_MODEL", "glm-5.2"))
+MODEL = os.environ.get(
+    "FORTUNE_MODEL",
+    os.environ.get("TOOLKIT_MODEL", "glm-5.3-flash:cloud"),
+).strip() or "glm-5.3-flash:cloud"
+FALLBACK_MODEL = os.environ.get(
+    "FORTUNE_FALLBACK_MODEL", "z-ai/glm-5.3-flash"
+).strip() or "z-ai/glm-5.3-flash"
 KEY = os.environ.get("OLLAMA_API_KEY", "").strip()
+OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 ALLOWED_ORIGINS = {
     origin.strip().rstrip("/")
     for origin in os.environ.get("FORTUNE_ALLOWED_ORIGINS", "").split(",")
@@ -96,6 +103,10 @@ MODEL_OUTPUT_SCHEMA = {
 
 class ModelResponseRejected(RuntimeError):
     """The provider replied, but no safe participant-facing answer survived validation."""
+
+
+def model_available():
+    return bool(KEY or OPENROUTER_KEY)
 
 def bounded_env_int(name, default, minimum, maximum):
     try:
@@ -312,6 +323,116 @@ def ollama_request(payload):
     except urllib.error.HTTPError as error:
         error.read()
         raise RuntimeError("Ollama Cloud returned an error") from error
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        raise RuntimeError("Ollama Cloud could not be reached") from error
+
+
+def openrouter_request(payload):
+    request = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(payload).encode(),
+        headers={
+            "Authorization": "Bearer " + OPENROUTER_KEY,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://www.fortunedigitalequity.org/",
+            "X-OpenRouter-Title": "Digital Equity Website Guide",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as error:
+        error.read()
+        raise RuntimeError("OpenRouter returned an error") from error
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        raise RuntimeError("OpenRouter could not be reached") from error
+
+
+def ollama_completion(messages):
+    data = ollama_request({
+        "model": MODEL,
+        "messages": messages,
+        "stream": False,
+        "think": "low",
+        "format": MODEL_OUTPUT_SCHEMA,
+        "keep_alive": MODEL_KEEP_ALIVE,
+        "options": {
+            "temperature": 0,
+            "seed": MODEL_SEED,
+            "num_predict": MODEL_NUM_PREDICT,
+        },
+    })
+    if not isinstance(data, dict):
+        raise RuntimeError("Ollama Cloud returned an invalid response")
+    message = data.get("message") if isinstance(data.get("message"), dict) else {}
+    content = message.get("content") or ""
+    if not content.strip():
+        raise RuntimeError("Ollama Cloud returned no content")
+    return {
+        "provider": "ollama",
+        "model": MODEL,
+        "content": content,
+        "provider_total_ms": round(float(data.get("total_duration") or 0) / 1_000_000),
+        "provider_load_ms": round(float(data.get("load_duration") or 0) / 1_000_000),
+        "prompt_tokens": int(data.get("prompt_eval_count") or 0),
+        "output_tokens": int(data.get("eval_count") or 0),
+        "done_reason": str(data.get("done_reason") or "")[:32],
+    }
+
+
+def openrouter_completion(messages):
+    data = openrouter_request({
+        "model": FALLBACK_MODEL,
+        "messages": messages,
+        "stream": False,
+        "temperature": 0,
+        "seed": MODEL_SEED,
+        "max_tokens": MODEL_NUM_PREDICT,
+        "response_format": {"type": "json_object"},
+        "reasoning": {"effort": "low", "exclude": True},
+    })
+    if not isinstance(data, dict):
+        raise RuntimeError("OpenRouter returned an invalid response")
+    choices = data.get("choices") if isinstance(data.get("choices"), list) else []
+    choice = choices[0] if choices and isinstance(choices[0], dict) else {}
+    message = choice.get("message") if isinstance(choice.get("message"), dict) else {}
+    content = message.get("content") or ""
+    if not str(content or "").strip():
+        raise RuntimeError("OpenRouter returned no content")
+    usage = data.get("usage") or {}
+    return {
+        "provider": "openrouter",
+        "model": str(data.get("model") or FALLBACK_MODEL)[:120],
+        "content": str(content),
+        "provider_total_ms": 0,
+        "provider_load_ms": 0,
+        "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+        "output_tokens": int(usage.get("completion_tokens") or 0),
+        "done_reason": str(choice.get("finish_reason") or "")[:32],
+    }
+
+
+def model_completion(messages, *, prefer_fallback=False):
+    providers = []
+    if KEY:
+        providers.append(("ollama", ollama_completion))
+    if OPENROUTER_KEY:
+        providers.append(("openrouter", openrouter_completion))
+    if prefer_fallback:
+        providers.sort(key=lambda item: item[0] != "openrouter")
+    if not providers:
+        raise RuntimeError("No model provider is configured")
+
+    attempted = []
+    for provider, completion in providers:
+        attempted.append(provider)
+        try:
+            result = completion(messages)
+            result["attempted_providers"] = list(attempted)
+            return result
+        except RuntimeError:
+            continue
+    raise RuntimeError("All configured model providers failed")
 
 
 def preload_model():
@@ -2240,7 +2361,7 @@ def response_contract(
         "model": MODEL,
         "model_called": model_called,
         "retrieval_scope": retrieval_scope,
-        "continuation": {"label": "Ask the live guide", "available": bool(KEY)},
+        "continuation": {"label": "Ask the live guide", "available": model_available()},
     }
 
 
@@ -3106,7 +3227,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json(200 if service_ready else 503, {
                 "status": "ok" if service_ready else "unavailable",
                 "model": MODEL,
-                "model_enabled": bool(KEY),
+                "model_enabled": model_available(),
+                "model_providers": {
+                    "primary": {
+                        "provider": "ollama",
+                        "model": MODEL,
+                        "configured": bool(KEY),
+                    },
+                    "fallback": {
+                        "provider": "openrouter",
+                        "model": FALLBACK_MODEL,
+                        "configured": bool(OPENROUTER_KEY),
+                    },
+                },
                 "index_loaded": SITE_INDEX_PATH.exists(),
                 "indexed_pages": SITE_INDEX.get("unique_urls", len(SOURCE_BY_ID)),
                 "answer_sources": len(ANSWER_SOURCES),
@@ -3122,9 +3255,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 },
                 "app_version": CONVERSATION_RECORDER.app_version,
                 "model_call_limits": {
-                    "per_client_hour": MODEL_CALLS_PER_HOUR,
+                    "per_conversation_hour": MODEL_CALLS_PER_HOUR,
                     "shared_day": MODEL_CALLS_PER_DAY,
                     "max_output_tokens": MODEL_NUM_PREDICT,
+                    "repair_calls_counted_separately": False,
                 },
                 "chat_request_limits": {
                     "per_client_hour": CHAT_REQUESTS_PER_HOUR,
@@ -3192,7 +3326,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
         if path == "/api/warmup":
             if not KEY:
-                self._json(200, {"status": "disabled", "model": MODEL})
+                self._json(200, {
+                    "status": "fallback_ready" if OPENROUTER_KEY else "disabled",
+                    "model": FALLBACK_MODEL if OPENROUTER_KEY else MODEL,
+                    "provider": "openrouter" if OPENROUTER_KEY else None,
+                })
                 return
             try:
                 warmed = MODEL_WARMUP.ensure(preload_model)
@@ -3202,10 +3340,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     "warmed": warmed,
                 })
             except Exception:
-                self._json(503, {
-                    "status": "unavailable",
-                    "model": MODEL,
-                })
+                if OPENROUTER_KEY:
+                    self._json(200, {
+                        "status": "fallback_ready",
+                        "model": FALLBACK_MODEL,
+                        "provider": "openrouter",
+                    })
+                else:
+                    self._json(503, {
+                        "status": "unavailable",
+                        "model": MODEL,
+                    })
             return
         turn = None
         question = ""
@@ -3332,7 +3477,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 ),
                 "",
             )
-            if not KEY:
+            if not model_available():
                 self._chat_failure(
                     503,
                     "Guide unavailable. Try again.",
@@ -3346,8 +3491,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     privacy_state=("sensitive_handoff" if sensitive_request else "clear"),
                 )
                 return
-            client_identifier = self._client_identifier()
-            if not MODEL_CALL_BUDGET.claim(client_identifier):
+            budget_identifier = f"conversation:{turn.conversation_id}"
+            if not MODEL_CALL_BUDGET.claim(budget_identifier):
                 self._chat_failure(
                     429,
                     "Guide busy. Try again shortly.",
@@ -3386,7 +3531,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             })
             model_attempted = True
             model_attempts = 1
-            raw = self._ollama(messages)
+            raw = self._model_completion(messages)
             retry_reason = model_selection_retry_reason(
                 raw,
                 model_sources,
@@ -3397,7 +3542,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 require_model_answer,
                 conversation_history=safe_history,
             )
-            if retry_reason and MODEL_CALL_BUDGET.claim(client_identifier):
+            # A contract repair belongs to the already-authorized participant
+            # turn. Charging it again caused unrelated testers behind one NAT
+            # address to exhaust the model budget before their own model call.
+            if retry_reason:
                 retry_messages = [
                     {
                         "role": "system",
@@ -3407,7 +3555,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     },
                     messages[1],
                 ]
-                raw = self._ollama(retry_messages)
+                raw = self._model_completion(retry_messages, prefer_fallback=True)
                 model_attempts = 2
             final_validation_reason = model_selection_retry_reason(
                 raw,
@@ -3878,6 +4026,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     ):
         interaction = dict(interaction or {})
         response = dict(response)
+        if response.get("model_called"):
+            response["model"] = getattr(self, "_model_used", MODEL)
+            response["model_provider"] = getattr(self, "_model_provider", "ollama")
         response.update({
             "chat_stage": interaction.get("chat_stage") or "unknown",
             "request_kind": interaction.get("request_kind") or "unknown",
@@ -3952,35 +4103,35 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             headers=headers,
         )
 
-    def _ollama(self, messages):
+    def _model_completion(self, messages, *, prefer_fallback=False):
         started_at = time.monotonic()
-        data = ollama_request({
-            "model": MODEL,
-            "messages": messages,
-            "stream": False,
-            "think": False,
-            "format": MODEL_OUTPUT_SCHEMA,
-            "keep_alive": MODEL_KEEP_ALIVE,
-            "options": {
-                "temperature": 0,
-                "seed": MODEL_SEED,
-                "num_predict": MODEL_NUM_PREDICT,
-            },
-        })
-        MODEL_WARMUP.mark_ready()
+        data = model_completion(messages, prefer_fallback=prefer_fallback)
+        self._model_provider = data["provider"]
+        self._model_used = data["model"]
+        if data["provider"] == "ollama":
+            MODEL_WARMUP.mark_ready()
         request_id = getattr(self, "_request_id", "")
         if request_id:
+            if len(data.get("attempted_providers") or []) > 1:
+                print(json.dumps({
+                    "event": "model_provider_fallback",
+                    "request_id": request_id,
+                    "attempted_providers": data["attempted_providers"],
+                    "selected_provider": data["provider"],
+                }, separators=(",", ":")), flush=True)
             print(json.dumps({
                 "event": "model_provider_timing",
                 "request_id": request_id,
+                "provider": data["provider"],
+                "model": data["model"],
                 "wall_ms": round((time.monotonic() - started_at) * 1000),
-                "provider_total_ms": round(float(data.get("total_duration") or 0) / 1_000_000),
-                "provider_load_ms": round(float(data.get("load_duration") or 0) / 1_000_000),
-                "prompt_tokens": int(data.get("prompt_eval_count") or 0),
-                "output_tokens": int(data.get("eval_count") or 0),
+                "provider_total_ms": data["provider_total_ms"],
+                "provider_load_ms": data["provider_load_ms"],
+                "prompt_tokens": data["prompt_tokens"],
+                "output_tokens": data["output_tokens"],
                 "done_reason": str(data.get("done_reason") or "")[:32],
             }, separators=(",", ":")), flush=True)
-        return data.get("message", {}).get("content") or ""
+        return data["content"]
 
     def _client_identifier(self):
         forwarded = self.headers.get("X-Forwarded-For", "")
@@ -4065,9 +4216,10 @@ if __name__ == "__main__":
     EVALUATION_STORE.open()
     print("Digital Equity Website Guide")
     print("  http://%s:%d" % (HOST, PORT))
-    print("  model=%s  key=%s  indexed_pages=%d  answer_sources=%d" % (
+    print("  model=%s  ollama=%s  openrouter=%s  indexed_pages=%d  answer_sources=%d" % (
         MODEL,
         "set" if KEY else "MISSING",
+        "set" if OPENROUTER_KEY else "MISSING",
         SITE_INDEX.get("unique_urls", len(SOURCE_BY_ID)),
         len(ANSWER_SOURCES),
     ))

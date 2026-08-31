@@ -414,7 +414,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
             css,
         )
         self.assertIn(
-            "repeat(auto-fit, minmax(min(300px, 100%), 1fr))",
+            "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
             css,
         )
         self.assertIn("align-items: start", css)
@@ -428,16 +428,21 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertNotIn('label: "Handoff"', javascript)
         self.assertNotIn('"handoff"', javascript)
         self.assertNotIn('label: "Mostly works"', javascript)
-        self.assertIn('addEventListener("drop"', javascript)
+        self.assertNotIn('addEventListener("drop"', javascript)
+        self.assertNotIn('addEventListener("dragstart"', javascript)
+        self.assertNotIn('draggable="true"', javascript)
+        self.assertNotIn("drag-handle", javascript)
         self.assertIn("card-move", javascript)
+        self.assertIn('class="conversation-card-body"', javascript)
+        self.assertIn('class="conversation-summary"', javascript)
         self.assertIn("conversation.evaluation_version = Number(evaluation.version", javascript)
         self.assertIn('id="bucket-visibility"', html)
         self.assertIn('id="bucket-sort"', html)
         self.assertIn('id="bucket-layout"', html)
         self.assertIn('board[data-layout="compact"]', css)
         self.assertIn('layout: "compact"', javascript)
-        self.assertIn('previewKey = "fortune-evaluation-preview-v5"', javascript)
-        self.assertIn('viewKeyPrefix = "fortune-evaluation-view-v2"', javascript)
+        self.assertIn('previewKey = "fortune-evaluation-preview-v6"', javascript)
+        self.assertIn('viewKeyPrefix = "fortune-evaluation-view-v3"', javascript)
         self.assertIn("const UNREVIEWED_PAGE_SIZE = 8", javascript)
         self.assertIn('api("/api/evaluation/conversations?limit=500")', javascript)
         self.assertIn("items.slice(start, end)", javascript)
@@ -461,6 +466,10 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('class="invite-form"', javascript)
         self.assertIn('"invitation_path"', (DEMO / "server.py").read_text(encoding="utf-8"))
         self.assertIn("Link ready · single use", javascript)
+        self.assertIn('id="transcript-bucket"', html)
+        self.assertIn('id="transcript-turn-filter"', html)
+        self.assertIn('id="transcript-turn-order"', html)
+        self.assertIn('class="transcript-review-details"', html)
 
     def test_shared_queue_and_transcripts_show_stored_time_newest_first(self):
         store_source = (DEMO / "evaluation_store.py").read_text(encoding="utf-8")
@@ -488,11 +497,15 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260831-prompt-provenance-2", html)
+        self.assertIn("20260831-compact-review-1", html)
         self.assertIn('id="queue-summary"', html)
-        self.assertIn('class="conversation-counts"', javascript)
+        self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
         self.assertIn("function failedAttemptHtml", javascript)
+        self.assertIn('class="failed-attempt"', javascript)
+        self.assertIn("The request stopped before the Website Guide model ran.", javascript)
+        self.assertIn('state.transcriptView.filter === "failed"', javascript)
+        self.assertIn('state.transcriptView.order === "newest"', javascript)
 
     def test_conversation_queue_refreshes_when_reviewers_return_to_it(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -537,7 +550,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260831-prompt-provenance-2", html)
+        self.assertIn("20260831-compact-review-1", html)
         self.assertIn('version: "2026-08-31-v33"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript

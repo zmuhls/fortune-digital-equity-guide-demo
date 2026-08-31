@@ -78,7 +78,7 @@ fi
 
 echo "Digital Equity Website Guide"
 echo "  $DEMO_URL"
-echo "  GLM-5.2 through Ollama Cloud; credential stays server-side"
+echo "  GLM-5.3-Flash through Ollama Cloud; optional OpenRouter fallback stays server-side"
 
 if command -v open >/dev/null 2>&1; then
   open "$DEMO_URL"

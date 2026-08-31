@@ -746,6 +746,7 @@ class ConversationRecorder:
                 "kind",
                 "retrieval_scope",
                 "model",
+                "model_provider",
                 "model_called",
                 "conversation_id",
                 "turn_id",

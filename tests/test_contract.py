@@ -481,7 +481,7 @@ class StagedRetrievalTests(unittest.TestCase):
         captured = {}
         handler._json = lambda status, value, **_kwargs: captured.update(status=status, payload=value)
 
-        def record_model_call(_handler, messages):
+        def record_model_call(_handler, messages, **_kwargs):
             model_calls.append(messages)
             if raw_sequence:
                 return raw_sequence.pop(0)
@@ -493,7 +493,7 @@ class StagedRetrievalTests(unittest.TestCase):
             )
             return json.dumps({"pick": selected["id"], "answer": answer})
 
-        handler._ollama = record_model_call.__get__(handler, server.Handler)
+        handler._model_completion = record_model_call.__get__(handler, server.Handler)
         original_key = server.KEY
         original_model_budget = server.MODEL_CALL_BUDGET
         server.KEY = "test-only-placeholder" if model_enabled else ""
@@ -1696,7 +1696,7 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
         model_calls = []
         original_key = server.KEY
 
-        def record_model_call(handler, messages):
+        def record_model_call(handler, messages, **_kwargs):
             model_calls.append(messages)
             raise AssertionError("The model must not receive a six-digit Fortune ID")
 
@@ -1705,7 +1705,7 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
         handler.path = "/api/chat"
         handler.headers = {"Content-Length": str(len(body))}
         handler.rfile = io.BytesIO(body)
-        handler._ollama = record_model_call.__get__(handler, server.Handler)
+        handler._model_completion = record_model_call.__get__(handler, server.Handler)
         captured = {}
         handler._json = lambda status, value, **_kwargs: captured.update(status=status, payload=value)
 
@@ -2192,7 +2192,7 @@ class ResponseContractTests(unittest.TestCase):
     def test_runtime_has_no_deterministic_factual_answer_builder(self):
         self.assertFalse(hasattr(server, "grounded_answer_message"))
         handler_source = inspect.getsource(server.Handler.do_POST)
-        self.assertIn("self._ollama(messages)", handler_source)
+        self.assertIn("self._model_completion(messages)", handler_source)
         self.assertIn("parse_model_selection", handler_source)
 
     def test_spanish_answer_uses_selected_source_content_not_fixed_navigation_copy(self):
@@ -2595,6 +2595,9 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertFalse(budget.claim("client-c"))
         now[0] += 86400
         self.assertTrue(budget.claim("client-a"))
+        handler_source = inspect.getsource(server.Handler.do_POST)
+        self.assertIn('budget_identifier = f"conversation:{turn.conversation_id}"', handler_source)
+        self.assertNotIn("retry_reason and MODEL_CALL_BUDGET.claim", handler_source)
 
     def test_model_warmup_loads_once_per_cooldown(self):
         now = [100.0]
@@ -2611,6 +2614,60 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         warmer.mark_ready()
         now[0] += 59
         self.assertFalse(warmer.ensure(lambda: calls.append("load")))
+
+    def test_model_completion_falls_back_to_openrouter(self):
+        original_key = server.KEY
+        original_openrouter_key = server.OPENROUTER_KEY
+        original_ollama = server.ollama_completion
+        original_openrouter = server.openrouter_completion
+        calls = []
+        server.KEY = "ollama-test-key"
+        server.OPENROUTER_KEY = "openrouter-test-key"
+        server.ollama_completion = lambda _messages: (
+            calls.append("ollama") or (_ for _ in ()).throw(RuntimeError("offline"))
+        )
+        server.openrouter_completion = lambda _messages: calls.append("openrouter") or {
+            "provider": "openrouter",
+            "model": server.FALLBACK_MODEL,
+            "content": '{"pick":"ASK","answer":"Hello"}',
+        }
+        try:
+            result = server.model_completion([{"role": "user", "content": "Hello"}])
+        finally:
+            server.KEY = original_key
+            server.OPENROUTER_KEY = original_openrouter_key
+            server.ollama_completion = original_ollama
+            server.openrouter_completion = original_openrouter
+        self.assertEqual(calls, ["ollama", "openrouter"])
+        self.assertEqual(result["provider"], "openrouter")
+        self.assertEqual(result["attempted_providers"], ["ollama", "openrouter"])
+
+    def test_validation_retry_prefers_the_fallback_provider(self):
+        original_key = server.KEY
+        original_openrouter_key = server.OPENROUTER_KEY
+        original_ollama = server.ollama_completion
+        original_openrouter = server.openrouter_completion
+        calls = []
+        server.KEY = "ollama-test-key"
+        server.OPENROUTER_KEY = "openrouter-test-key"
+        server.ollama_completion = lambda _messages: calls.append("ollama") or {}
+        server.openrouter_completion = lambda _messages: calls.append("openrouter") or {
+            "provider": "openrouter",
+            "model": server.FALLBACK_MODEL,
+            "content": '{"pick":"ASK","answer":"Hello"}',
+        }
+        try:
+            result = server.model_completion(
+                [{"role": "user", "content": "Hello"}],
+                prefer_fallback=True,
+            )
+        finally:
+            server.KEY = original_key
+            server.OPENROUTER_KEY = original_openrouter_key
+            server.ollama_completion = original_ollama
+            server.openrouter_completion = original_openrouter
+        self.assertEqual(calls, ["openrouter"])
+        self.assertEqual(result["provider"], "openrouter")
 
     def test_preload_uses_an_empty_request_and_keep_alive(self):
         payloads = []
@@ -2629,15 +2686,19 @@ class FrontendAndDeploymentTests(unittest.TestCase):
     def test_answer_generation_uses_reproducible_low_variance_settings(self):
         payloads = []
         original_request = server.ollama_request
+        original_key = server.KEY
         server.ollama_request = lambda payload: payloads.append(payload) or {
             "message": {"content": "{}"}
         }
+        server.KEY = "test-only-placeholder"
         try:
-            server.Handler.__new__(server.Handler)._ollama([
+            server.Handler.__new__(server.Handler)._model_completion([
                 {"role": "user", "content": "public test question"}
             ])
         finally:
             server.ollama_request = original_request
+            server.KEY = original_key
+        self.assertEqual(payloads[0]["think"], "low")
         options = payloads[0]["options"]
         self.assertEqual(options, {
             "temperature": 0,
@@ -2669,7 +2730,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn('"OLLAMA_API_KEY": KEY', server_source)
         self.assertNotIn("'OLLAMA_API_KEY': KEY", server_source)
         self.assertNotIn("OLLAMA_API_KEY", config_source)
-        self.assertIn('"model_enabled": bool(KEY)', server_source)
+        self.assertIn('"model_enabled": model_available()', server_source)
 
         handler = server.Handler.__new__(server.Handler)
         handler.path = "/health"
@@ -3123,6 +3184,9 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertEqual(manifest["deploy"]["healthcheckPath"], "/health")
         env_template = (DEMO / ".env.example").read_text(encoding="utf-8")
         self.assertIn("OLLAMA_API_KEY=", env_template)
+        self.assertIn("OPENROUTER_API_KEY=", env_template)
+        self.assertIn("FORTUNE_MODEL=glm-5.3-flash:cloud", env_template)
+        self.assertIn("FORTUNE_FALLBACK_MODEL=z-ai/glm-5.3-flash", env_template)
         self.assertIn("FORTUNE_MODEL_WARMUP_COOLDOWN=900", env_template)
         self.assertIn("FORTUNE_MODEL_KEEP_ALIVE=30m", env_template)
         self.assertIn("FORTUNE_MODEL_NUM_PREDICT=256", env_template)
@@ -3130,6 +3194,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("FORTUNE_CONVERSATION_TOKEN_SECRET=", env_template)
         self.assertIn("DATABASE_URL=", env_template)
         self.assertNotRegex(env_template, r"OLLAMA_API_KEY=.+")
+        self.assertNotRegex(env_template, r"OPENROUTER_API_KEY=.+")
         self.assertNotRegex(env_template, r"FORTUNE_CONVERSATION_TOKEN_SECRET=.+")
         self.assertNotRegex(env_template, r"DATABASE_URL=.+")
 

@@ -34,6 +34,11 @@
   const transcriptTitle = document.querySelector("#transcript-title");
   const transcriptMeta = document.querySelector("#transcript-meta");
   const transcript = document.querySelector("#transcript");
+  const transcriptBucketForm = document.querySelector("#transcript-bucket-form");
+  const transcriptBucket = document.querySelector("#transcript-bucket");
+  const transcriptBucketStatus = document.querySelector("#transcript-bucket-status");
+  const transcriptTurnFilter = document.querySelector("#transcript-turn-filter");
+  const transcriptTurnOrder = document.querySelector("#transcript-turn-order");
   const transcriptAttributionForm = document.querySelector("#transcript-attribution-form");
   const transcriptEvaluator = document.querySelector("#transcript-evaluator");
   const transcriptAttributionStatus = document.querySelector("#transcript-attribution-status");
@@ -66,8 +71,8 @@
 
   const localPreview = ["127.0.0.1", "localhost"].includes(location.hostname)
     && new URLSearchParams(location.search).get("preview") === "1";
-  const previewKey = "fortune-evaluation-preview-v5";
-  const viewKeyPrefix = "fortune-evaluation-view-v2";
+  const previewKey = "fortune-evaluation-preview-v6";
+  const viewKeyPrefix = "fortune-evaluation-view-v3";
   const defaultView = { visibility: "all", sort: "default", layout: "compact" };
   const UNREVIEWED_PAGE_SIZE = 8;
   const WORKSPACE_REFRESH_INTERVAL_MS = 10000;
@@ -85,6 +90,7 @@
     editingProposalId: "",
     unreviewedPage: 1,
     view: { ...defaultView },
+    transcriptView: { filter: "all", order: "oldest" },
   };
 
   const annotationLabels = {
@@ -122,9 +128,11 @@
     ["4b5c6d", "Workshops", 7, null],
     ["5c6d7e", "About the Program", 4, null],
     ["6d7e8f", "Frequently Asked Questions", 5, null],
-  ].map(([id, page_title, turn_count, bucket_id]) => ({
+  ].map(([id, page_title, turn_count, bucket_id]) => {
+    const failed_turn_count = id === "6e7f9g" ? 3 : 0;
+    return {
     id, page_title, turn_count, bucket_id,
-    complete_turn_count: turn_count, failed_turn_count: 0,
+    complete_turn_count: turn_count - failed_turn_count, failed_turn_count,
     transcript_version: turn_count,
     last_turn_at: "2026-08-08T14:30:00Z",
     app_version: "010d369846b09dcaccf8ab5d7955a56d3deaff26",
@@ -132,7 +140,7 @@
     client_surface: "replica",
     is_automated: id === "7b8d3e",
     automation_source: id === "7b8d3e" ? "browser-webdriver" : null,
-  }));
+  }});
 
   const previewPromptLab = {
     scope: "shared",
@@ -410,13 +418,16 @@
     return newestFirst(matches);
   }
 
-  function moveOptions(conversation) {
-    const options = bucketColumns().map(bucket => {
+  function bucketOptions(conversation) {
+    return bucketColumns().map(bucket => {
       const value = bucket.id || "";
       const selected = (conversation.bucket_id || "") === value ? " selected" : "";
       return `<option value="${escapeHtml(value)}"${selected}>${escapeHtml(bucket.label)}</option>`;
     }).join("");
-    return `<select class="card-move" aria-label="Move ${shortId(conversation.id)} to bucket">${options}</select>`;
+  }
+
+  function moveOptions(conversation) {
+    return `<select class="card-move" aria-label="Move ${shortId(conversation.id)} to bucket">${bucketOptions(conversation)}</select>`;
   }
 
   function escapeHtml(value) {
@@ -436,17 +447,30 @@
       ? `Reviewed by ${conversation.reviewed_by_name}`
       : "";
     return `
-      <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${provenanceLabel ? `${provenanceLabel}, ` : ""}${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(countLabel)}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}, ${escapeHtml(versionLabel(conversation))}">
-        <span class="drag-handle" aria-hidden="true">⠿</span>
-        <p class="conversation-id">${shortId(conversation.id)}${provenanceLabel ? ` <span class="automation-badge">${provenanceLabel}</span>` : ""}</p>
-        <p class="conversation-page">${escapeHtml(conversation.page_title || "Unknown page")}</p>
-        <p class="conversation-counts">${escapeHtml(countLabel)}</p>
-        ${evaluatorLabel ? `<p class="conversation-attribution">${escapeHtml(evaluatorLabel)}</p>` : ""}
-        ${reviewerLabel ? `<p class="conversation-attribution">${escapeHtml(reviewerLabel)}</p>` : ""}
-        ${timeHtml(conversation.last_turn_at, "conversation-time")}
-        <p class="conversation-version" title="${escapeHtml(versionLabel(conversation, true))}">${escapeHtml(versionLabel(conversation))}</p>
-        ${selected ? `<div class="card-actions"><button class="open-transcript" type="button">Open transcript</button>${moveOptions(conversation)}</div>` : moveOptions(conversation)}
-      </article>`;
+      <details class="conversation-card${selected ? " is-selected" : ""}" data-conversation-id="${escapeHtml(conversation.id)}">
+        <summary class="conversation-summary" aria-label="${shortId(conversation.id)}, ${provenanceLabel ? `${provenanceLabel}, ` : ""}${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(countLabel)}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}">
+          <span class="conversation-summary-copy">
+            <span class="conversation-id">${shortId(conversation.id)}${provenanceLabel ? ` <span class="automation-badge">${provenanceLabel}</span>` : ""}</span>
+            <span class="conversation-page">${escapeHtml(conversation.page_title || "Unknown page")}</span>
+          </span>
+          <span class="conversation-summary-meta">
+            <span class="conversation-counts${failed ? " has-failures" : ""}">${escapeHtml(countLabel)}</span>
+            ${timeHtml(conversation.last_turn_at, "conversation-time")}
+          </span>
+        </summary>
+        <div class="conversation-card-body">
+          ${evaluatorLabel ? `<p class="conversation-attribution">${escapeHtml(evaluatorLabel)}</p>` : ""}
+          ${reviewerLabel ? `<p class="conversation-attribution">${escapeHtml(reviewerLabel)}</p>` : ""}
+          <p class="conversation-version" title="${escapeHtml(versionLabel(conversation, true))}">${escapeHtml(versionLabel(conversation))}</p>
+          <div class="card-actions">
+            <button class="open-transcript" type="button">View transcript</button>
+            <label class="card-bucket-control">
+              <span>Bucket</span>
+              ${moveOptions(conversation)}
+            </label>
+          </div>
+        </div>
+      </details>`;
   }
 
   function pageTokens(currentPage, pageCount) {
@@ -898,35 +922,11 @@
 
   function bindBoardEvents() {
     board.querySelectorAll(".conversation-card").forEach(card => {
-      card.addEventListener("click", event => {
-        if (event.target.closest("button, select")) return;
+      card.querySelector(".open-transcript")?.addEventListener("click", () => {
         state.selectedId = card.dataset.conversationId;
-        renderBoard();
+        openTranscript(card.dataset.conversationId);
       });
-      card.addEventListener("keydown", event => {
-        if ((event.key === "Enter" || event.key === " ") && !event.target.closest("button, select")) {
-          event.preventDefault();
-          state.selectedId = card.dataset.conversationId;
-          renderBoard();
-          board.querySelector(`[data-conversation-id="${CSS.escape(state.selectedId)}"]`)?.focus();
-        }
-      });
-      card.addEventListener("dragstart", event => {
-        event.dataTransfer.effectAllowed = "move";
-        event.dataTransfer.setData("text/plain", card.dataset.conversationId);
-      });
-      card.querySelector(".open-transcript")?.addEventListener("click", () => openTranscript(card.dataset.conversationId));
       card.querySelector(".card-move")?.addEventListener("change", event => moveConversation(card.dataset.conversationId, event.target.value || null));
-    });
-
-    board.querySelectorAll(".bucket").forEach(bucket => {
-      bucket.addEventListener("dragover", event => { event.preventDefault(); bucket.classList.add("is-drop-target"); });
-      bucket.addEventListener("dragleave", () => bucket.classList.remove("is-drop-target"));
-      bucket.addEventListener("drop", event => {
-        event.preventDefault();
-        bucket.classList.remove("is-drop-target");
-        moveConversation(event.dataTransfer.getData("text/plain"), bucket.dataset.bucketId || null);
-      });
     });
 
     board.querySelectorAll(".bucket-pagination [data-page]").forEach(button => {
@@ -965,6 +965,12 @@
       renderBoard();
       const label = bucketColumns().find(bucket => bucket.id === bucketId)?.label || "Not yet reviewed";
       moveStatus.textContent = `${shortId(conversationId)} moved to ${label}.`;
+      if (state.openConversation?.id === conversationId) {
+        state.openConversation.bucket_id = bucketId;
+        state.openConversation.evaluation_version = conversation.evaluation_version;
+        transcriptBucket.value = bucketId || "";
+        transcriptBucketStatus.textContent = `Moved to ${label}.`;
+      }
     } catch (error) {
       const current = error.payload?.current;
       if (error.status === 409 && current) {
@@ -976,6 +982,11 @@
       }
       renderBoard();
       moveStatus.textContent = `Move failed. ${error.message}`;
+      if (state.openConversation?.id === conversationId) {
+        state.openConversation.bucket_id = conversation.bucket_id || null;
+        transcriptBucket.value = conversation.bucket_id || "";
+        transcriptBucketStatus.textContent = `Not moved. ${error.message}`;
+      }
     }
   }
 
@@ -983,24 +994,57 @@
     const conversation = state.conversations.find(item => item.id === conversationId);
     let detail;
     if (localPreview) {
+      const previewFailedTurns = Number(conversation.failed_turn_count || 0);
+      const baseTime = timestampValue(conversation.last_turn_at);
+      const turn = (sequence, status, errorCode = null) => ({
+        id: `${conversation.id}-turn-${sequence}`,
+        sequence,
+        status,
+        error_code: errorCode,
+        model_called: status === "complete",
+        message_count: status === "complete" ? 2 : 1,
+        created_at: new Date(baseTime - ((6 - sequence) * 60000)).toISOString(),
+        completed_at: new Date(baseTime - ((6 - sequence) * 60000) + 1500).toISOString(),
+      });
+      const turns = previewFailedTurns ? [
+        turn(1, "complete"),
+        turn(2, "failed", "usage_limit"),
+        turn(3, "failed", "usage_limit"),
+        turn(4, "failed", "usage_limit"),
+        turn(5, "complete"),
+        turn(6, "complete"),
+      ] : [];
+      const messages = turns.length ? turns.flatMap(item => {
+        const created = item.created_at;
+        const visitor = { id: `${item.id}-user`, turn_id: item.id, role: "user", content: item.status === "failed" ? "Can you try that again?" : "Where can I find the current information on this page?", created_at: created };
+        if (item.status === "failed") return [visitor];
+        return [visitor, { id: `${item.id}-assistant`, turn_id: item.id, role: "assistant", content: "I found the relevant public page and can point you to it.", created_at: item.completed_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version }];
+      }) : [
+        { id: `${conversation.id}-user`, role: "user", content: "Where can I find the current information on this page?", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
+        { id: `${conversation.id}-assistant`, role: "assistant", content: "I found the relevant public page and can point you to it.", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
+      ];
       detail = {
         ...conversation,
         note: conversation.note || null,
         annotations: conversation.annotations || [],
-        messages: [
-          { id: `${conversation.id}-user`, role: "user", content: "Where can I find the current information on this page?", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
-          { id: `${conversation.id}-assistant`, role: "assistant", content: "I found the relevant public page and can point you to it.", created_at: conversation.last_turn_at, app_version: conversation.app_version, prompt_policy_version: conversation.prompt_policy_version },
-        ],
+        turns,
+        messages,
       };
     } else {
       detail = (await api(`/api/evaluation/conversations/${encodeURIComponent(conversationId)}`)).conversation;
     }
     state.openConversation = detail;
+    state.transcriptView = { filter: "all", order: "oldest" };
     transcriptTitle.textContent = shortId(detail.id);
     const provenance = detail.is_automated
       ? `Automated${detail.automation_source ? ` (${detail.automation_source})` : ""} · `
       : "";
     transcriptMeta.textContent = `${provenance}${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)} · ${versionLabel(detail, true)}`;
+    transcriptBucket.innerHTML = bucketOptions(detail);
+    transcriptBucket.value = detail.bucket_id || "";
+    transcriptBucketStatus.textContent = "";
+    transcriptTurnFilter.value = state.transcriptView.filter;
+    transcriptTurnOrder.value = state.transcriptView.order;
     transcriptEvaluator.innerHTML = [
       '<option value="">Not attributed</option>',
       ...state.evaluators.map(evaluator => `<option value="${escapeHtml(evaluator.slot_key)}">${escapeHtml(evaluator.display_name)}</option>`),
@@ -1116,7 +1160,7 @@
       </article>`;
   }
 
-  function failedAttemptHtml(turn) {
+  function failedAttemptHtml(turn, turnMessages) {
     const label = {
       usage_limit: "Request limit",
       model_disabled: "Model unavailable",
@@ -1126,15 +1170,19 @@
     const missingQuestion = Number(turn.message_count || 0) === 0
       ? '<p class="failed-attempt-note">Visitor message unavailable from the earlier release.</p>'
       : "";
+    const modelState = turn.model_called ? "model call failed" : "model not called";
     return `
-      <article class="failed-attempt" data-turn-id="${escapeHtml(turn.id)}">
-        <div class="message-heading">
-          <p class="message-role">No guide response</p>
+      <details class="failed-attempt" data-turn-id="${escapeHtml(turn.id)}">
+        <summary>
+          <span><strong>${escapeHtml(label)}</strong> · ${escapeHtml(modelState)}</span>
           ${timeHtml(turn.completed_at || turn.created_at, "message-time")}
+        </summary>
+        <div class="failed-attempt-body">
+          ${turnMessages}
+          <p class="failed-attempt-note">${turn.model_called ? "No response was saved." : "The request stopped before the Website Guide model ran."}</p>
+          ${missingQuestion}
         </div>
-        <p class="failed-attempt-label">${escapeHtml(label)}</p>
-        ${missingQuestion}
-      </article>`;
+      </details>`;
   }
 
   function renderTranscriptMessages() {
@@ -1146,10 +1194,17 @@
         if (!messagesByTurn.has(message.turn_id)) messagesByTurn.set(message.turn_id, []);
         messagesByTurn.get(message.turn_id).push(message);
       });
-      transcript.innerHTML = turns.map(turn => {
+      let visibleTurns = turns.filter(turn => {
+        if (state.transcriptView.filter === "failed") return turn.status === "failed";
+        if (state.transcriptView.filter === "complete") return turn.status !== "failed";
+        return true;
+      });
+      if (state.transcriptView.order === "newest") visibleTurns = [...visibleTurns].reverse();
+      transcript.innerHTML = visibleTurns.map(turn => {
         const turnMessages = (messagesByTurn.get(turn.id) || []).map(transcriptMessageHtml).join("");
-        return `${turnMessages}${turn.status === "failed" ? failedAttemptHtml(turn) : ""}`;
-      }).join("");
+        if (turn.status === "failed") return failedAttemptHtml(turn, turnMessages);
+        return `<section class="transcript-turn" data-turn-id="${escapeHtml(turn.id)}">${turnMessages}</section>`;
+      }).join("") || '<p class="transcript-empty">No turns match this view.</p>';
     } else {
       transcript.innerHTML = messages.map(transcriptMessageHtml).join("");
     }
@@ -1490,6 +1545,20 @@
   transcriptAttributionForm.addEventListener("submit", event => {
     event.preventDefault();
     saveConversationAttribution();
+  });
+  transcriptBucketForm.addEventListener("submit", event => {
+    event.preventDefault();
+    if (!state.openConversation) return;
+    transcriptBucketStatus.textContent = "Moving…";
+    moveConversation(state.openConversation.id, transcriptBucket.value || null);
+  });
+  transcriptTurnFilter.addEventListener("change", () => {
+    state.transcriptView.filter = transcriptTurnFilter.value;
+    renderTranscriptMessages();
+  });
+  transcriptTurnOrder.addEventListener("change", () => {
+    state.transcriptView.order = transcriptTurnOrder.value;
+    renderTranscriptMessages();
   });
   reviewNote.addEventListener("input", () => {
     reviewNoteStatus.textContent = "Unsaved changes";

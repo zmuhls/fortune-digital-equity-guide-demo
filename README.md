@@ -2,7 +2,7 @@
 
 This repository publishes text views of the public Digital Equity sources used by its Website Guide. The August 17 inventory contains 138 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each published route is regenerated from the same approved title, description, and content blocks available to retrieval; image markup, visual captions, Wix styling, scripts, forms, tokens, trackers, and authenticated services are not published. The reviewed rendered captures remain private build inputs for source completeness and integrity checks.
 
-The source text remains readable when the model service is unavailable. In that state, the static GitHub Pages build uses the public index for page context and links visitors to source pages. The published Pages configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds the provider key, accepts the `https://zmuhls.github.io` browser origin, and applies per-client and shared daily model-call limits. The server preloads GLM-5.2 at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the model ready for 30 minutes.
+The source text remains readable when the model service is unavailable. In that state, the static GitHub Pages build uses the public index for page context and links visitors to source pages. The published Pages configuration calls a separate Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds provider credentials, accepts the `https://zmuhls.github.io` browser origin, and applies per-conversation and shared daily model-call limits. Ollama Cloud serves GLM-5.3-Flash first; OpenRouter serves the same model when Ollama is unavailable or returns an unusable contract. A repair remains part of the original participant turn and does not consume another participant allowance. The server preloads the Ollama model at startup. The Pages and Wix clients repeat the same empty warm-up request when the guide loads, while a server-side cooldown collapses visitors into one provider call and keeps the primary model ready for 30 minutes.
 
 ## Source limits
 
@@ -107,6 +107,7 @@ Run the live local model demo:
 
 ```bash
 export OLLAMA_API_KEY="your Ollama Cloud key"
+export OPENROUTER_API_KEY="your OpenRouter key"
 ./run.sh
 ```
 
