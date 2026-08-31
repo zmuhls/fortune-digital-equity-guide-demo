@@ -412,7 +412,17 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertIn("automation_source", automation)
         self.assertIn("client_surface IN ('benchmark', 'synthetic')", automation)
         self.assertNotIn("conversation_messages", automation)
-        self.assertEqual(conversation_store.SCHEMA_VERSION, "010_automation_provenance")
+        automation_boundary = (
+            DEMO / "migrations" / "011_automation_review_boundary.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("SET review_state = 'excluded'", automation_boundary)
+        self.assertIn("client_surface IN ('benchmark', 'synthetic')", automation_boundary)
+        self.assertNotIn("DELETE FROM", automation_boundary)
+        self.assertNotIn("conversation_messages", automation_boundary)
+        self.assertEqual(
+            conversation_store.SCHEMA_VERSION,
+            "011_automation_review_boundary",
+        )
 
 
 if __name__ == "__main__":

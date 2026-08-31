@@ -62,10 +62,10 @@ class EvaluationSchemaTests(unittest.TestCase):
         list_source = inspect.getsource(evaluation_store.EvaluationStore.list_buckets)
         self.assertIn("b.archived_at IS NULL", list_source)
 
-    def test_evaluation_schema_version_tracks_automation_provenance(self):
+    def test_evaluation_schema_version_tracks_automation_review_boundary(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "010_automation_provenance",
+            "011_automation_review_boundary",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 

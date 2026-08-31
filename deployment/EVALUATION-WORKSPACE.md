@@ -91,7 +91,7 @@ Prompts never edits the compiled system prompt and has no activation or publishi
 
 1. Run `./run.sh test` and both snapshot checks.
 2. Apply migrations through Railway's pre-deploy command.
-3. Confirm `/health` reports evaluation schema `010_automation_provenance`, four total slots, and the expected claimed/unassigned slot counts.
+3. Confirm `/health` reports evaluation schema `011_automation_review_boundary`, four total slots, and the expected claimed/unassigned slot counts.
 4. Confirm `/server.py`, `/.env.example`, `/migrations/003_evaluator_identity.sql`, `/migrations/009_human_review_capture.sql`, and `/scripts/issue_evaluator_invite.py` return `404`.
 5. Confirm `/evaluation` shows the login surface and no reviewer data without a session.
 6. Claim the admin account, create one editor link from **Account**, and verify first-use registration signs the editor in without exposing the token in an HTTP request path or server log.

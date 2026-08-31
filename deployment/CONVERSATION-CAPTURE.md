@@ -61,7 +61,7 @@ A staging release is accepted only after all of these are true:
 
 1. The local Python and JavaScript suites pass.
 2. The Railway deployment reaches terminal `SUCCESS`.
-3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=010_automation_provenance` without revealing database or token values.
+3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=011_automation_review_boundary` without revealing database or token values.
 4. Re-running the migration reports a current schema.
 5. One invented `benchmark` question produces stable UUIDs and exactly two message rows while remaining review-pending and absent from the evaluator.
 6. Replaying its client event ID returns the same turn and response without another row.

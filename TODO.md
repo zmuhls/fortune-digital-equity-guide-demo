@@ -22,6 +22,9 @@
   shared Prompts view to the exact v32 runtime policy.
 - [x] Pass the complete v32 release suite: 362 Python, 30 frontend, and 18
   source-snapshot checks, plus desktop, mobile, and reduced-motion launcher QA.
+- [x] Exclude two stale benchmark-ready turns from evaluator review without
+  deleting their transcripts, notes, or provenance; retain public browser
+  automation as visible and explicitly labeled.
 
 ## Conversation-grounding release — 2026-08-31
 

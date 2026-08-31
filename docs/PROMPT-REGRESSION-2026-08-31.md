@@ -114,7 +114,9 @@ Formal runners send `client_surface=benchmark` plus a bounded
 automation on the public replica or Wix surface is stored with
 `is_automated=true` and shown to every evaluator with an **Automated** badge and
 source label. Migration `010_automation_provenance` backfills benchmark and
-synthetic surfaces without reading transcript text. The reconciliation script
+synthetic surfaces without reading transcript text; migration
+`011_automation_review_boundary` excludes stale nonparticipant automation from
+review without deleting it. The reconciliation script
 can mark additional historical IDs only when they appear in versioned result
 artifacts; it never guesses from conversation content or deletes transcripts.
 

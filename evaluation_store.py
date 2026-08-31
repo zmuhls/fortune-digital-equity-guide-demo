@@ -20,7 +20,7 @@ from prompt_policy import (
 )
 
 
-EVALUATION_SCHEMA_VERSION = "010_automation_provenance"
+EVALUATION_SCHEMA_VERSION = "011_automation_review_boundary"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
