@@ -377,6 +377,7 @@ class EvaluationContractV2Tests(unittest.TestCase):
         capture_mode = multi_raw["target"]["health"]["conversation_logging"][
             "capture_mode"
         ]
+        history_limit = int(multi_raw["protocol"]["history_messages"])
         passed_turns = 0
         passed_episodes = 0
         for raw_episode in multi_raw["episodes"]:
@@ -397,6 +398,7 @@ class EvaluationContractV2Tests(unittest.TestCase):
                         response=row["response"],
                         conversation_id=row.get("conversation_id_sent") or "",
                         history=row["history_sent"],
+                        history_limit=history_limit,
                     )
                 )
                 if turn_index:

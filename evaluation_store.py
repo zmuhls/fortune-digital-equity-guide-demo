@@ -1331,6 +1331,7 @@ class EvaluationStore:
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
                   AND {VISIBLE_HUMAN_TURN_PREDICATE}
                 GROUP BY c.id, c.client_surface
+                HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0
             )
         """
 
@@ -1439,6 +1440,19 @@ class EvaluationStore:
               AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
               AND {VISIBLE_HUMAN_TURN_PREDICATE}
+              AND EXISTS (
+                  SELECT 1
+                  FROM conversation_turns completed
+                  WHERE completed.conversation_id = c.id
+                    AND completed.status = 'complete'
+                    AND completed.privacy_state = 'clear'
+                    AND completed.review_state = 'ready'
+                    AND (
+                        SELECT COUNT(*)
+                        FROM conversation_messages completed_messages
+                        WHERE completed_messages.turn_id = completed.id
+                    ) = 2
+              )
             """,
             (conversation_id, self.min_inactive_seconds),
         )

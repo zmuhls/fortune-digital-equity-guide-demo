@@ -22,7 +22,7 @@ except ModuleNotFoundError:  # Direct execution from the repository root.
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "website-guide" / "multiturn-cases.json"
 DEFAULT_SPEC = ROOT / "evals" / "website-guide" / "multiturn-spec.json"
-MAX_HISTORY_MESSAGES = 6
+MAX_HISTORY_MESSAGES = 12
 LEVELS = {"hard", "release", "diagnostic"}
 
 
@@ -94,6 +94,7 @@ def continuity_failures(
     response: dict,
     conversation_id: str,
     history: list[dict],
+    history_limit: int = MAX_HISTORY_MESSAGES,
 ) -> list[str]:
     failures: list[str] = []
     expected_stage = "opening" if turn_index == 0 else "follow_up"
@@ -106,7 +107,7 @@ def continuity_failures(
         failures.append(
             f"continuity: conversation changed from {conversation_id} to {received_id or '<missing>'}"
         )
-    expected_history = min(turn_index * 2, MAX_HISTORY_MESSAGES)
+    expected_history = min(turn_index * 2, history_limit)
     if len(history) != expected_history:
         failures.append(
             f"continuity: expected {expected_history} history messages, got {len(history)}"

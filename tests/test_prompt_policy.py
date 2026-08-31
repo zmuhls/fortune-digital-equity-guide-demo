@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-28-v30")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v31")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
-            "digital-equity-model-first-one-sentence-identity",
+            "digital-equity-conversation-grounding",
         )
         self.assertEqual(server.PROMPT_POLICY_VERSION, prompt_policy.PROMPT_POLICY_VERSION)
         self.assertEqual(
@@ -55,6 +55,10 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("You are an AI guide", source_selector.SYSTEM_PROMPT)
         self.assertIn("Do not call it the Fortune Society site", source_selector.SYSTEM_PROMPT)
         self.assertIn("answer in one short sentence", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Your purpose is informational", source_selector.SYSTEM_PROMPT)
+        self.assertIn("cannot enroll or book someone", source_selector.SYSTEM_PROMPT)
+        self.assertIn("recent conversation", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Never repeat the same clarification", source_selector.SYSTEM_PROMPT)
         self.assertIn("live calendar candidate", source_selector.SYSTEM_PROMPT)
         self.assertIn("do not invent an event", source_selector.SYSTEM_PROMPT)
         self.assertIn("Use plain, conversational language", source_selector.SYSTEM_PROMPT)
@@ -93,25 +97,25 @@ class PromptPolicyTests(unittest.TestCase):
         clarification = catalog["clarification"]
         self.assertEqual(
             clarification["current_variant"],
-            "ask_only_when_blocked",
+            "evidence_first_clarification",
         )
         self.assertEqual(
             clarification["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["clarification"]
-            ["ask_only_when_blocked"],
+            ["evidence_first_clarification"],
         )
-        self.assertIn("missing information changes", clarification["current_value"])
-        self.assertIn("answer the request directly", clarification["current_value"])
+        self.assertIn("more than one plausible answer", clarification["current_value"])
+        self.assertIn("Never repeat", clarification["current_value"])
 
         page_awareness = catalog["page_awareness"]
         self.assertEqual(
             page_awareness["current_variant"],
-            "sitewide_candidates",
+            "current_sitewide_evidence",
         )
         self.assertEqual(
             page_awareness["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["page_awareness"]
-            ["sitewide_candidates"],
+            ["current_sitewide_evidence"],
         )
         self.assertIn("anywhere on the Digital Equity site", page_awareness["current_value"])
         self.assertIn("active page as a hint", page_awareness["current_value"])
@@ -122,7 +126,19 @@ class PromptPolicyTests(unittest.TestCase):
             current_date="2026-08-26",
         )
         self.assertIn('CURRENT DATE:\n"2026-08-26"', prompt)
+        self.assertIn("RECENT CONVERSATION:\n[]", prompt)
         self.assertLess(prompt.index("CURRENT DATE:"), prompt.index("CANDIDATE RECORDS:"))
+
+    def test_runtime_prompt_carries_bounded_safe_conversation_history(self):
+        history = [
+            {"role": "user", "content": "Which Excel class covers formulas?"},
+            {"role": "assistant", "content": "Excel - Formulas & Functions."},
+        ]
+        prompt = source_selector.build_prompt([], conversation_history=history)
+        block = prompt.split("\nRECENT CONVERSATION:\n", 1)[1].split(
+            "\nCANDIDATE RECORDS:\n", 1
+        )[0]
+        self.assertEqual(json.loads(block), history)
 
     def test_visible_prompts_preview_matches_current_policy_registry(self):
         javascript = (ROOT / "evaluation.js").read_text(encoding="utf-8")

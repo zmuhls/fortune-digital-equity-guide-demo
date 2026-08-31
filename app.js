@@ -20,7 +20,7 @@
   const resetButton = document.querySelector("#guide-reset");
   const API_BASE = String(window.FORTUNE_GUIDE_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 6;
+  const MAX_CONTEXT_MESSAGES = 12;
   const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:replica:v20";
 

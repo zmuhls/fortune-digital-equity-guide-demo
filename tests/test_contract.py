@@ -816,7 +816,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
 
-    def test_model_receives_resolved_question_and_candidates_not_raw_history(self):
+    def test_model_receives_bounded_safe_history_and_current_candidates(self):
         source_id = server.source_id_for_path("/techfair/qa")
         captured, model_calls = self.dispatch_chat(
             "Where can I ask a speaker a question?",
@@ -831,11 +831,13 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(len(model_calls), 1)
         messages = model_calls[0]
         self.assertEqual([message["role"] for message in messages], ["system", "user"])
+        self.assertIn("RECENT CONVERSATION", messages[0]["content"])
+        self.assertIn("Tell me about the Tech Fair.", messages[0]["content"])
         self.assertIn("Earlier answer text", json.dumps(messages))
         records = self.retrieval_records(model_calls)
         self.assertIn(source_id, [record["id"] for record in records])
 
-    def test_follow_up_supplies_only_latest_answer_without_a_prose_classifier(self):
+    def test_follow_up_supplies_recent_history_without_a_prose_classifier(self):
         source_id = server.INTRO_EMAIL_ID
         prior = (
             "Email is part of everything from appointments and applications to work "
@@ -862,7 +864,8 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(len(model_calls), 1)
         first_prompt = model_calls[0][0]["content"]
         self.assertIn(prior, first_prompt)
-        self.assertNotIn("This older answer must not be reused.", first_prompt)
+        self.assertIn("This older answer must not be reused.", first_prompt)
+        self.assertIn("do not repeat an earlier answer unless asked", first_prompt)
 
     def test_model_authored_follow_up_is_not_rejected_by_a_repetition_classifier(self):
         source_id = server.INTRO_EMAIL_ID
@@ -1614,6 +1617,7 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
         module_source = inspect.getsource(server)
         self.assertNotIn("def question_needs_model_clarification", module_source)
         self.assertNotIn("def deterministic_answer_sources", module_source)
+        self.assertNotIn("def contextual_routing_question", module_source)
         self.assertNotIn("require_model_clarification", module_source)
 
     def test_navigation_prompts_retrieve_current_pages_for_the_model(self):
@@ -2663,18 +2667,18 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn('search.get("tour")', app)
         self.assertIn("@media (prefers-reduced-motion: reduce)", styles)
 
-    def test_context_window_reports_the_same_three_exchange_limit_sent_to_the_server(self):
+    def test_context_window_reports_the_same_six_exchange_limit_sent_to_the_server(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
         app = (DEMO / "app.js").read_text(encoding="utf-8")
         readme = (DEMO / "README.md").read_text(encoding="utf-8")
         self.assertIn('id="context-window"', html)
-        self.assertIn("Context · conversation · 0/3", html)
-        self.assertIn("const MAX_CONTEXT_MESSAGES = 6", app)
+        self.assertIn("Context · conversation · 0/6", html)
+        self.assertIn("const MAX_CONTEXT_MESSAGES = 12", app)
         self.assertIn("MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2", app)
         self.assertIn(".slice(-MAX_CONTEXT_MESSAGES)", app)
         self.assertIn("updateContextWindow();", app)
-        self.assertIn("three recent exchanges (six messages)", readme)
-        self.assertEqual(server.MAX_HISTORY, 6)
+        self.assertIn("six recent exchanges (twelve messages)", readme)
+        self.assertEqual(server.MAX_HISTORY, 12)
 
     def test_conversation_persists_across_page_navigation_in_the_same_tab(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")

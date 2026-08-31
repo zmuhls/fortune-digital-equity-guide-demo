@@ -71,7 +71,7 @@ ALLOWED_ORIGINS = {
     if origin.strip()
 }
 MAX_BODY = 64 * 1024
-MAX_HISTORY = 6
+MAX_HISTORY = 12
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
 MAX_MODEL_EXCERPT_CHARS = 700
@@ -538,14 +538,6 @@ SPECIFIC_CLASS_TERMS = {
     "scam", "scams", "smartphone", "smartphones", "spanish", "spreadsheet",
     "spreadsheets", "word", "zoom",
 }
-
-HISTORY_TOPIC_TERMS = SPECIFIC_CLASS_TERMS.union({
-    "appointment", "device", "devices", "digital", "distribution", "eligibility",
-    "equity", "impact", "individual", "internet", "laptop", "lifeline",
-    "organizing", "partners", "program", "programs", "support", "tech",
-    "tutoring", "wifi",
-})
-
 
 def fold_text(value):
     normalized = unicodedata.normalize("NFKD", str(value or ""))
@@ -1338,6 +1330,70 @@ def retrieve_sources(query, limit=MAX_RETRIEVED):
     return result
 
 
+def conversation_search_queries(question, history=None):
+    """Build general site-search queries from the latest turn and recent context."""
+
+    latest = semantic_question(question)
+    if not latest:
+        return []
+    result = [latest]
+    seen = {fold_text(latest)}
+    for item in reversed(list(history or [])):
+        # User turns carry the participant's topic. Model-authored answers are
+        # deliberately excluded from search so a weak answer cannot reinforce
+        # its own source drift on the next turn.
+        if item.get("role") != "user":
+            continue
+        context = semantic_question(item.get("content"))
+        key = fold_text(context)
+        if not context or key in seen:
+            continue
+        result.append(f"{context}. Latest request: {latest}")
+        seen.add(key)
+    return result
+
+
+def retrieve_conversation_sources(question, history=None, limit=MAX_RETRIEVED):
+    """Search current and recent turns without an intent or referent classifier."""
+
+    ranked = {}
+    for query_index, query in enumerate(conversation_search_queries(question, history)):
+        # Keep enough weight on the beginning of the bounded six-exchange
+        # window for a series of short follow-ups to retain its subject.
+        recency_weight = 0.95 ** query_index
+        for source_rank, source in enumerate(retrieve_sources(query, limit=limit)):
+            # retrieve_sources has already put explicit titles, schedules, and
+            # support routes ahead of broad directory matches. Preserve that
+            # evidence ordering while merging recent user turns.
+            rank_weight = max(0, 50 - source_rank * 40)
+            score = (source_evidence_score(query, source) + rank_weight) * recency_weight
+            candidate = (score, -query_index, -source_rank, source)
+            previous = ranked.get(source["url"])
+            if previous is None or candidate[:3] > previous[:3]:
+                ranked[source["url"]] = candidate
+    return [
+        row[3]
+        for row in sorted(ranked.values(), key=lambda row: (-row[0], -row[1], -row[2]))
+        [:limit]
+    ]
+
+
+def conversation_evidence_query(question, history=None):
+    """Give excerpt selection enough recent context to surface the right facts."""
+
+    parts = []
+    for item in list(history or []):
+        if item.get("role") not in {"user", "assistant"}:
+            continue
+        content = semantic_question(item.get("content"))
+        if content and (not parts or fold_text(content) != fold_text(parts[-1])):
+            parts.append(content)
+    latest = semantic_question(question)
+    if latest and (not parts or fold_text(latest) != fold_text(parts[-1])):
+        parts.append(latest)
+    return ". ".join(parts)
+
+
 _CALENDAR_MONTH_NAMES = {
     name.lower(): number
     for number, name in enumerate(
@@ -1415,12 +1471,16 @@ def calendar_evidence_blocks(source, query, today=None):
     else:
         exact_date = None
         for name, number in _CALENDAR_MONTH_NAMES.items():
-            match = re.search(rf"\b{re.escape(name)}\s+(\d{{1,2}})\b", query_value)
+            match = re.search(
+                rf"\b{re.escape(name)}\s+(\d{{1,2}})(?:,?\s+(\d{{4}}))?\b",
+                query_value,
+            )
             if not match:
                 continue
             try:
-                exact_date = date(current.year, number, int(match.group(1)))
-                if exact_date < current:
+                explicit_year = int(match.group(2)) if match.group(2) else None
+                exact_date = date(explicit_year or current.year, number, int(match.group(1)))
+                if explicit_year is None and exact_date < current:
                     exact_date = date(current.year + 1, number, int(match.group(1)))
             except ValueError:
                 exact_date = None
@@ -1960,133 +2020,12 @@ def contextualize_sources(retrieved, page_context):
 def question_refers_to_current_page(question):
     value = fold_text(semantic_question(question))
     patterns = (
-        r"\b(?:this|the current) (?:page|class|service|program|event|workshop)\b",
+        r"\b(?:this|the current) page\b",
         r"\b(?:on|from) this page\b",
-        r"\bwhat is here\b",
-        r"\bwhere should i go next\b",
-        r"\bwhat do i do next\b",
-        r"\bmain information here\b",
-        r"\b(?:help|information|service|program|class|workshop) "
-        r"(?:described |listed |shown |mentioned |explained )?here\b",
-        r"\b(?:described|listed|shown|mentioned|explained) (?:on this page|here)\b",
+        r"\b(?:described|listed|shown|mentioned|explained) on this page\b",
+        r"\b(?:described|listed|shown|mentioned|explained) here\b",
     )
     return any(re.search(pattern, value) for pattern in patterns)
-
-
-def question_needs_history_context(question):
-    """Identify a follow-up whose nouns live in a previous safe user turn."""
-
-    value = fold_text(semantic_question(question))
-    patterns = (
-        r"\b(?:it|its|that|those|they|them|there)\b",
-        r"\b(?:this|that) class\b",
-        r"\b(?:which|is there) one\b",
-        r"\bwhat (?:else|about|are they for|kind of (?:help|class|workshop))\b",
-        r"\bwhat kinds? of (?:help|support|classes|services|workshops)\b",
-        r"\bwhat (?:are|is) (?:the )?(?:regular )?(?:class |support |office )?"
-        r"(?:hours|schedule)\b",
-        r"\b(?:can|do) i walk in\b",
-        r"\bwhen is it offered\b",
-        r"\bdo i need\b",
-        r"\bhow do i confirm whether i qualify\b",
-        r"\bque aprenderia\b",
-        r"\bque mas\b",
-    )
-    return any(re.search(pattern, value) for pattern in patterns)
-
-
-def history_topic_question(history):
-    """Return the latest explicit topic from the bounded, privacy-clean history."""
-
-    fallback = ""
-    for item in reversed(list(history or [])):
-        if item.get("role") != "user":
-            continue
-        content = semantic_question(item.get("content"))
-        if not content:
-            continue
-        if not fallback:
-            fallback = content
-        word_set = set(tokens(content, keep_stopwords=True))
-        if word_set.intersection(HISTORY_TOPIC_TERMS):
-            return content
-    return fallback
-
-
-def explicit_follow_up_domain(question):
-    """Return the domain of a broad but independently routable new question."""
-
-    value = fold_text(semantic_question(question))
-    if re.search(
-        r"\b(?:what|which) kinds? of (?:classes|courses|trainings|workshops)\b|"
-        r"\b(?:class|course|training|workshop) catalog\b|"
-        r"\bwhat (?:classes|courses|trainings|workshops) (?:are )?(?:available|offered)\b",
-        value,
-    ):
-        return "catalog"
-    if re.search(
-        r"\b(?:calendar|current schedule|regular class hours|class schedule|"
-        r"schedule of classes|what (?:are|is) (?:the )?class hours)\b",
-        value,
-    ):
-        return "schedule"
-    if re.search(
-        r"\bwhat kinds? of (?:help|support|services)\b|"
-        r"\bwhat (?:help|support|services) (?:are|is) (?:available|offered)\b",
-        value,
-    ):
-        return "support"
-    return ""
-
-
-def routing_topic_domain(question):
-    """Classify only the broad domains needed to avoid stale-topic carryover."""
-
-    value = fold_text(semantic_question(question))
-    explicit = explicit_follow_up_domain(value)
-    if explicit:
-        return explicit
-    words = set(tokens(value, keep_stopwords=True))
-    if device_use_support_intent(value) or individual_support_intent(value):
-        return "support"
-    if device_distribution_intent(value):
-        return "device"
-    if re.search(r"\b(?:calendar|current schedule|class schedule|regular class hours)\b", value):
-        return "schedule"
-    if exact_named_source_ids(value) or words.intersection(
-        SPECIFIC_CLASS_TERMS.union({"class", "classes", "course", "courses", "training", "trainings", "workshop", "workshops"})
-    ):
-        return "catalog"
-    return ""
-
-
-def contextual_routing_question(question, history=None):
-    """Add only the latest safe topic to genuinely elliptical retrieval turns."""
-
-    question = semantic_question(question)
-    if not question_needs_history_context(question):
-        return question
-    topic = history_topic_question(history)
-    new_domain = explicit_follow_up_domain(question)
-    if new_domain:
-        prior_domain = routing_topic_domain(topic)
-        # A broad catalog question is independently routable even after a
-        # specific class. Schedule/support questions retain context only when
-        # the preceding turn was already in that same domain.
-        if new_domain == "catalog" or prior_domain != new_domain:
-            return question
-    # A turn can contain conversational words such as "there" while still
-    # naming a complete, independently routable topic.  In that case the new
-    # topic must win over the previous exchange.  Calendar and registration
-    # routes are intentionally excluded because phrases such as "when is it
-    # offered?" still need the class named in history.
-    explicit_sources = likely_source_ids(question, fallback=False)
-    generic_follow_up_ids = {"calendar", "contact", "trainings"}
-    if any(source_id not in generic_follow_up_ids for source_id in explicit_sources):
-        return question
-    if not topic or fold_text(topic) == fold_text(question):
-        return question
-    return f"{topic}. Follow-up: {question}"
 
 
 def guided_class_sources(question):
@@ -2176,7 +2115,7 @@ def retired_class_sources(question):
     ]
 
 
-def retrieval_plan(question, page_context=None):
+def retrieval_plan(question, page_context=None, history=None):
     """Choose the narrowest approved evidence scope that can answer a question."""
     question = semantic_question(question)
     guided = guided_class_sources(question)
@@ -2201,7 +2140,7 @@ def retrieval_plan(question, page_context=None):
     if retired:
         return "site", retired
 
-    site_sources = retrieve_sources(question)
+    site_sources = retrieve_conversation_sources(question, history)
     if current and site_sources and site_sources[0]["url"] == current["url"]:
         return "page", [current]
     if site_sources:
@@ -2297,6 +2236,7 @@ def retrieval_prompt(
     interaction=None,
     previous_answer="",
     current_date="",
+    conversation_history=None,
 ):
     records = []
     for source in sources:
@@ -2326,6 +2266,7 @@ def retrieval_prompt(
         current_page_id=current["id"] if current else "",
         previous_answer=re.sub(r"\s+", " ", str(previous_answer or "")).strip(),
         current_date=current_date or datetime.now(timezone.utc).date().isoformat(),
+        conversation_history=list(conversation_history or []),
     )
 
 
@@ -3230,7 +3171,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     headers={"Retry-After": "60"},
                 )
                 return
-            routing_question = contextual_routing_question(question, safe_history)
+            evidence_query = conversation_evidence_query(question, safe_history)
             interaction = interaction_context(question, safe_history)
             turn = CONVERSATION_RECORDER.begin_turn(
                 question=question,
@@ -3296,7 +3237,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 retrieval_scope = "staff"
                 retrieved = [SOURCE_BY_ID["contact"]]
             else:
-                retrieval_scope, retrieved = retrieval_plan(routing_question, page_context)
+                retrieval_scope, retrieved = retrieval_plan(
+                    question,
+                    page_context,
+                    safe_history,
+                )
                 if not retrieved:
                     retrieval_scope = "site"
             require_model_answer = sensitive_request
@@ -3349,11 +3294,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 for source in retrieved
             ]
             messages = [{"role": "system", "content": retrieval_prompt(
-                routing_question,
+                evidence_query,
                 model_sources,
                 page_context,
                 interaction,
                 previous_answer=prior_answer,
+                conversation_history=safe_history,
             )}]
             model_question = semantic_question(question) or (
                 "Ask one short question about what the participant needs from "
@@ -3372,7 +3318,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 interaction,
                 prior_answer,
                 question,
-                routing_question,
+                evidence_query,
                 require_model_answer,
             )
             if retry_reason and MODEL_CALL_BUDGET.claim(client_identifier):
@@ -3393,7 +3339,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 interaction,
                 prior_answer,
                 question,
-                routing_question,
+                evidence_query,
                 require_model_answer,
             )
             if (
@@ -3417,7 +3363,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     interaction,
                     prior_answer,
                     question,
-                    routing_question,
+                    evidence_query,
                     require_model_answer,
                 )
             response = parse_model_selection(
@@ -3426,7 +3372,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 model_sources,
                 retrieval_scope,
                 interaction,
-                routing_question=routing_question,
+                routing_question=evidence_query,
                 prior_answer=prior_answer,
                 require_answer=require_model_answer,
             )

@@ -27,8 +27,9 @@ def build_prompt(
     current_page_id: str = "",
     previous_answer: str = "",
     current_date: str = "",
+    conversation_history: list[dict] | None = None,
 ) -> str:
-    """Build a grounded-answer prompt without raw participant history."""
+    """Build a grounded prompt with bounded, server-sanitized conversation context."""
 
     return (
         SYSTEM_PROMPT
@@ -38,6 +39,8 @@ def build_prompt(
         + json.dumps(current_page_id or None)
         + "\nPREVIOUS GUIDE ANSWER:\n"
         + json.dumps(previous_answer or None, ensure_ascii=False)
+        + "\nRECENT CONVERSATION:\n"
+        + json.dumps(conversation_history or [], ensure_ascii=False, indent=2)
         + "\nCANDIDATE RECORDS:\n"
         + json.dumps(records, ensure_ascii=False, indent=2)
     )

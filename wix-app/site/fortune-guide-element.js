@@ -8,7 +8,7 @@
 (() => {
   const TAG_NAME = "fortune-digital-equity-guide";
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 6;
+  const MAX_CONTEXT_MESSAGES = 12;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:wix:v20";
   const STARTERS = Object.freeze([
     { label: "Page summary", prompt: "What is the main information here?" },
@@ -401,7 +401,7 @@
             <details class="meta">
               <summary>Info</summary>
               <div class="info">
-                <p class="context-count">Context · conversation · 0/3</p>
+                <p class="context-count">Context · conversation · 0/6</p>
                 <p class="model-status">Starting…</p>
               </div>
             </details>

@@ -94,7 +94,7 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertNotIn("benchmark", source)
             self.assertNotIn("synthetic", source)
 
-    def test_clear_failed_human_attempts_are_visible_without_weakening_boundaries(self):
+    def test_failed_only_reports_are_hidden_but_mixed_failures_remain_visible(self):
         predicate = evaluation_store.REVIEWABLE_TURN_PREDICATE
         failed_predicate = evaluation_store.FAILED_HUMAN_ATTEMPT_PREDICATE
         visible_predicate = evaluation_store.VISIBLE_HUMAN_TURN_PREDICATE
@@ -126,6 +126,12 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertIn(clause, visible_predicate)
             self.assertIn(clause, eligible_source)
         self.assertNotIn("privacy_state = 'blocked'", failed_predicate)
+        self.assertIn(
+            "HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0",
+            eligible_source,
+        )
+        self.assertIn("AND EXISTS", current_version_source)
+        self.assertIn("completed.status = 'complete'", current_version_source)
         self.assertNotIn("HAVING BOOL_AND", eligible_source)
         self.assertNotIn("HAVING BOOL_AND", current_version_source)
 
@@ -445,7 +451,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260828-shared-queue-1", html)
+        self.assertIn("20260831-conversation-grounding-1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts"', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -493,16 +499,17 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260828-shared-queue-1", html)
-        self.assertIn('version: "2026-08-28-v30"', javascript)
+        self.assertIn("20260831-conversation-grounding-1", html)
+        self.assertIn('version: "2026-08-31-v31"', javascript)
         self.assertIn(
-            'behavior_release: "digital-equity-model-first-one-sentence-identity"', javascript
+            'behavior_release: "digital-equity-conversation-grounding"', javascript
         )
         self.assertIn(
-            'current_variant: "ask_only_when_blocked"',
+            'current_variant: "evidence_first_clarification"',
             javascript,
         )
-        self.assertIn('current_variant: "sitewide_candidates"', javascript)
+        self.assertIn('current_variant: "conversation_continuity"', javascript)
+        self.assertIn('current_variant: "current_sitewide_evidence"', javascript)
         self.assertIn("Production changes still require code review", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)

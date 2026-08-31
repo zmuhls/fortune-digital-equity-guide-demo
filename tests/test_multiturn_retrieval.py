@@ -32,9 +32,9 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "user", "content": "Can I get a free laptop?"},
             {"role": "assistant", "content": "Laptop supply is limited and can take time."},
         ]
-        routed = server.contextual_routing_question("Is that available now?", history)
-        self.assertIn("free laptop", routed)
-        scope, sources = server.retrieval_plan(routed, HOME)
+        queries = server.conversation_search_queries("Is that available now?", history)
+        self.assertTrue(any("free laptop" in query for query in queries))
+        scope, sources = server.retrieval_plan("Is that available now?", HOME, history)
         self.assertEqual(scope, "site")
         self.assertEqual(sources[0]["id"], "devices")
 
@@ -45,10 +45,7 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "user", "content": "Instead, tell me about Intro to Canva."},
             {"role": "assistant", "content": "Intro to Canva covers design basics."},
         ]
-        routed = server.contextual_routing_question("What does that cover?", history)
-        self.assertIn("Intro to Canva", routed)
-        self.assertNotIn("laptop", routed)
-        _, sources = server.retrieval_plan(routed, HOME)
+        _, sources = server.retrieval_plan("What does that cover?", HOME, history)
         self.assertEqual(sources[0]["id"], server.INTRO_CANVA_ID)
 
     def test_explicit_topic_shift_is_not_rewritten_as_an_elliptical_follow_up(self):
@@ -57,9 +54,7 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "assistant", "content": "Resume Writing in an AI World."},
         ]
         question = "Is there also a class on job searching online?"
-        routed = server.contextual_routing_question(question, history)
-        self.assertEqual(routed, server.semantic_question(question))
-        _, sources = server.retrieval_plan(routed, HOME)
+        _, sources = server.retrieval_plan(question, HOME, history)
         self.assertEqual(sources[0]["id"], server.JOB_SEARCH_ID)
 
     def test_generic_class_words_do_not_override_an_elliptical_follow_up(self):
@@ -67,12 +62,11 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "user", "content": "Which class teaches Excel formulas?"},
             {"role": "assistant", "content": "It begins with basic operators."},
         ]
-        routed = server.contextual_routing_question(
+        _, sources = server.retrieval_plan(
             "What else does that class cover?",
+            HOME,
             history,
         )
-        self.assertIn("Excel formulas", routed)
-        _, sources = server.retrieval_plan(routed, HOME)
         self.assertEqual(sources[0]["id"], server.EXCEL_FORMULAS_ID)
 
     def test_natural_generic_follow_ups_keep_the_latest_support_and_calendar_topics(self):
@@ -80,26 +74,21 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "user", "content": "What one-on-one technology help is available?"},
             {"role": "assistant", "content": "Fortune lists tutoring and technical support."},
         ]
-        support_routed = server.contextual_routing_question(
+        _, support_sources = server.retrieval_plan(
             "What kinds of help are offered?",
+            HOME,
             support_history,
         )
-        self.assertIn("one-to-one", support_routed)
-        _, support_sources = server.retrieval_plan(support_routed, HOME)
         self.assertEqual(support_sources[0]["id"], "individual")
 
         calendar_history = [
             {"role": "user", "content": "What current schedule is shown on this page?"},
             {"role": "assistant", "content": "The calendar lists current sessions."},
         ]
-        calendar_routed = server.contextual_routing_question(
-            "What are the regular class hours?",
-            calendar_history,
-        )
-        self.assertIn("current schedule", calendar_routed)
         scope, calendar_sources = server.retrieval_plan(
-            calendar_routed,
+            "What are the regular class hours?",
             {"url": server.CALENDAR_URL},
+            calendar_history,
         )
         self.assertEqual(scope, "page")
         self.assertEqual(calendar_sources[0]["id"], "calendar")
@@ -111,13 +100,11 @@ class MultiTurnRetrievalTests(unittest.TestCase):
         ]
 
         catalog_question = "What kinds of classes are offered?"
-        catalog_routed = server.contextual_routing_question(catalog_question, history)
-        self.assertEqual(catalog_routed, server.semantic_question(catalog_question))
+        _, catalog_sources = server.retrieval_plan(catalog_question, HOME, history)
+        self.assertEqual(catalog_sources[0]["id"], "trainings")
 
         schedule_question = "What are the regular class hours?"
-        schedule_routed = server.contextual_routing_question(schedule_question, history)
-        self.assertEqual(schedule_routed, server.semantic_question(schedule_question))
-        scope, schedule_sources = server.retrieval_plan(schedule_routed, HOME)
+        scope, schedule_sources = server.retrieval_plan(schedule_question, HOME, history)
         self.assertEqual(scope, "site")
         self.assertEqual(schedule_sources[0]["id"], "calendar")
 
@@ -151,9 +138,28 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"role": "user", "content": "Which certifications are listed?"},
             {"role": "assistant", "content": "Microsoft Office certifications are listed."},
         ]
-        routed = server.contextual_routing_question("Is there one for Word?", history)
-        _, sources = server.retrieval_plan(routed, HOME)
+        _, sources = server.retrieval_plan("Is there one for Word?", HOME, history)
         self.assertEqual(sources[0]["id"], server.WORD_CERTIFICATION_ID)
+
+    def test_excel_topic_survives_five_short_follow_ups_without_a_classifier(self):
+        history = [
+            {"role": "user", "content": "Which Excel class teaches formulas and functions?"},
+            {"role": "assistant", "content": "Excel - Formulas & Functions covers basic operators."},
+            {"role": "user", "content": "What else?"},
+            {"role": "assistant", "content": "It also covers built-in functions."},
+            {"role": "user", "content": "And after that?"},
+            {"role": "assistant", "content": "The page lists additional spreadsheet topics."},
+            {"role": "user", "content": "Can you be more specific?"},
+            {"role": "assistant", "content": "The approved page has more detail."},
+            {"role": "user", "content": "What about the next part?"},
+            {"role": "assistant", "content": "The same class page remains the source."},
+        ]
+        _, sources = server.retrieval_plan("What would I learn next?", HOME, history)
+        self.assertEqual(sources[0]["id"], server.EXCEL_FORMULAS_ID)
+        self.assertIn(
+            "Which Excel class teaches formulas and functions",
+            server.conversation_evidence_query("What would I learn next?", history),
+        )
 
     def test_ambiguous_specific_sources_still_reach_the_model_selector(self):
         question = "Which Excel class covers formatting and organizing data?"

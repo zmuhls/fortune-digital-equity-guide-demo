@@ -1,5 +1,32 @@
 # Website Guide — next steps
 
+## Conversation-grounding release — 2026-08-31
+
+- [x] Review all 29 current human production conversations without changing
+  bucket placement; audit all 10 conversations longer than three turns.
+- [x] Keep every successful or mixed-result transcript, note, annotation, and
+  timestamp; hide only the three failed-only reports from the review queue.
+- [x] Replace the short-follow-up classifier with bounded conversation-aware
+  retrieval and send six recent exchanges to the model.
+- [x] Add regressions for Excel continuity, topic changes, support/page context,
+  live calendar dates, failed-only cleanup, and the shared evaluator boundary.
+- [x] Publish prompt v31 and preserve v30 as an immutable compiled artifact.
+- [x] Update the dashboard Prompts preview to the exact v31 runtime policy.
+- [x] Record team-source contributions and the action-item audit in
+  `docs/TRANSCRIPT-AND-PROMPT-REVIEW-2026-08-31.md`.
+- [x] Pass the complete local release suite: 358 Python, 29 frontend, and 18
+  source-snapshot checks.
+- [ ] Push v31 directly to `zmuhls/fortune-digital-equity-guide-demo` main and
+  deploy only the canonical zmuhls Railway production service.
+- [ ] Verify v31 health, model calls, Excel continuity, current calendar data,
+  reset, cross-account shared-view digests, preserved review state, and an
+  active unused one-time invitation for Jacob.
+- [ ] Copy the exact modular v31 prompt into review-tagged Google Doc tabs. The
+  existing System Prompt tab is populated, but Customization is still empty.
+- [ ] Confirm Sasha's individual prompt-Doc and transcript-categorization
+  activity; the connected audit currently proves shared team material and
+  Maria activity but does not independently attribute Sasha's edits.
+
 ## Human transcript review — 2026-08-21
 
 - [x] Record the owner instruction to enable production human-conversation
