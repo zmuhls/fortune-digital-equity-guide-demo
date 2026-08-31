@@ -34,6 +34,9 @@
   const transcriptTitle = document.querySelector("#transcript-title");
   const transcriptMeta = document.querySelector("#transcript-meta");
   const transcript = document.querySelector("#transcript");
+  const transcriptAttributionForm = document.querySelector("#transcript-attribution-form");
+  const transcriptEvaluator = document.querySelector("#transcript-evaluator");
+  const transcriptAttributionStatus = document.querySelector("#transcript-attribution-status");
   const reviewNoteForm = document.querySelector("#review-note-form");
   const reviewNote = document.querySelector("#review-note");
   const reviewNoteSave = reviewNoteForm.querySelector('button[type="submit"]');
@@ -53,6 +56,13 @@
   const promptProposalName = document.querySelector("#prompt-proposal-name");
   const promptModuleFields = document.querySelector("#prompt-module-fields");
   const promptProposalStatus = document.querySelector("#prompt-proposal-status");
+  const sharedPromptForm = document.querySelector("#shared-prompt-form");
+  const sharedPromptBody = document.querySelector("#shared-prompt-body");
+  const sharedPromptChangeNote = document.querySelector("#shared-prompt-change-note");
+  const sharedPromptMeta = document.querySelector("#shared-prompt-meta");
+  const sharedPromptStatus = document.querySelector("#shared-prompt-status");
+  const sharedPromptHistorySummary = document.querySelector("#shared-prompt-history-summary");
+  const sharedPromptHistory = document.querySelector("#shared-prompt-history");
 
   const localPreview = ["127.0.0.1", "localhost"].includes(location.hostname)
     && new URLSearchParams(location.search).get("preview") === "1";
@@ -68,6 +78,7 @@
     csrf: "",
     buckets: [],
     conversations: [],
+    evaluators: [],
     selectedId: "",
     openConversation: null,
     promptLab: null,
@@ -128,6 +139,9 @@
     shared: true,
     deployed: {
       version: "2026-08-31-v33",
+      display_version: "v1.33",
+      release_number: 1,
+      edit_number: 33,
       behavior_release: "digital-equity-conversation-grounding",
       editable: false,
     },
@@ -145,6 +159,19 @@
       "Answer in the participant's language when you can do so reliably. Keep official program names unchanged.",
       'Return only JSON: {"pick":"<candidate ID or ASK>","answer":"<direct response>"}. With no candidate records, use ASK and put the direct conversational response in answer.',
     ].join("\n\n") + "\n",
+    shared_draft: {
+      scope_key: "shared",
+      release_number: 1,
+      edit_number: 33,
+      display_version: "v1.33",
+      body: "You are the AI Website Guide for the Digital Equity site.\n\nUse current approved site material and never guess.",
+      change_note: "Initial shared draft copied from the live prompt.",
+      version: 1,
+      updated_by: "editor-1",
+      updated_by_name: "Editor 1",
+      updated_at: "2026-08-31T20:20:00Z",
+      revisions: [{ release_number: 1, edit_number: 33, change_note: "Initial shared draft copied from the live prompt.", actor_slot: "editor-1", actor_name: "Editor 1", recorded_at: "2026-08-31T20:20:00Z", character_count: 112 }],
+    },
     editable_modules: [
       { key: "style", label: "Tone and concision", current_variant: "adaptive_minimal", current_value: "Use plain, conversational language for a phone screen. Start with the answer. Ordinary replies are one or two short sentences and under 40 words. Use more only for a requested list, full schedule, comparison, or steps, with one item per plain-text line. Avoid setup, slogans, repetition, Markdown, and closing invitations.", maximum_length: 500 },
       { key: "clarification", label: "Clarification style", current_variant: "evidence_exhausted_only", current_value: "Use ASK only after the evidence and context leave no useful partial answer. Ask one concrete question when its answer changes the result. Never ask the participant to choose a page, repeat a clarification, or present an unrequested menu.", maximum_length: 500 },
@@ -211,11 +238,19 @@
     return version.length > 24 ? `${version.slice(0, 23)}…` : version;
   }
 
+  function promptDisplayVersion(value) {
+    const version = String(value || "").trim();
+    if (!version) return "";
+    if (/^v\d+\.\d+$/i.test(version)) return version;
+    const legacyEdit = version.match(/-v(\d+)$/i);
+    return legacyEdit ? `v1.${legacyEdit[1]}` : version;
+  }
+
   function versionLabel(item, full = false) {
     const prompt = String(item?.prompt_policy_version || "").trim();
     const app = String(item?.app_version || "").trim();
     const parts = [];
-    if (prompt) parts.push(`Prompt ${prompt}`);
+    if (prompt) parts.push(`Prompt ${promptDisplayVersion(prompt)}`);
     if (app) parts.push(`Build ${full ? app : compactBuildVersion(app)}`);
     return parts.join(" · ") || "Version unavailable";
   }
@@ -272,6 +307,11 @@
       : { slot_key: "editor-1", role: "editor", display_name: "Editor 1" };
     state.buckets = saved?.buckets || previewBuckets;
     state.conversations = saved?.conversations || previewConversations;
+    state.evaluators = [
+      { slot_key: "admin", display_name: "Administrator" },
+      { slot_key: "editor-1", display_name: "Editor 1" },
+      { slot_key: "editor-2", display_name: "Maria" },
+    ];
     state.promptLab = saved?.promptLab || structuredClone(previewPromptLab);
     state.promptLab.can_mark_status = previewAdmin;
     loadViewPreferences();
@@ -316,14 +356,16 @@
 
   async function loadWorkspace() {
     if (localPreview) return previewLoad();
-    const [bucketPayload, conversationPayload, promptPayload] = await Promise.all([
+    const [bucketPayload, conversationPayload, promptPayload, evaluatorPayload] = await Promise.all([
       api("/api/evaluation/buckets"),
       api("/api/evaluation/conversations?limit=500"),
       api("/api/evaluation/prompt-lab"),
+      api("/api/evaluation/evaluators"),
     ]);
     state.buckets = bucketPayload.buckets || [];
     state.conversations = conversationPayload.conversations || [];
     state.promptLab = promptPayload.prompt_lab || null;
+    state.evaluators = evaluatorPayload.evaluators || [];
     loadViewPreferences();
     showWorkspace();
     renderBoard();
@@ -363,7 +405,7 @@
     const query = search.value.trim().toLowerCase();
     const matches = state.conversations.filter(item => {
       if (!query) return true;
-      return `${shortId(item.id)} ${item.page_title || ""} ${item.app_version || ""} ${item.prompt_policy_version || ""} ${item.is_automated ? "automated" : ""}`.toLowerCase().includes(query);
+      return `${shortId(item.id)} ${item.page_title || ""} ${item.app_version || ""} ${item.prompt_policy_version || ""} ${item.evaluator_name || ""} ${item.reviewed_by_name || ""} ${item.is_automated ? "automated" : ""}`.toLowerCase().includes(query);
     });
     return newestFirst(matches);
   }
@@ -387,12 +429,20 @@
     const turnLabel = `${Number(conversation.turn_count || 0)} ${Number(conversation.turn_count || 0) === 1 ? "turn" : "turns"}`;
     const countLabel = failed ? `${turnLabel} · ${failed} failed` : turnLabel;
     const provenanceLabel = conversation.is_automated ? "Automated" : "";
+    const evaluatorLabel = conversation.evaluator_name
+      ? `Evaluator ${conversation.evaluator_name}`
+      : "";
+    const reviewerLabel = conversation.reviewed_by_name
+      ? `Reviewed by ${conversation.reviewed_by_name}`
+      : "";
     return `
       <article class="conversation-card${selected ? " is-selected" : ""}" draggable="true" data-conversation-id="${escapeHtml(conversation.id)}" tabindex="0" aria-label="${shortId(conversation.id)}, ${provenanceLabel ? `${provenanceLabel}, ` : ""}${escapeHtml(conversation.page_title || "Unknown page")}, ${escapeHtml(countLabel)}, ${escapeHtml(readableTimestamp(conversation.last_turn_at))}, ${escapeHtml(versionLabel(conversation))}">
         <span class="drag-handle" aria-hidden="true">⠿</span>
         <p class="conversation-id">${shortId(conversation.id)}${provenanceLabel ? ` <span class="automation-badge">${provenanceLabel}</span>` : ""}</p>
         <p class="conversation-page">${escapeHtml(conversation.page_title || "Unknown page")}</p>
         <p class="conversation-counts">${escapeHtml(countLabel)}</p>
+        ${evaluatorLabel ? `<p class="conversation-attribution">${escapeHtml(evaluatorLabel)}</p>` : ""}
+        ${reviewerLabel ? `<p class="conversation-attribution">${escapeHtml(reviewerLabel)}</p>` : ""}
         ${timeHtml(conversation.last_turn_at, "conversation-time")}
         <p class="conversation-version" title="${escapeHtml(versionLabel(conversation, true))}">${escapeHtml(versionLabel(conversation))}</p>
         ${selected ? `<div class="card-actions"><button class="open-transcript" type="button">Open transcript</button>${moveOptions(conversation)}</div>` : moveOptions(conversation)}
@@ -579,12 +629,25 @@
       promptProposalEmpty.hidden = false;
       return;
     }
-    deployedPromptVersion.textContent = `${lab.deployed.version} · ${lab.deployed.behavior_release}`;
+    deployedPromptVersion.textContent = `${lab.deployed.display_version || promptDisplayVersion(lab.deployed.version)} · ${lab.deployed.behavior_release}`;
+    const draft = lab.shared_draft || null;
+    if (draft) {
+      sharedPromptBody.value = draft.body || "";
+      sharedPromptMeta.textContent = `${draft.display_version || `v${draft.release_number}.${draft.edit_number}`} · ${savedByText(draft.updated_by_name, draft.updated_by, draft.updated_at)}`;
+      const revisions = draft.revisions || [];
+      sharedPromptHistorySummary.textContent = `${revisions.length} ${revisions.length === 1 ? "edit" : "edits"}`;
+      sharedPromptHistory.innerHTML = revisions.map(revision => `
+        <li>
+          <strong>Edit ${Number(revision.edit_number)}</strong>
+          <span>${escapeHtml(revision.change_note || "No change note")}</span>
+          <small>${escapeHtml(revision.actor_name || revision.actor_slot || "Evaluator")} · ${escapeHtml(readableTimestamp(revision.recorded_at))}</small>
+        </li>`).join("");
+    }
     const compiledPrompt = String(lab.compiled_prompt || "");
     const compiledPromptCard = compiledPrompt ? `
       <article class="compiled-prompt-card">
         <details>
-          <summary>System prompt · read only</summary>
+          <summary>Live prompt · read only</summary>
           <pre>${escapeHtml(compiledPrompt)}</pre>
         </details>
       </article>` : "";
@@ -602,6 +665,70 @@
     proposalCount.textContent = `${proposals.length} shared ${proposals.length === 1 ? "proposal" : "proposals"}`;
     promptProposalList.innerHTML = proposals.map(proposalHtml).join("");
     promptProposalEmpty.hidden = proposals.length > 0;
+  }
+
+  async function saveSharedPromptDraft() {
+    const draft = state.promptLab?.shared_draft;
+    if (!draft) return;
+    const body = sharedPromptBody.value.trim();
+    const changeNote = sharedPromptChangeNote.value.trim();
+    if (!body || !changeNote) {
+      sharedPromptStatus.textContent = "Add the prompt text and a short change note.";
+      return;
+    }
+    const saveButton = sharedPromptForm.querySelector('button[type="submit"]');
+    saveButton.disabled = true;
+    sharedPromptStatus.textContent = "Saving…";
+    try {
+      let updated;
+      if (localPreview) {
+        const now = new Date().toISOString();
+        const nextEdit = Number(draft.edit_number) + 1;
+        updated = {
+          ...draft,
+          edit_number: nextEdit,
+          display_version: `v${draft.release_number}.${nextEdit}`,
+          body,
+          change_note: changeNote,
+          version: Number(draft.version) + 1,
+          updated_by: state.session.slot_key,
+          updated_by_name: state.session.display_name,
+          updated_at: now,
+          revisions: [{
+            release_number: draft.release_number,
+            edit_number: nextEdit,
+            change_note: changeNote,
+            actor_slot: state.session.slot_key,
+            actor_name: state.session.display_name,
+            recorded_at: now,
+            character_count: body.length,
+          }, ...(draft.revisions || [])],
+        };
+      } else {
+        updated = (await api("/api/evaluation/prompt-draft", {
+          method: "PUT",
+          body: JSON.stringify({
+            body,
+            change_note: changeNote,
+            expected_version: Number(draft.version),
+            operation_id: crypto.randomUUID(),
+          }),
+        })).shared_draft;
+      }
+      state.promptLab.shared_draft = updated;
+      sharedPromptChangeNote.value = "";
+      if (localPreview) previewSave();
+      renderPromptLab();
+      sharedPromptStatus.textContent = `Saved edit ${updated.edit_number}.`;
+    } catch (error) {
+      if (error.status === 409 && error.payload?.current) {
+        state.promptLab.shared_draft = error.payload.current;
+        renderPromptLab();
+      }
+      sharedPromptStatus.textContent = `Not saved. ${error.message}`;
+    } finally {
+      saveButton.disabled = false;
+    }
   }
 
   function upsertProposal(proposal) {
@@ -874,12 +1001,76 @@
       ? `Automated${detail.automation_source ? ` (${detail.automation_source})` : ""} · `
       : "";
     transcriptMeta.textContent = `${provenance}${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)} · ${versionLabel(detail, true)}`;
+    transcriptEvaluator.innerHTML = [
+      '<option value="">Not attributed</option>',
+      ...state.evaluators.map(evaluator => `<option value="${escapeHtml(evaluator.slot_key)}">${escapeHtml(evaluator.display_name)}</option>`),
+    ].join("");
+    transcriptEvaluator.value = detail.evaluator_slot || "";
+    transcriptAttributionStatus.textContent = detail.evaluator_name
+      ? `Attributed to ${detail.evaluator_name}${detail.evaluator_attributed_at ? ` · ${readableTimestamp(detail.evaluator_attributed_at)}` : ""}`
+      : "";
     reviewNote.value = detail.note || "";
     reviewNoteStatus.textContent = detail.note
       ? savedByText(detail.note_updated_by_name, detail.note_updated_by, detail.note_updated_at)
       : "";
     renderTranscriptMessages();
     transcriptDialog.showModal();
+  }
+
+  async function saveConversationAttribution() {
+    if (!state.openConversation) return;
+    const saveButton = transcriptAttributionForm.querySelector('button[type="submit"]');
+    saveButton.disabled = true;
+    transcriptAttributionStatus.textContent = "Saving…";
+    try {
+      let attribution;
+      if (localPreview) {
+        const evaluator = state.evaluators.find(item => item.slot_key === transcriptEvaluator.value);
+        attribution = {
+          evaluator_slot: transcriptEvaluator.value || null,
+          evaluator_name: evaluator?.display_name || null,
+          evaluator_attribution_version: Number(state.openConversation.evaluator_attribution_version || 0) + 1,
+          evaluator_attribution_source: "manual",
+          evaluator_attributed_at: new Date().toISOString(),
+          transcript_version: state.openConversation.transcript_version,
+        };
+      } else {
+        attribution = (await api(`/api/evaluation/conversations/${encodeURIComponent(state.openConversation.id)}/attribution`, {
+          method: "PUT",
+          body: JSON.stringify({
+            evaluator_slot: transcriptEvaluator.value || null,
+            expected_version: Number(state.openConversation.evaluator_attribution_version || 0),
+            expected_transcript_version: Number(state.openConversation.transcript_version || 0),
+            operation_id: crypto.randomUUID(),
+          }),
+        })).attribution;
+      }
+      for (const field of ["evaluator_slot", "evaluator_name", "evaluator_attribution_source", "evaluator_attributed_at"]) {
+        state.openConversation[field] = attribution[field] || null;
+      }
+      state.openConversation.evaluator_attribution_version = Number(attribution.evaluator_attribution_version || 0);
+      const conversation = state.conversations.find(item => item.id === state.openConversation.id);
+      if (conversation) Object.assign(conversation, {
+        evaluator_slot: state.openConversation.evaluator_slot,
+        evaluator_name: state.openConversation.evaluator_name,
+        evaluator_attribution_source: state.openConversation.evaluator_attribution_source,
+        evaluator_attributed_at: state.openConversation.evaluator_attributed_at,
+        evaluator_attribution_version: state.openConversation.evaluator_attribution_version,
+      });
+      if (localPreview) previewSave();
+      renderBoard();
+      transcriptAttributionStatus.textContent = state.openConversation.evaluator_name
+        ? `Attributed to ${state.openConversation.evaluator_name} · ${readableTimestamp(state.openConversation.evaluator_attributed_at)}`
+        : "Attribution removed";
+    } catch (error) {
+      if (error.status === 409 && error.payload?.current) {
+        Object.assign(state.openConversation, error.payload.current);
+        transcriptEvaluator.value = state.openConversation.evaluator_slot || "";
+      }
+      transcriptAttributionStatus.textContent = `Not saved. ${error.message}`;
+    } finally {
+      saveButton.disabled = false;
+    }
   }
 
   function annotationOptions(selected) {
@@ -1013,6 +1204,11 @@
       conversation.annotations = detail.annotations || [];
       conversation.evaluation_version = Number(detail.evaluation_version || 0);
       conversation.transcript_version = Number(detail.transcript_version || 0);
+      for (const field of [
+        "evaluator_slot", "evaluator_name", "evaluator_attribution_version",
+        "evaluator_attribution_source", "evaluator_attributed_at",
+        "reviewed_by", "reviewed_by_name", "reviewed_at",
+      ]) conversation[field] = detail[field] ?? null;
     }
     return detail;
   }
@@ -1192,6 +1388,13 @@
     event.preventDefault();
     savePromptProposal();
   });
+  sharedPromptForm.addEventListener("submit", event => {
+    event.preventDefault();
+    saveSharedPromptDraft();
+  });
+  sharedPromptBody.addEventListener("input", () => {
+    sharedPromptStatus.textContent = "Unsaved changes";
+  });
   promptProposalList.addEventListener("click", event => {
     const proposal = event.target.closest(".prompt-proposal");
     if (!proposal) return;
@@ -1283,6 +1486,10 @@
   reviewNoteForm.addEventListener("submit", event => {
     event.preventDefault();
     saveReviewNote();
+  });
+  transcriptAttributionForm.addEventListener("submit", event => {
+    event.preventDefault();
+    saveConversationAttribution();
   });
   reviewNote.addEventListener("input", () => {
     reviewNoteStatus.textContent = "Unsaved changes";

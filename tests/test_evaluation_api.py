@@ -25,6 +25,19 @@ class _FakeEvaluationStore:
         self.invited_email = None
         self.prompt_proposals = {}
         self.review_notes = {}
+        self.shared_prompt_draft = {
+            "scope_key": "shared",
+            "release_number": 1,
+            "edit_number": 33,
+            "display_version": "v1.33",
+            "body": "Shared prompt body",
+            "change_note": "Initial shared draft",
+            "version": 1,
+            "updated_by": "admin",
+            "updated_by_name": "Administrator",
+            "updated_at": "2026-08-31T20:00:00Z",
+            "revisions": [],
+        }
 
     def public_status(self):
         return {
@@ -128,6 +141,13 @@ class _FakeEvaluationStore:
     def list_conversations(self, _slot, _limit):
         return []
 
+    def list_evaluator_options(self):
+        return [
+            {"slot_key": "admin", "display_name": "Administrator"},
+            {"slot_key": "editor-1", "display_name": "Editor 1"},
+            {"slot_key": "editor-2", "display_name": "Editor 2"},
+        ]
+
     def get_conversation(self, _slot, conversation_id):
         return {
             "id": conversation_id,
@@ -164,15 +184,34 @@ class _FakeEvaluationStore:
             "operation_id": operation_id,
         }
 
+    def save_conversation_attribution(
+        self, slot, conversation_id, evaluator_slot, expected_version,
+        transcript_version, operation_id,
+    ):
+        return {
+            "evaluator_slot": evaluator_slot,
+            "evaluator_name": "Editor 2" if evaluator_slot == "editor-2" else None,
+            "evaluator_attribution_version": int(expected_version) + 1,
+            "evaluator_attribution_source": "manual",
+            "evaluator_attributed_at": "2026-08-31T20:30:00Z",
+            "transcript_version": int(transcript_version),
+            "operation_id": operation_id,
+            "actor_slot": slot,
+            "conversation_id": conversation_id,
+        }
+
     def get_prompt_lab(self, slot, deployed_version, behavior_release):
         return {
             "scope": "shared",
             "shared": True,
             "deployed": {
                 "version": deployed_version,
+                "display_version": "v1.33",
                 "behavior_release": behavior_release,
                 "editable": False,
             },
+            "compiled_prompt": "Live prompt body",
+            "shared_draft": self.shared_prompt_draft,
             "editable_modules": [
                 {"key": "style", "label": "Tone and concision", "current_value": "Current style", "current_variant": "concise_conversational", "maximum_length": 500},
             ],
@@ -181,6 +220,22 @@ class _FakeEvaluationStore:
             "can_mark_status": slot == "admin",
             "proposals": list(self.prompt_proposals.values()),
         }
+
+    def update_shared_prompt_draft(
+        self, slot, body, change_note, expected_version, operation_id
+    ):
+        next_edit = self.shared_prompt_draft["edit_number"] + 1
+        self.shared_prompt_draft = {
+            **self.shared_prompt_draft,
+            "body": body,
+            "change_note": change_note,
+            "edit_number": next_edit,
+            "display_version": f"v1.{next_edit}",
+            "version": int(expected_version) + 1,
+            "updated_by": slot,
+            "updated_by_name": "Editor 1",
+        }
+        return self.shared_prompt_draft
 
     def create_prompt_proposal(
         self, slot, title, module_values, base_version, proposal_id, operation_id
@@ -516,6 +571,28 @@ class EvaluationApiTests(unittest.TestCase):
         self.assertEqual(annotation["category"], "helpful")
         self.assertEqual(annotation["message_id"], message_id)
 
+        status, _, body = self.request(
+            "GET",
+            "/api/evaluation/evaluators",
+            headers={"Cookie": "__Host-fs_eval=session-token"},
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body)["evaluators"][2]["display_name"], "Editor 2")
+
+        status, _, body = self.request(
+            "PUT",
+            f"/api/evaluation/conversations/{conversation_id}/attribution",
+            {
+                "evaluator_slot": "editor-2",
+                "expected_version": 0,
+                "expected_transcript_version": 9,
+                "operation_id": "55555555-5555-4555-8555-555555555555",
+            },
+            headers,
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body)["attribution"]["evaluator_name"], "Editor 2")
+
     def test_prompt_lab_is_shared_but_status_is_admin_only_and_never_activates(self):
         store = server.EVALUATION_STORE
         store.prompt_proposals = {}
@@ -552,6 +629,23 @@ class EvaluationApiTests(unittest.TestCase):
         self.assertTrue(shared["shared"])
         self.assertEqual(shared["proposals"][0]["id"], proposal_id)
         self.assertEqual(shared["activation"], "code_review_and_deploy_only")
+        self.assertEqual(shared["shared_draft"]["display_version"], "v1.33")
+
+        status, _, body = self.request(
+            "PUT",
+            "/api/evaluation/prompt-draft",
+            {
+                "body": "Revised shared prompt body",
+                "change_note": "Clarified the purpose.",
+                "expected_version": 1,
+                "operation_id": "88888888-8888-4888-8888-888888888888",
+            },
+            editor_headers,
+        )
+        self.assertEqual(status, 200)
+        draft = json.loads(body)["shared_draft"]
+        self.assertEqual(draft["display_version"], "v1.34")
+        self.assertEqual(draft["updated_by"], "editor-1")
 
         editor_two_headers = {
             **self.same_origin_headers(),

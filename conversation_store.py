@@ -25,7 +25,7 @@ from prompt_policy import PROMPT_POLICY_VERSION
 
 CAPTURE_MODES = {"none", "metadata", "transcript"}
 HUMAN_REVIEW_SURFACES = frozenset({"replica", "wix"})
-SCHEMA_VERSION = "011_automation_review_boundary"
+SCHEMA_VERSION = "012_shared_prompt_and_review_history"
 
 
 class CaptureUnavailable(RuntimeError):
@@ -74,6 +74,11 @@ def sanitized_automation_source(value: Any) -> str:
 
     source = re.sub(r"[^a-z0-9._-]+", "-", str(value or "").strip().lower())
     return source.strip("-.")[:80]
+
+
+def sanitized_evaluator_slot(value: Any) -> str | None:
+    slot = str(value or "").strip()
+    return slot if slot in {"admin", "editor-1", "editor-2", "editor-3"} else None
 
 
 def automation_provenance(client_surface: Any, automation_source: Any = None) -> tuple[bool, str]:
@@ -389,6 +394,7 @@ class ConversationRecorder:
         page_context: dict | None = None,
         client_surface: Any = None,
         automation_source: Any = None,
+        evaluator_slot: Any = None,
         history_context: list[dict] | None = None,
         interaction_context: dict | None = None,
     ) -> TurnReservation:
@@ -416,6 +422,7 @@ class ConversationRecorder:
             history_context=history_context,
             automation_source=automation_source,
         )
+        attributed_evaluator = sanitized_evaluator_slot(evaluator_slot)
         try:
             with self._pool.connection() as connection:
                 with connection.transaction():
@@ -425,9 +432,14 @@ class ConversationRecorder:
                             INSERT INTO conversations (
                                 id, capture_mode, client_surface, page_context,
                                 app_version, is_automated, automation_source,
+                                evaluator_slot, evaluator_attribution_version,
+                                evaluator_attribution_source, evaluator_attributed_by,
+                                evaluator_attributed_at,
                                 expires_at
                             ) VALUES (
                                 %s, %s, %s, %s, %s, %s, %s,
+                                %s, %s, %s, %s,
+                                CASE WHEN %s IS NULL THEN NULL ELSE NOW() END,
                                 NOW() + (%s * INTERVAL '1 day')
                             )
                             ON CONFLICT (id) DO UPDATE SET
@@ -441,6 +453,34 @@ class ConversationRecorder:
                                         conversations.automation_source
                                       )
                                     ELSE conversations.automation_source
+                                END,
+                                evaluator_slot = COALESCE(
+                                    conversations.evaluator_slot,
+                                    EXCLUDED.evaluator_slot
+                                ),
+                                evaluator_attribution_version = CASE
+                                    WHEN conversations.evaluator_slot IS NULL
+                                     AND EXCLUDED.evaluator_slot IS NOT NULL
+                                      THEN conversations.evaluator_attribution_version + 1
+                                    ELSE conversations.evaluator_attribution_version
+                                END,
+                                evaluator_attribution_source = CASE
+                                    WHEN conversations.evaluator_slot IS NULL
+                                     AND EXCLUDED.evaluator_slot IS NOT NULL
+                                      THEN EXCLUDED.evaluator_attribution_source
+                                    ELSE conversations.evaluator_attribution_source
+                                END,
+                                evaluator_attributed_by = CASE
+                                    WHEN conversations.evaluator_slot IS NULL
+                                     AND EXCLUDED.evaluator_slot IS NOT NULL
+                                      THEN EXCLUDED.evaluator_attributed_by
+                                    ELSE conversations.evaluator_attributed_by
+                                END,
+                                evaluator_attributed_at = CASE
+                                    WHEN conversations.evaluator_slot IS NULL
+                                     AND EXCLUDED.evaluator_slot IS NOT NULL
+                                      THEN EXCLUDED.evaluator_attributed_at
+                                    ELSE conversations.evaluator_attributed_at
                                 END
                             """,
                             (
@@ -451,6 +491,11 @@ class ConversationRecorder:
                                 self.app_version,
                                 reservation.is_automated,
                                 reservation.automation_source or None,
+                                attributed_evaluator,
+                                1 if attributed_evaluator else 0,
+                                "session" if attributed_evaluator else None,
+                                attributed_evaluator,
+                                attributed_evaluator,
                                 self.retention_days,
                             ),
                         )

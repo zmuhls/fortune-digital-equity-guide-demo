@@ -62,12 +62,27 @@ class EvaluationSchemaTests(unittest.TestCase):
         list_source = inspect.getsource(evaluation_store.EvaluationStore.list_buckets)
         self.assertIn("b.archived_at IS NULL", list_source)
 
-    def test_evaluation_schema_version_tracks_automation_review_boundary(self):
+    def test_evaluation_schema_version_tracks_shared_prompt_and_review_history(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "011_automation_review_boundary",
+            "012_shared_prompt_and_review_history",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
+
+    def test_shared_prompt_feedback_and_attribution_history_are_append_only(self):
+        sql = (DEMO / "migrations" / "012_shared_prompt_and_review_history.sql").read_text(
+            encoding="utf-8"
+        )
+        for table in (
+            "shared_prompt_draft_revisions",
+            "conversation_note_revisions",
+            "conversation_annotation_revisions",
+            "conversation_attribution_revisions",
+        ):
+            self.assertIn(f"CREATE TABLE {table}", sql)
+        self.assertIn("prevent_shared_review_history_mutation", sql)
+        self.assertIn("conversation.attribute", sql)
+        self.assertNotIn("conversation_messages.content", sql)
 
     def test_human_review_migration_preserves_transcripts_and_excludes_tests(self):
         sql = (DEMO / "migrations" / "009_human_review_capture.sql").read_text(
@@ -537,7 +552,11 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)
         self.assertIn('class="compiled-prompt-card"', javascript)
-        self.assertIn("System prompt · read only", javascript)
+        self.assertIn("Live prompt · read only", javascript)
+        self.assertIn('id="shared-prompt-form"', html)
+        self.assertIn('api("/api/evaluation/prompt-draft"', javascript)
+        self.assertIn("Saving creates a named edit for review", html)
+        self.assertIn("promptDisplayVersion", javascript)
         self.assertIn("max-height: 360px", css)
         self.assertIn("Proposed", javascript)
         self.assertIn('api("/api/evaluation/prompt-lab")', javascript)

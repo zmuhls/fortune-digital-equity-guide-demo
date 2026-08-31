@@ -24,6 +24,9 @@ import source_selector
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
         self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v33")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.33")
+        self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 33)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",

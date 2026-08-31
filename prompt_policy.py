@@ -8,6 +8,12 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
+PROMPT_RELEASE_NUMBER = 1
+PROMPT_EDIT_NUMBER = 33
+PROMPT_DISPLAY_VERSION = f"v{PROMPT_RELEASE_NUMBER}.{PROMPT_EDIT_NUMBER}"
+# Keep the immutable policy ID for stored provenance and manifest validation.
+# The dashboard presents PROMPT_DISPLAY_VERSION so an edit is not mistaken for
+# an entirely new system-prompt release.
 PROMPT_POLICY_VERSION = "2026-08-31-v33"
 PROMPT_BEHAVIOR_RELEASE = "digital-equity-conversation-grounding"
 

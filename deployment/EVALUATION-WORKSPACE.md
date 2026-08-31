@@ -25,9 +25,11 @@ After the admin account is claimed, the administrator can open **Account** in th
 Returning testers sign in at `/evaluation` with the email and password they chose during registration. All four accounts open the same shared queue, buckets, placements, conversation notes, and message annotations. Changes persist in PostgreSQL after reload, sign-out, and a new browser session; audit records identify the evaluator who made each change. Interface preferences remain browser-local.
 
 Saved notes and message annotations show the evaluator's display name and the
-stored save time. A same-person credential reset preserves that email binding
-and display name when the operator omits `--email`; supplying a new email
-explicitly reassigns the slot and clears the former display name.
+stored save time. Each save and removal also appends an immutable revision, so
+an overwritten current value does not erase who changed it or what it said.
+A same-person credential reset preserves that email binding and display name
+when the operator omits `--email`; supplying a new email explicitly reassigns
+the slot and clears the former display name.
 
 If a claimed account must be reassigned, use the private operator command below. It revokes active sessions and clears only that slot's authentication fields; the shared workspace and audit history remain intact.
 
@@ -65,7 +67,7 @@ Only a conversation satisfying every condition enters the shared review queue:
 
 Clear failed attempts remain visible so a model or service failure cannot silently remove a human submission from review. Earlier failed attempts may have metadata only because prior releases did not retain their visitor message. New failed attempts retain the privacy-clear visitor question without an invented assistant response.
 
-Privacy-held turns are withheld in full; their presence does not suppress other visible turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Browser automation on a public `replica` or `wix` surface remains in the shared queue with an **Automated** badge and bounded source label. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards identify the number of turns grouped into each browser conversation, show failed-attempt counts, and refresh periodically from PostgreSQL. Cards and transcript details show the stored date, prompt-policy version, app version, and automation provenance when present. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
+Privacy-held turns are withheld in full; their presence does not suppress other visible turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Browser automation on a public `replica` or `wix` surface remains in the shared queue with an **Automated** badge and bounded source label. Every authenticated evaluator receives the same placements, buckets, conversation notes, message annotations, and prompt draft. Cards identify the number of turns grouped into each browser conversation, show failed-attempt counts, and refresh periodically from PostgreSQL. Cards and transcript details show the stored date, prompt-policy version, app version, automation provenance, and known evaluator attribution. A conversation created by a signed-in evaluator on the same origin records that evaluator automatically. An authenticated reviewer may explicitly attribute an older conversation; changes are versioned and audited. The service does not infer ownership from timestamps, prose, or account claim dates. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in append-only history. All evaluation records cascade away when the conversation expires.
 
 Automated suites and capture verification use `client_surface='benchmark'`
 and an explicit `automation_source`. Those rows remain available to aggregate
@@ -79,9 +81,31 @@ The shared review taxonomy includes **Success**, **Needs work**, the virtual **N
 
 ## Prompts boundary
 
-All authenticated evaluators share one Prompts workspace. Editors and the administrator can create or revise draft suggestions and add comments for four presentation modules only: style, clarification, page awareness, and follow-up behavior. The administrator can mark a proposal ready for code review or archive it.
+All authenticated evaluators share one Prompts workspace. It contains an
+editable working copy of the complete system prompt, its immutable revision
+history, and the existing proposal/comment workflow. Saving the working copy
+requires a short change note and records the full text, evaluator, timestamp,
+and optimistic version. The display label treats `v1.33` as release 1, edit 33;
+subsequent draft saves advance the edit number without declaring a new release.
 
-Prompts never edits the compiled system prompt and has no activation or publishing route. Grounding, approved source access, privacy, safety, response validation, language handling, and deployment remain code-controlled. A ready proposal becomes live only after a developer converts it into an allowlisted prompt version, reviews it through Git, and deploys that code.
+Prompts has no activation or publishing route. Saving the working copy does not
+edit the compiled system prompt used by the live guide. Grounding, approved
+source access, privacy, safety, response validation, language handling, and
+deployment remain code-controlled. A draft becomes live only after a developer
+reviews it, runs regression tests, commits the corresponding compiled artifact,
+and deliberately deploys it.
+
+## Daily review
+
+The production service includes `scripts/daily_evaluation_digest.py`, which
+produces a 24-hour, privacy-safe review of shared prompt edits, proposal
+activity, note and annotation revisions, evaluator attribution changes, and
+human-versus-automated conversation aggregates. It never selects participant
+message text, credentials, evaluator emails, invitation tokens, or raw database
+URLs. The Codex thread automation runs this review daily at 8:00 PM
+America/New_York, reports concise implementation candidates, and asks no more
+than three decisions. It does not change prompts, categories, data, code, or a
+deployment without explicit approval. See `docs/DAILY-EVALUATION-REVIEW.md`.
 
 ## HTTP boundary
 
@@ -96,11 +120,12 @@ Prompts never edits the compiled system prompt and has no activation or publishi
 
 1. Run `./run.sh test` and both snapshot checks.
 2. Apply migrations through Railway's pre-deploy command.
-3. Confirm `/health` reports evaluation schema `011_automation_review_boundary`, four total slots, and the expected claimed/unassigned slot counts.
+3. Confirm `/health` reports evaluation schema `012_shared_prompt_and_review_history`, prompt display `v1.33`, four total slots, and the expected claimed/unassigned slot counts.
 4. Confirm `/server.py`, `/.env.example`, `/migrations/003_evaluator_identity.sql`, `/migrations/009_human_review_capture.sql`, and `/scripts/issue_evaluator_invite.py` return `404`.
 5. Confirm `/evaluation` shows the login surface and no reviewer data without a session.
 6. Claim the admin account, create one editor link from **Account**, and verify first-use registration signs the editor in without exposing the token in an HTTP request path or server log.
-7. Save a bucket placement, note, and annotation as one evaluator; sign in as another evaluator and confirm the same state is visible. Make a second change and confirm the first evaluator sees it after reload. Confirm both users see the same newest-first human transcript set, timestamps, prompt versions, and app versions.
-8. Create, revise, and comment on one Prompts proposal as an editor; confirm another evaluator sees it, confirm an editor cannot change its status, and confirm the administrator can mark it ready without activating it.
+7. Save a bucket placement, note, annotation, and manual conversation attribution as one evaluator; sign in as another evaluator and confirm the same state is visible. Make a second change and confirm the first evaluator sees it after reload. Confirm both users see the same newest-first human transcript set, timestamps, prompt versions, app versions, evaluator names, and append-only review history.
+8. Save one full-prompt draft edit with a change note and create, revise, and comment on one module proposal as an editor. Confirm another evaluator sees the shared draft and revision attribution, an editor cannot change proposal status, and the administrator can mark a proposal ready without activating either draft path.
 9. Confirm the same invitation cannot be claimed twice, then leave the remaining invitation fields null until Fortune names the recipients.
 10. Submit one automated smoke with `client_surface='benchmark'` and `automation_source='capture-verification'`; confirm it is persisted for aggregate auditing but absent from every evaluator account. Submit one browser-automation smoke on `replica` and confirm every evaluator sees the same **Automated** label.
+11. Run `python3 scripts/daily_evaluation_digest.py --hours 24` in the production service. Confirm it contains review revisions and aggregate counts but no participant message text, account email, token, credential, or database URL.

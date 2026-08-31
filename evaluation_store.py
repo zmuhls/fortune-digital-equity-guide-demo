@@ -14,13 +14,16 @@ from typing import Any
 
 from prompt_policy import (
     CURRENT_TUNABLE_SELECTIONS,
+    PROMPT_DISPLAY_VERSION,
+    PROMPT_EDIT_NUMBER,
     PROMPT_LAB_TUNABLE_MODULES,
+    PROMPT_RELEASE_NUMBER,
     SYSTEM_PROMPT,
     TEAM_TUNABLE_PROMPT_MODULES,
 )
 
 
-EVALUATION_SCHEMA_VERSION = "011_automation_review_boundary"
+EVALUATION_SCHEMA_VERSION = "012_shared_prompt_and_review_history"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -187,6 +190,29 @@ def _proposal_comment(value: Any) -> str:
     return comment
 
 
+def _prompt_draft_body(value: Any) -> str:
+    body = str(value or "").strip()
+    if not 1 <= len(body) <= 20000:
+        raise EvaluationValidation("The shared prompt draft must be between 1 and 20,000 characters.")
+    return body
+
+
+def _prompt_change_note(value: Any) -> str:
+    note = " ".join(str(value or "").split())
+    if not 1 <= len(note) <= 500:
+        raise EvaluationValidation("Describe the change in 500 characters or fewer.")
+    return note
+
+
+def _account_slot(value: Any, *, allow_empty: bool = False) -> str | None:
+    slot = str(value or "").strip()
+    if allow_empty and not slot:
+        return None
+    if slot not in SLOT_KEYS:
+        raise EvaluationValidation("Choose an available evaluator.")
+    return slot
+
+
 def _json_value(value: Any) -> Any:
     if isinstance(value, uuid.UUID):
         return str(value)
@@ -318,6 +344,7 @@ class EvaluationStore:
                         "DELETE FROM evaluator_sessions "
                         "WHERE absolute_expires_at <= NOW() OR revoked_at IS NOT NULL"
                     )
+                    self._ensure_shared_prompt_draft(cursor)
                 connection.commit()
         except Exception:
             self.close()
@@ -758,6 +785,25 @@ class EvaluationStore:
                 )
                 return [_json_value(dict(row)) for row in cursor.fetchall()]
 
+    def list_evaluator_options(self) -> list[dict]:
+        """Return claimed evaluator names without exposing account emails."""
+
+        with self._pool.connection() as connection:
+            with connection.cursor(row_factory=self._dict_row) as cursor:
+                cursor.execute(
+                    """
+                    SELECT slot_key,
+                           COALESCE(display_name,
+                                    INITCAP(REPLACE(slot_key, '-', ' '))) AS display_name
+                    FROM evaluator_accounts
+                    WHERE claimed_at IS NOT NULL AND disabled_at IS NULL
+                    ORDER BY CASE slot_key
+                        WHEN 'admin' THEN 0 WHEN 'editor-1' THEN 1
+                        WHEN 'editor-2' THEN 2 ELSE 3 END
+                    """
+                )
+                return [_json_value(dict(row)) for row in cursor.fetchall()]
+
     def _bucket_set_id(self, cursor, account_slot: str) -> str:
         """Return the one shared workspace while retaining the actor separately."""
 
@@ -814,6 +860,91 @@ class EvaluationStore:
         if not row:
             raise EvaluationUnavailable("The shared prompt review workspace is unavailable.")
         return str(row.get("scope_key") if isinstance(row, dict) else row[0])
+
+    @staticmethod
+    def _ensure_shared_prompt_draft(cursor) -> None:
+        """Seed the collaborative draft once without changing the live prompt."""
+
+        change_note = f"Initial shared draft copied from live prompt {PROMPT_DISPLAY_VERSION}."
+        cursor.execute(
+            """
+            INSERT INTO shared_prompt_drafts (
+                scope_key, release_number, edit_number, body, change_note,
+                version, updated_by
+            ) VALUES ('shared', %s, %s, %s, %s, 1, %s)
+            ON CONFLICT (scope_key) DO NOTHING
+            """,
+            (
+                PROMPT_RELEASE_NUMBER,
+                PROMPT_EDIT_NUMBER,
+                SYSTEM_PROMPT.strip(),
+                change_note,
+                SHARED_BUCKET_OWNER,
+            ),
+        )
+        cursor.execute(
+            """
+            INSERT INTO shared_prompt_draft_revisions (
+                scope_key, release_number, edit_number, body, change_note,
+                actor_slot
+            )
+            SELECT scope_key, release_number, edit_number, body, change_note,
+                   updated_by
+            FROM shared_prompt_drafts draft
+            WHERE draft.scope_key = 'shared'
+              AND NOT EXISTS (
+                  SELECT 1 FROM shared_prompt_draft_revisions revision
+                  WHERE revision.scope_key = draft.scope_key
+                    AND revision.release_number = draft.release_number
+                    AND revision.edit_number = draft.edit_number
+              )
+            """
+        )
+
+    def _shared_prompt_draft_record(self, cursor, scope: str) -> dict:
+        cursor.execute(
+            """
+            SELECT draft.scope_key, draft.release_number, draft.edit_number,
+                   draft.body, draft.change_note, draft.version,
+                   draft.updated_by,
+                   COALESCE(account.display_name,
+                            INITCAP(REPLACE(draft.updated_by, '-', ' ')))
+                       AS updated_by_name,
+                   draft.created_at, draft.updated_at
+            FROM shared_prompt_drafts draft
+            LEFT JOIN evaluator_accounts account
+              ON account.slot_key = draft.updated_by
+            WHERE draft.scope_key = %s
+            """,
+            (scope,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise EvaluationUnavailable("The shared prompt draft is unavailable.")
+        draft = dict(row)
+        cursor.execute(
+            """
+            SELECT revision.release_number, revision.edit_number,
+                   revision.change_note, revision.actor_slot,
+                   COALESCE(account.display_name,
+                            INITCAP(REPLACE(revision.actor_slot, '-', ' ')))
+                       AS actor_name,
+                   revision.recorded_at,
+                   LENGTH(revision.body) AS character_count
+            FROM shared_prompt_draft_revisions revision
+            LEFT JOIN evaluator_accounts account
+              ON account.slot_key = revision.actor_slot
+            WHERE revision.scope_key = %s
+            ORDER BY revision.release_number DESC, revision.edit_number DESC
+            LIMIT 100
+            """,
+            (scope,),
+        )
+        draft["revisions"] = [dict(item) for item in cursor.fetchall()]
+        draft["display_version"] = (
+            f"v{draft['release_number']}.{draft['edit_number']}"
+        )
+        return draft
 
     @staticmethod
     def _prompt_module_catalog() -> list[dict]:
@@ -928,15 +1059,20 @@ class EvaluationStore:
                     self._prompt_proposal_record(cursor, proposal_id, scope)
                     for proposal_id in proposal_ids
                 ]
+                shared_draft = self._shared_prompt_draft_record(cursor, scope)
         return _json_value({
             "scope": scope,
             "shared": True,
             "deployed": {
                 "version": str(deployed_version or "unknown")[:80],
+                "display_version": PROMPT_DISPLAY_VERSION,
+                "release_number": PROMPT_RELEASE_NUMBER,
+                "edit_number": PROMPT_EDIT_NUMBER,
                 "behavior_release": str(behavior_release or "unknown")[:120],
                 "editable": False,
             },
             "compiled_prompt": SYSTEM_PROMPT,
+            "shared_draft": shared_draft,
             "editable_modules": self._prompt_module_catalog(),
             "code_controlled": [
                 "Grounding and no-guessing rules",
@@ -948,6 +1084,86 @@ class EvaluationStore:
             "can_mark_status": account_slot == SHARED_BUCKET_OWNER,
             "proposals": proposals,
         })
+
+    def update_shared_prompt_draft(
+        self,
+        account_slot: str,
+        body_value: Any,
+        change_note_value: Any,
+        expected_version_value: Any,
+        operation_value: Any,
+    ) -> dict:
+        body = _prompt_draft_body(body_value)
+        change_note = _prompt_change_note(change_note_value)
+        operation_id = _uuid(operation_value, "operation_id")
+        try:
+            expected_version = max(1, int(expected_version_value))
+        except (TypeError, ValueError) as error:
+            raise EvaluationValidation("The prompt draft changed; refresh before saving.") from error
+        with self._pool.connection() as connection:
+            with connection.cursor(row_factory=self._dict_row) as cursor:
+                scope = self._prompt_workspace_scope(cursor)
+                cursor.execute(
+                    "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                    (f"shared-prompt-draft:{scope}",),
+                )
+                cursor.execute(
+                    """
+                    SELECT scope_key, release_number, edit_number, body, version
+                    FROM shared_prompt_drafts
+                    WHERE scope_key = %s
+                    FOR UPDATE
+                    """,
+                    (scope,),
+                )
+                current = cursor.fetchone()
+                if not current:
+                    raise EvaluationUnavailable("The shared prompt draft is unavailable.")
+                cursor.execute(
+                    """
+                    SELECT 1 FROM shared_prompt_draft_revisions
+                    WHERE operation_id = %s
+                    """,
+                    (operation_id,),
+                )
+                if cursor.fetchone():
+                    return _json_value(self._shared_prompt_draft_record(cursor, scope))
+                if expected_version != int(current["version"]):
+                    raise EvaluationConflict(
+                        "The shared draft changed; refresh before saving.",
+                        _json_value(self._shared_prompt_draft_record(cursor, scope)),
+                    )
+                if body == str(current["body"]).strip():
+                    raise EvaluationValidation("Change the shared prompt before saving a new edit.")
+                next_version = expected_version + 1
+                next_edit = int(current["edit_number"]) + 1
+                cursor.execute(
+                    """
+                    UPDATE shared_prompt_drafts
+                    SET edit_number = %s, body = %s, change_note = %s,
+                        version = %s, updated_by = %s, updated_at = NOW()
+                    WHERE scope_key = %s
+                    """,
+                    (
+                        next_edit, body, change_note, next_version,
+                        account_slot, scope,
+                    ),
+                )
+                cursor.execute(
+                    """
+                    INSERT INTO shared_prompt_draft_revisions (
+                        scope_key, operation_id, release_number, edit_number,
+                        body, change_note, actor_slot
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        scope, operation_id, int(current["release_number"]),
+                        next_edit, body, change_note, account_slot,
+                    ),
+                )
+                draft = self._shared_prompt_draft_record(cursor, scope)
+            connection.commit()
+        return _json_value(draft)
 
     def create_prompt_proposal(
         self,
@@ -1317,6 +1533,10 @@ class EvaluationStore:
                        c.client_surface,
                        c.is_automated,
                        c.automation_source,
+                       c.evaluator_slot,
+                       c.evaluator_attribution_version,
+                       c.evaluator_attribution_source,
+                       c.evaluator_attributed_at,
                        COUNT(t.id)::INTEGER AS turn_count,
                        COUNT(t.id) FILTER (WHERE t.status = 'complete')::INTEGER
                          AS complete_turn_count,
@@ -1336,7 +1556,10 @@ class EvaluationStore:
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
                   AND {VISIBLE_HUMAN_TURN_PREDICATE}
                 GROUP BY c.id, c.client_surface, c.is_automated,
-                         c.automation_source
+                         c.automation_source, c.evaluator_slot,
+                         c.evaluator_attribution_version,
+                         c.evaluator_attribution_source,
+                         c.evaluator_attributed_at
                 HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0
             )
         """
@@ -1349,6 +1572,16 @@ class EvaluationStore:
                    e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
                    e.is_automated, e.automation_source,
+                   e.evaluator_slot,
+                   COALESCE(evaluator.display_name,
+                            INITCAP(REPLACE(e.evaluator_slot, '-', ' ')))
+                     AS evaluator_name,
+                   e.evaluator_attribution_version,
+                   e.evaluator_attribution_source,
+                   e.evaluator_attributed_at,
+                   review_attribution.actor_slot AS reviewed_by,
+                   review_attribution.actor_name AS reviewed_by_name,
+                   review_attribution.created_at AS reviewed_at,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    ce.bucket_id, COALESCE(ce.version, 0) AS evaluation_version
             FROM eligible e
@@ -1356,6 +1589,26 @@ class EvaluationStore:
               ON s.account_slot = %s AND s.archived_at IS NULL
             LEFT JOIN conversation_evaluations ce
               ON ce.bucket_set_id = s.id AND ce.conversation_id = e.id
+            LEFT JOIN evaluator_accounts evaluator
+              ON evaluator.slot_key = e.evaluator_slot
+            LEFT JOIN LATERAL (
+                SELECT event.actor_slot,
+                       COALESCE(account.display_name,
+                                INITCAP(REPLACE(event.actor_slot, '-', ' ')))
+                         AS actor_name,
+                       event.created_at
+                FROM evaluation_audit_events event
+                LEFT JOIN evaluator_accounts account
+                  ON account.slot_key = event.actor_slot
+                WHERE event.bucket_set_id = s.id
+                  AND event.conversation_id = e.id
+                  AND event.action IN (
+                      'conversation.move', 'conversation.note',
+                      'conversation.annotation'
+                  )
+                ORDER BY event.created_at DESC, event.id DESC
+                LIMIT 1
+            ) review_attribution ON TRUE
             ORDER BY e.last_turn_at DESC, e.id
             LIMIT %s
         """
@@ -1372,6 +1625,16 @@ class EvaluationStore:
                    e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
                    e.is_automated, e.automation_source,
+                   e.evaluator_slot,
+                   COALESCE(evaluator.display_name,
+                            INITCAP(REPLACE(e.evaluator_slot, '-', ' ')))
+                     AS evaluator_name,
+                   e.evaluator_attribution_version,
+                   e.evaluator_attribution_source,
+                   e.evaluator_attributed_at,
+                   review_attribution.actor_slot AS reviewed_by,
+                   review_attribution.actor_name AS reviewed_by_name,
+                   review_attribution.created_at AS reviewed_at,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    s.id AS bucket_set_id, ce.bucket_id, ce.note,
                    note_attribution.updated_by AS note_updated_by,
@@ -1383,6 +1646,26 @@ class EvaluationStore:
               ON s.account_slot = %s AND s.archived_at IS NULL
             LEFT JOIN conversation_evaluations ce
               ON ce.bucket_set_id = s.id AND ce.conversation_id = e.id
+            LEFT JOIN evaluator_accounts evaluator
+              ON evaluator.slot_key = e.evaluator_slot
+            LEFT JOIN LATERAL (
+                SELECT event.actor_slot,
+                       COALESCE(account.display_name,
+                                INITCAP(REPLACE(event.actor_slot, '-', ' ')))
+                         AS actor_name,
+                       event.created_at
+                FROM evaluation_audit_events event
+                LEFT JOIN evaluator_accounts account
+                  ON account.slot_key = event.actor_slot
+                WHERE event.bucket_set_id = s.id
+                  AND event.conversation_id = e.id
+                  AND event.action IN (
+                      'conversation.move', 'conversation.note',
+                      'conversation.annotation'
+                  )
+                ORDER BY event.created_at DESC, event.id DESC
+                LIMIT 1
+            ) review_attribution ON TRUE
             LEFT JOIN LATERAL (
                 SELECT event.actor_slot AS updated_by,
                        COALESCE(
@@ -1505,6 +1788,120 @@ class EvaluationStore:
         except (TypeError, ValueError) as error:
             raise EvaluationValidation("Evaluation versions must be integers.") from error
 
+    def save_conversation_attribution(
+        self,
+        account_slot: str,
+        conversation_value: Any,
+        evaluator_value: Any,
+        expected_version_value: Any,
+        transcript_version_value: Any,
+        operation_value: Any,
+    ) -> dict:
+        conversation_id = _uuid(conversation_value, "conversation_id")
+        evaluator_slot = _account_slot(evaluator_value, allow_empty=True)
+        operation_id = _uuid(operation_value, "operation_id")
+        expected_version, expected_transcript_version = self._expected_versions(
+            expected_version_value, transcript_version_value
+        )
+        with self._pool.connection() as connection:
+            with connection.cursor(row_factory=self._dict_row) as cursor:
+                set_id = self._bucket_set_id(cursor, account_slot)
+                self._lock_review_record(cursor, set_id, conversation_id)
+                actual_transcript_version = self._current_transcript_version(
+                    cursor, conversation_id
+                )
+                if evaluator_slot:
+                    cursor.execute(
+                        """
+                        SELECT 1 FROM evaluator_accounts
+                        WHERE slot_key = %s AND claimed_at IS NOT NULL
+                          AND disabled_at IS NULL
+                        """,
+                        (evaluator_slot,),
+                    )
+                    if not cursor.fetchone():
+                        raise EvaluationValidation("That evaluator is not available.")
+                cursor.execute(
+                    """
+                    SELECT c.evaluator_slot, c.evaluator_attribution_version,
+                           c.evaluator_attribution_source, c.evaluator_attributed_at,
+                           COALESCE(account.display_name,
+                                    INITCAP(REPLACE(c.evaluator_slot, '-', ' ')))
+                             AS evaluator_name
+                    FROM conversations c
+                    LEFT JOIN evaluator_accounts account
+                      ON account.slot_key = c.evaluator_slot
+                    WHERE c.id = %s
+                    FOR UPDATE OF c
+                    """,
+                    (conversation_id,),
+                )
+                current = cursor.fetchone()
+                if not current:
+                    raise EvaluationForbidden("That conversation is not available for review.")
+                current_payload = _json_value(dict(current))
+                current_payload["transcript_version"] = actual_transcript_version
+                cursor.execute(
+                    "SELECT 1 FROM evaluation_audit_events WHERE operation_id = %s",
+                    (operation_id,),
+                )
+                if cursor.fetchone():
+                    return current_payload
+                if (
+                    expected_version != int(current["evaluator_attribution_version"])
+                    or expected_transcript_version != actual_transcript_version
+                ):
+                    raise EvaluationConflict(
+                        "The conversation attribution changed; refresh before saving.",
+                        current_payload,
+                    )
+                if (current["evaluator_slot"] or None) == evaluator_slot:
+                    return current_payload
+                next_version = expected_version + 1
+                cursor.execute(
+                    """
+                    UPDATE conversations
+                    SET evaluator_slot = %s,
+                        evaluator_attribution_version = %s,
+                        evaluator_attribution_source = 'manual',
+                        evaluator_attributed_by = %s,
+                        evaluator_attributed_at = NOW()
+                    WHERE id = %s
+                    RETURNING evaluator_slot, evaluator_attribution_version,
+                              evaluator_attribution_source, evaluator_attributed_at
+                    """,
+                    (evaluator_slot, next_version, account_slot, conversation_id),
+                )
+                attribution = dict(cursor.fetchone())
+                cursor.execute(
+                    """
+                    SELECT COALESCE(display_name,
+                                    INITCAP(REPLACE(slot_key, '-', ' '))) AS evaluator_name
+                    FROM evaluator_accounts WHERE slot_key = %s
+                    """,
+                    (evaluator_slot,),
+                )
+                name_row = cursor.fetchone() if evaluator_slot else None
+                attribution["evaluator_name"] = (
+                    name_row["evaluator_name"] if name_row else None
+                )
+                attribution["transcript_version"] = actual_transcript_version
+                cursor.execute(
+                    """
+                    INSERT INTO evaluation_audit_events (
+                        id, operation_id, actor_slot, action,
+                        bucket_set_id, conversation_id, metadata
+                    ) VALUES (%s, %s, %s, 'conversation.attribute', %s, %s, %s)
+                    """,
+                    (
+                        str(uuid.uuid4()), operation_id, account_slot, set_id,
+                        conversation_id,
+                        self._jsonb({"evaluator_slot": evaluator_slot}),
+                    ),
+                )
+            connection.commit()
+        return _json_value(attribution)
+
     def save_note(
         self,
         account_slot: str,
@@ -1578,6 +1975,19 @@ class EvaluationStore:
                     ),
                 )
                 evaluation = dict(cursor.fetchone())
+                cursor.execute(
+                    """
+                    INSERT INTO conversation_note_revisions (
+                        operation_id, bucket_set_id, conversation_id,
+                        evaluation_version, note, action, actor_slot
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        operation_id, set_id, conversation_id, next_version,
+                        note, "save" if note is not None else "remove",
+                        account_slot,
+                    ),
+                )
                 cursor.execute(
                     """
                     INSERT INTO evaluation_audit_events (
@@ -1660,6 +2070,7 @@ class EvaluationStore:
                         "The annotation changed; reopen the transcript before saving.",
                         current_payload,
                     )
+                next_version = expected_version + 1
                 if category is None:
                     cursor.execute(
                         "DELETE FROM conversation_annotations "
@@ -1668,7 +2079,6 @@ class EvaluationStore:
                     )
                     annotation = None
                 else:
-                    next_version = expected_version + 1
                     cursor.execute(
                         """
                         INSERT INTO conversation_annotations (
@@ -1690,6 +2100,20 @@ class EvaluationStore:
                         ),
                     )
                     annotation = dict(cursor.fetchone())
+                cursor.execute(
+                    """
+                    INSERT INTO conversation_annotation_revisions (
+                        operation_id, bucket_set_id, conversation_id, message_id,
+                        annotation_version, category, note, action, actor_slot
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        operation_id, set_id, conversation_id, message_id,
+                        next_version, category, note,
+                        "save" if category is not None else "remove",
+                        account_slot,
+                    ),
+                )
                 cursor.execute(
                     """
                     INSERT INTO evaluation_audit_events (

@@ -7,8 +7,8 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#281a39">
   <title>Review conversations · Digital Equity</title>
-  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260831-prompt-provenance-2">
-  <script src="/evaluation/assets/evaluation.js?v=20260831-prompt-provenance-2" defer></script>
+  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260831-shared-prompt-1">
+  <script src="/evaluation/assets/evaluation.js?v=20260831-shared-prompt-1" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#evaluation-main">Skip to review workspace</a>
@@ -121,6 +121,31 @@
           <button class="primary-button" id="new-proposal-button" type="button">New proposal</button>
         </header>
 
+        <section class="shared-prompt-draft" aria-labelledby="shared-prompt-title">
+          <div class="shared-prompt-heading">
+            <div>
+              <p class="eyebrow">Editable by every evaluator</p>
+              <h3 id="shared-prompt-title">Shared system prompt draft</h3>
+              <p>Saving creates a named edit for review. It does not change the live guide.</p>
+            </div>
+            <p id="shared-prompt-meta"></p>
+          </div>
+          <form id="shared-prompt-form">
+            <label class="sr-only" for="shared-prompt-body">Shared system prompt draft</label>
+            <textarea id="shared-prompt-body" maxlength="20000" rows="18" required></textarea>
+            <div class="shared-prompt-save-row">
+              <label for="shared-prompt-change-note">What changed?</label>
+              <input id="shared-prompt-change-note" maxlength="500" required placeholder="One concise change note">
+              <button class="primary-button" type="submit">Save edit</button>
+            </div>
+            <span class="save-status" id="shared-prompt-status" role="status"></span>
+          </form>
+          <details class="shared-prompt-history">
+            <summary id="shared-prompt-history-summary">Edit history</summary>
+            <ol id="shared-prompt-history"></ol>
+          </details>
+        </section>
+
         <section class="current-policy" aria-labelledby="current-policy-title">
           <div>
             <p class="eyebrow">Read only</p>
@@ -149,6 +174,12 @@
       </div>
       <button class="icon-button" id="transcript-close" type="button" aria-label="Close transcript">×</button>
     </div>
+    <form class="transcript-attribution-form" id="transcript-attribution-form">
+      <label for="transcript-evaluator">Evaluator</label>
+      <select id="transcript-evaluator"><option value="">Not attributed</option></select>
+      <button class="secondary-button" type="submit">Save evaluator</button>
+      <span class="save-status" id="transcript-attribution-status" role="status"></span>
+    </form>
     <form class="review-note-form" id="review-note-form">
       <label for="review-note">Shared reviewer note</label>
       <textarea id="review-note" maxlength="1000" rows="3" placeholder="What worked or needs attention?"></textarea>

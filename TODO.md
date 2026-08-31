@@ -1,5 +1,25 @@
 # Website Guide — next steps
 
+## Shared prompt and nightly review — 2026-08-31
+
+- [x] Make the complete system prompt an editable shared draft in **Prompts**
+  for every authenticated evaluator, with required change notes and immutable
+  author/time/full-text revision history.
+- [x] Keep draft editing separate from runtime activation and display the
+  release/edit convention as `v1.33` while retaining the immutable internal
+  `2026-08-31-v33` provenance on logged turns.
+- [x] Attach a known evaluator name to transcript cards and details, attribute
+  future same-origin signed-in sessions automatically, and allow explicit,
+  audited assignment of older unattributed conversations without guessing.
+- [x] Preserve every note and annotation save/removal in append-only storage
+  with evaluator name and timestamp while keeping the current shared value.
+- [x] Add a privacy-safe 24-hour review that summarizes prompt activity,
+  reviewer feedback, attribution changes, and human/automated aggregates without
+  selecting participant message text or exposing account data.
+- [ ] Push directly to `main`, deploy schema 012 only to the canonical zmuhls
+  production service, verify existing transcript/review row counts are intact,
+  and activate the 8:00 PM America/New_York review automation.
+
 ## Prompt responsiveness and automation provenance — 2026-08-31
 
 - [x] Show the saving evaluator's name and timestamp on every shared note and

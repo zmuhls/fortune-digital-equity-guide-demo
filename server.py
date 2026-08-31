@@ -48,7 +48,10 @@ from evaluation_store import (
 )
 from prompt_policy import (
     PROMPT_BEHAVIOR_RELEASE,
+    PROMPT_DISPLAY_VERSION,
+    PROMPT_EDIT_NUMBER,
     PROMPT_POLICY_VERSION,
+    PROMPT_RELEASE_NUMBER,
     RETRY_INSTRUCTIONS,
     build_retry_prompt,
 )
@@ -3051,6 +3054,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 ),
             })
             return
+        if parsed.path == "/api/evaluation/evaluators":
+            account, _ = self._require_evaluation_account()
+            if not account:
+                return
+            self._json(200, {
+                "evaluators": EVALUATION_STORE.list_evaluator_options(),
+            })
+            return
         if parsed.path == "/api/evaluation/prompt-lab":
             account, _ = self._require_evaluation_account()
             if not account:
@@ -3104,6 +3115,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 "sources_reviewed_on": KNOWLEDGE["reviewed_on"],
                 "prompt_policy": {
                     "version": PROMPT_POLICY_VERSION,
+                    "display_version": PROMPT_DISPLAY_VERSION,
+                    "release_number": PROMPT_RELEASE_NUMBER,
+                    "edit_number": PROMPT_EDIT_NUMBER,
                     "behavior_release": PROMPT_BEHAVIOR_RELEASE,
                 },
                 "app_version": CONVERSATION_RECORDER.app_version,
@@ -3231,6 +3245,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             evidence_query = conversation_evidence_query(question, safe_history)
             interaction = interaction_context(question, safe_history)
+            evaluator_account, _ = self._evaluation_account()
             turn = CONVERSATION_RECORDER.begin_turn(
                 question=question,
                 conversation_id=request.get("conversation_id"),
@@ -3239,6 +3254,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 page_context=capture_page_context(page_context),
                 client_surface=request.get("client_surface"),
                 automation_source=request.get("automation_source"),
+                evaluator_slot=(evaluator_account or {}).get("slot_key"),
                 history_context=safe_history,
                 interaction_context=interaction,
             )
@@ -3505,6 +3521,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             r"/api/evaluation/conversations/([0-9a-fA-F-]{36})/annotations/([0-9a-fA-F-]{36})",
             path,
         )
+        attribution_match = re.fullmatch(
+            r"/api/evaluation/conversations/([0-9a-fA-F-]{36})/attribution",
+            path,
+        )
+        prompt_draft_match = path == "/api/evaluation/prompt-draft"
         prompt_match = re.fullmatch(
             r"/api/evaluation/prompt-proposals/([0-9a-fA-F-]{36})",
             path,
@@ -3514,8 +3535,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             path,
         )
         if not (
-            placement_match or note_match or annotation_match
-            or prompt_match or prompt_status_match
+            placement_match or note_match or annotation_match or attribution_match
+            or prompt_draft_match or prompt_match or prompt_status_match
         ):
             self.send_error(404)
             return
@@ -3537,6 +3558,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     request.get("operation_id"),
                 )
                 self._json(200, {"evaluation": evaluation})
+            elif attribution_match:
+                attribution = EVALUATION_STORE.save_conversation_attribution(
+                    account["slot_key"],
+                    attribution_match.group(1),
+                    request.get("evaluator_slot"),
+                    request.get("expected_version"),
+                    request.get("expected_transcript_version"),
+                    request.get("operation_id"),
+                )
+                self._json(200, {"attribution": attribution})
             elif note_match:
                 evaluation = EVALUATION_STORE.save_note(
                     account["slot_key"],
@@ -3559,6 +3590,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     request.get("operation_id"),
                 )
                 self._json(200, {"annotation": annotation})
+            elif prompt_draft_match:
+                draft = EVALUATION_STORE.update_shared_prompt_draft(
+                    account["slot_key"],
+                    request.get("body"),
+                    request.get("change_note"),
+                    request.get("expected_version"),
+                    request.get("operation_id"),
+                )
+                self._json(200, {"shared_draft": draft})
             elif prompt_match:
                 proposal = EVALUATION_STORE.update_prompt_proposal(
                     account["slot_key"],
