@@ -167,8 +167,13 @@ def build_digest(database_url: str, hours: int) -> dict:
                     SELECT t.conversation_id,
                            COUNT(*) AS all_turns,
                            COUNT(*) FILTER (WHERE t.status = 'failed') AS failed_turns,
-                           COUNT(*) FILTER (WHERE t.status = 'complete' AND NOT t.model_called)
-                             AS complete_without_model
+                           COUNT(*) FILTER (
+                               WHERE t.status = 'complete'
+                                 AND NOT t.model_called
+                                 AND t.privacy_state = 'clear'
+                                 AND COALESCE(t.request_kind, 'retrieval')
+                                     NOT IN ('privacy', 'sensitive')
+                           ) AS complete_without_model
                     FROM conversation_turns t
                     JOIN active ON active.conversation_id = t.conversation_id
                     GROUP BY t.conversation_id
@@ -188,8 +193,10 @@ def build_digest(database_url: str, hours: int) -> dict:
                         WHERE NOT c.is_automated
                           AND c.client_surface IN ('replica', 'wix')
                     ), 0)::INTEGER AS failed_human_turns,
-                    COALESCE(SUM(totals.complete_without_model), 0)::INTEGER
-                      AS complete_turns_without_model
+                    COALESCE(SUM(totals.complete_without_model) FILTER (
+                        WHERE NOT c.is_automated
+                          AND c.client_surface IN ('replica', 'wix')
+                    ), 0)::INTEGER AS complete_turns_without_model
                 FROM active
                 JOIN conversations c ON c.id = active.conversation_id
                 JOIN totals ON totals.conversation_id = active.conversation_id
@@ -200,8 +207,11 @@ def build_digest(database_url: str, hours: int) -> dict:
             cursor.execute(
                 """
                 SELECT prompt_policy_version, COUNT(*)::INTEGER AS turn_count
-                FROM conversation_turns
-                WHERE created_at >= %s AND created_at < %s
+                FROM conversation_turns t
+                JOIN conversations c ON c.id = t.conversation_id
+                WHERE t.created_at >= %s AND t.created_at < %s
+                  AND NOT c.is_automated
+                  AND c.client_surface IN ('replica', 'wix')
                 GROUP BY prompt_policy_version
                 ORDER BY turn_count DESC, prompt_policy_version
                 """,
@@ -225,9 +235,12 @@ def build_digest(database_url: str, hours: int) -> dict:
             cursor.execute(
                 """
                 SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms)
-                FROM conversation_turns
-                WHERE created_at >= %s AND created_at < %s
-                  AND latency_ms IS NOT NULL
+                FROM conversation_turns t
+                JOIN conversations c ON c.id = t.conversation_id
+                WHERE t.created_at >= %s AND t.created_at < %s
+                  AND t.latency_ms IS NOT NULL
+                  AND NOT c.is_automated
+                  AND c.client_surface IN ('replica', 'wix')
                 """,
                 (start, end),
             )
