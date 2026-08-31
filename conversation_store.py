@@ -439,7 +439,7 @@ class ConversationRecorder:
                             ) VALUES (
                                 %s, %s, %s, %s, %s, %s, %s,
                                 %s, %s, %s, %s,
-                                CASE WHEN %s IS NULL THEN NULL ELSE NOW() END,
+                                CASE WHEN %s::text IS NULL THEN NULL ELSE NOW() END,
                                 NOW() + (%s * INTERVAL '1 day')
                             )
                             ON CONFLICT (id) DO UPDATE SET

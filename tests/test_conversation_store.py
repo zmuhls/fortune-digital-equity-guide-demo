@@ -91,6 +91,17 @@ def recording_recorder(mode):
 
 
 class ConversationStoreTests(unittest.TestCase):
+    def test_unattributed_conversation_timestamp_parameter_has_sql_type(self):
+        source = (DEMO / "conversation_store.py").read_text(encoding="utf-8")
+        self.assertIn(
+            "CASE WHEN %s::text IS NULL THEN NULL ELSE NOW() END",
+            source,
+        )
+        self.assertNotIn(
+            "CASE WHEN %s IS NULL THEN NULL ELSE NOW() END",
+            source,
+        )
+
     def test_human_and_automated_surfaces_are_distinct(self):
         self.assertEqual(conversation_store.sanitized_surface("benchmark"), "benchmark")
         self.assertEqual(conversation_store.sanitized_surface("synthetic"), "synthetic")
