@@ -95,6 +95,15 @@ def audit() -> dict:
         view_values = list(views.values())
         return {
             "claimed_accounts": len(claimed_slots),
+            "account_status": [
+                {
+                    "slot_key": row["slot_key"],
+                    "display_name": row.get("display_name"),
+                    "claimed": bool(row["claimed"]),
+                    "invitation_active": bool(row["invitation_active"]),
+                }
+                for row in accounts
+            ],
             "shared_view": {
                 "conversation_counts_match": len({
                     row["conversation_count"] for row in view_values

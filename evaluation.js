@@ -195,6 +195,14 @@
     }).format(new Date(timestamp));
   }
 
+  function savedByText(name, slot, value) {
+    const actor = String(name || slot || "").trim();
+    const timestamp = timestampValue(value) ? readableTimestamp(value) : "";
+    if (actor && timestamp) return `Saved by ${actor} · ${timestamp}`;
+    if (actor) return `Saved by ${actor}`;
+    return timestamp;
+  }
+
   function compactBuildVersion(value) {
     const version = String(value || "").trim();
     if (!version) return "";
@@ -867,7 +875,9 @@
       : "";
     transcriptMeta.textContent = `${provenance}${detail.page_title || "Conversation"} · ${readableTimestamp(detail.last_turn_at)} · ${versionLabel(detail, true)}`;
     reviewNote.value = detail.note || "";
-    reviewNoteStatus.textContent = detail.note ? "Saved in shared review" : "";
+    reviewNoteStatus.textContent = detail.note
+      ? savedByText(detail.note_updated_by_name, detail.note_updated_by, detail.note_updated_at)
+      : "";
     renderTranscriptMessages();
     transcriptDialog.showModal();
   }
@@ -905,6 +915,7 @@
           </label>
           <label class="sr-only" for="annotation-${escapeHtml(message.id)}">Annotation note</label>
           <textarea id="annotation-${escapeHtml(message.id)}" name="note" maxlength="500" rows="2" placeholder="Short note (optional)">${escapeHtml(annotation?.note || "")}</textarea>
+          ${annotation ? `<p class="annotation-attribution">${escapeHtml(savedByText(annotation.updated_by_name, annotation.updated_by, annotation.updated_at))}</p>` : ""}
           <div class="annotation-actions">
             <button class="secondary-button" type="submit">Save annotation</button>
             ${annotation ? '<button class="text-button remove-annotation" type="button">Remove</button>' : ""}
@@ -974,6 +985,11 @@
     if (Object.prototype.hasOwnProperty.call(evaluation, "note")) {
       state.openConversation.note = evaluation.note || null;
     }
+    for (const field of ["note_updated_by", "note_updated_by_name", "note_updated_at"]) {
+      if (Object.prototype.hasOwnProperty.call(evaluation, field)) {
+        state.openConversation[field] = evaluation[field] || null;
+      }
+    }
     state.openConversation.evaluation_version = Number(evaluation.version ?? state.openConversation.evaluation_version ?? 0);
     state.openConversation.transcript_version = Number(evaluation.transcript_version ?? state.openConversation.transcript_version ?? 0);
     const conversation = state.conversations.find(item => item.id === state.openConversation.id);
@@ -1023,6 +1039,9 @@
           note: reviewNote.value.trim() || null,
           version: Number(state.openConversation.evaluation_version || 0) + 1,
           transcript_version: Number(state.openConversation.transcript_version || 0),
+          note_updated_by: state.session?.slot_key || "",
+          note_updated_by_name: state.session?.display_name || "",
+          note_updated_at: new Date().toISOString(),
         };
       } else {
         evaluation = (await api(`/api/evaluation/conversations/${encodeURIComponent(state.openConversation.id)}/note`, {
@@ -1048,7 +1067,13 @@
       }
       if (reviewNote.value === submittedNote) {
         reviewNote.value = state.openConversation.note || "";
-        reviewNoteStatus.textContent = "Saved to shared review";
+        reviewNoteStatus.textContent = state.openConversation.note
+          ? savedByText(
+              state.openConversation.note_updated_by_name,
+              state.openConversation.note_updated_by,
+              state.openConversation.note_updated_at,
+            )
+          : "Removed from shared review";
       } else {
         reviewNoteStatus.textContent = "Saved. New changes not saved.";
       }
@@ -1081,6 +1106,9 @@
           note: note.trim() || null,
           transcript_version: Number(state.openConversation.transcript_version || 0),
           version: Number(current?.version || 0) + 1,
+          updated_by: state.session?.slot_key || "",
+          updated_by_name: state.session?.display_name || "",
+          updated_at: new Date().toISOString(),
         };
       } else {
         annotation = (await api(`/api/evaluation/conversations/${encodeURIComponent(state.openConversation.id)}/annotations/${encodeURIComponent(messageId)}`, {
@@ -1112,7 +1140,13 @@
       showAnnotationEditor(
         messageId,
         verified
-          ? (annotation ? "Saved to shared review" : "Removed from shared review")
+          ? (annotation
+              ? savedByText(
+                  annotationFor(messageId)?.updated_by_name,
+                  annotationFor(messageId)?.updated_by,
+                  annotationFor(messageId)?.updated_at,
+                )
+              : "Removed from shared review")
           : "Saved. Reopen to confirm.",
       );
     } catch (error) {

@@ -696,8 +696,11 @@ class EvaluationStore:
                 cursor.execute(
                     """
                     UPDATE evaluator_accounts
-                    SET email_normalized = %s,
-                        display_name = NULL,
+                    SET email_normalized = COALESCE(%s, email_normalized),
+                        display_name = CASE
+                            WHEN %s IS NULL THEN display_name
+                            ELSE NULL
+                        END,
                         password_hash = NULL,
                         claimed_at = NULL,
                         invite_token_hash = %s,
@@ -711,7 +714,7 @@ class EvaluationStore:
                     WHERE slot_key = %s
                     """,
                     (
-                        normalized_email,
+                        normalized_email, normalized_email,
                         self._digest("invite", token),
                         self.invite_seconds,
                         slot_key,
@@ -742,7 +745,7 @@ class EvaluationStore:
             with connection.cursor(row_factory=self._dict_row) as cursor:
                 cursor.execute(
                     """
-                    SELECT slot_key, role,
+                    SELECT slot_key, role, display_name,
                            claimed_at IS NOT NULL AS claimed,
                            invite_token_hash IS NOT NULL
                              AND invite_expires_at > NOW() AS invitation_active,
@@ -1371,12 +1374,31 @@ class EvaluationStore:
                    e.is_automated, e.automation_source,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    s.id AS bucket_set_id, ce.bucket_id, ce.note,
+                   note_attribution.updated_by AS note_updated_by,
+                   note_attribution.updated_by_name AS note_updated_by_name,
+                   note_attribution.updated_at AS note_updated_at,
                    COALESCE(ce.version, 0) AS evaluation_version
             FROM eligible e
             JOIN evaluation_bucket_sets s
               ON s.account_slot = %s AND s.archived_at IS NULL
             LEFT JOIN conversation_evaluations ce
               ON ce.bucket_set_id = s.id AND ce.conversation_id = e.id
+            LEFT JOIN LATERAL (
+                SELECT event.actor_slot AS updated_by,
+                       COALESCE(
+                           account.display_name,
+                           INITCAP(REPLACE(event.actor_slot, '-', ' '))
+                       ) AS updated_by_name,
+                       event.created_at AS updated_at
+                FROM evaluation_audit_events event
+                LEFT JOIN evaluator_accounts account
+                  ON account.slot_key = event.actor_slot
+                WHERE event.bucket_set_id = s.id
+                  AND event.conversation_id = e.id
+                  AND event.action = 'conversation.note'
+                ORDER BY event.created_at DESC, event.id DESC
+                LIMIT 1
+            ) note_attribution ON ce.note IS NOT NULL
             WHERE e.id = %s
         """
         with self._pool.connection() as connection:
@@ -1420,10 +1442,20 @@ class EvaluationStore:
                 turns = [dict(row) for row in cursor.fetchall()]
                 cursor.execute(
                     """
-                    SELECT message_id, category, note, transcript_version, version
-                    FROM conversation_annotations
-                    WHERE bucket_set_id = %s AND conversation_id = %s
-                    ORDER BY created_at, message_id
+                    SELECT annotation.message_id, annotation.category,
+                           annotation.note, annotation.transcript_version,
+                           annotation.version, annotation.updated_by,
+                           COALESCE(
+                               account.display_name,
+                               INITCAP(REPLACE(annotation.updated_by, '-', ' '))
+                           ) AS updated_by_name,
+                           annotation.updated_at
+                    FROM conversation_annotations annotation
+                    LEFT JOIN evaluator_accounts account
+                      ON account.slot_key = annotation.updated_by
+                    WHERE annotation.bucket_set_id = %s
+                      AND annotation.conversation_id = %s
+                    ORDER BY annotation.created_at, annotation.message_id
                     """,
                     (set_id, conversation_id),
                 )

@@ -603,6 +603,7 @@ dialog::backdrop { background: rgb(40 26 57 / 55%); }
 .annotation-form { margin-top: 8px; padding: 12px; border: 1px solid var(--line); background: #f8fafc; }
 .annotation-form label { display: block; margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 900; }
 .annotation-form textarea { margin-top: 10px; }
+.annotation-attribution { margin: 8px 0 0; color: var(--muted); font-size: 12px; font-weight: 800; }
 .annotation-actions .text-button { min-height: 38px; padding: 6px 4px; }
 
 .slot-list { margin: 18px 0; padding: 0; list-style: none; }

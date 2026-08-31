@@ -369,12 +369,23 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
         self.assertIn("auth_version = auth_version + 1", reset)
         self.assertIn("password_hash = NULL", reset)
         self.assertIn("claimed_at = NULL", reset)
+        self.assertIn("email_normalized = COALESCE(%s, email_normalized)", reset)
+        self.assertIn("WHEN %s IS NULL THEN display_name", reset)
         self.assertNotIn("DELETE FROM", reset)
         self.assertIn("credential_reset", reset)
         self.assertIn("--confirm-reset", script)
 
 
 class EvaluationFrontendContractTests(unittest.TestCase):
+    def test_notes_and_annotations_show_the_saving_evaluator_and_time(self):
+        store_source = (DEMO / "evaluation_store.py").read_text(encoding="utf-8")
+        javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
+        self.assertIn("note_updated_by_name", store_source)
+        self.assertIn("annotation.updated_by", store_source)
+        self.assertIn("annotation.updated_at", store_source)
+        self.assertIn("Saved by ${actor}", javascript)
+        self.assertIn("annotation-attribution", javascript)
+
     def test_review_surface_fits_multiple_buckets_and_stays_concise(self):
         html = (DEMO / "evaluation.html").read_text(encoding="utf-8")
         css = (DEMO / "evaluation.css").read_text(encoding="utf-8")
@@ -489,7 +500,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
             2,
         )
         self.assertIn('reviewNoteStatus.textContent = "Unsaved changes"', javascript)
-        self.assertIn('reviewNoteStatus.textContent = "Saved to shared review"', javascript)
+        self.assertIn("savedByText(", javascript)
+        self.assertIn("note_updated_by_name", javascript)
         self.assertIn('class="save-status annotation-status"', javascript)
         self.assertIn("showAnnotationEditor(", javascript)
         self.assertIn(

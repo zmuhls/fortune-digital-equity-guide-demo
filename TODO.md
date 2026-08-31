@@ -2,6 +2,8 @@
 
 ## Prompt responsiveness and automation provenance — 2026-08-31
 
+- [x] Show the saving evaluator's name and timestamp on every shared note and
+  message annotation; preserve attribution through a same-person login reset.
 - [x] Publish prompt v32 with evidence-exhausted clarification, current-source
   specificity, concise answers, sitewide page access, and follow-up advancement.
 - [x] Compare v32 with v31 on the same isolated 41-case suite with no database

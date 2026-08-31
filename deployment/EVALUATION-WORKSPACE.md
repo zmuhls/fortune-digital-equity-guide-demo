@@ -24,6 +24,11 @@ After the admin account is claimed, the administrator can open **Account** in th
 
 Returning testers sign in at `/evaluation` with the email and password they chose during registration. All four accounts open the same shared queue, buckets, placements, conversation notes, and message annotations. Changes persist in PostgreSQL after reload, sign-out, and a new browser session; audit records identify the evaluator who made each change. Interface preferences remain browser-local.
 
+Saved notes and message annotations show the evaluator's display name and the
+stored save time. A same-person credential reset preserves that email binding
+and display name when the operator omits `--email`; supplying a new email
+explicitly reassigns the slot and clears the former display name.
+
 If a claimed account must be reassigned, use the private operator command below. It revokes active sessions and clears only that slot's authentication fields; the shared workspace and audit history remain intact.
 
 ```bash
