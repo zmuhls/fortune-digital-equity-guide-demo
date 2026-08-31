@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-08-31-v32",
+  "current_policy_id": "2026-08-31-v33",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "e0d3d2148bc520e0f35a77189413d4677347938f937bcb7eaae3d1c81252b0f6",
-  "current_compiled_prompt_sha256": "99c45ce12ff725703119440e3e3246124fcd5781fb55218db96feea2a9be8039",
+  "current_policy_source_sha256": "c9b454cf3a64325baa2e5cf517e0d10dd3318aabe0088149a76efd2861b9ba70",
+  "current_compiled_prompt_sha256": "47f80cc4345fb1a3261d58efe6384cddfdf296ddc541a7c53009ac3c8c736907",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -351,8 +351,20 @@
       "behavior_release": "digital-equity-conversation-grounding",
       "artifact": "versions/2026-08-31-v32.md",
       "artifact_sha256": "c32da89e20f4f365abb11731cf17dcd513243137a15b1e1bde01c5c51ccd9cce",
-      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact": "versions/2026-08-31-v32-compiled.md",
       "compiled_prompt_artifact_sha256": "05d20fb006f5094d27424500fc0a94f900f21bd106fc28d09736efc3b84ce8e8"
+    },
+    {
+      "policy_id": "2026-08-31-v33",
+      "label": "Digital Equity conversation-recall prompt",
+      "reconstructed": false,
+      "source_state": "authored after production QA retained eight exchanges but rejected the ninth conversation-recall reply through the site-source contract",
+      "source_date": "2026-08-31",
+      "behavior_release": "digital-equity-conversation-grounding",
+      "artifact": "versions/2026-08-31-v33.md",
+      "artifact_sha256": "a1b5563cff239c210a1bb74697de1682af25c8aaea7a1322cf85e36a7eec3d1d",
+      "compiled_prompt_artifact": "current.md",
+      "compiled_prompt_artifact_sha256": "3563fd6d4689ff56c263c411aa229fe2a9bba239f621048a2781659cada34647"
     }
   ]
 }

@@ -126,3 +126,19 @@ artifacts; it never guesses from conversation content or deletes transcripts.
 - `evals/website-guide/results/2026-08-31-v32-prompt-regression-candidate.json`
 - `prompts/versions/2026-08-31-v31-compiled.md`
 - `prompts/versions/2026-08-31-v32.md`
+
+## Post-regression production recall fix
+
+A production benchmark conversation completed eight consecutive Excel turns
+with the model called on every turn and sent all sixteen retained history
+messages on turn nine. The ninth recall question then returned `502`: retrieval
+correctly supplied no site candidates, but final parsing repopulated a generic
+source lookup and rejected the model's conversation-only answer.
+
+Prompt v33 makes the boundary explicit: approved candidate records remain the
+only evidence for Digital Equity facts, while recent safe conversation may
+answer questions about earlier turns without becoming a site claim. Runtime
+now preserves an explicit empty retrieval result and may accept nonstandard
+model output only when its answer is grounded in the retained safe history.
+No canned response, intent classifier, participant-text inference, or invented
+source was added.

@@ -461,7 +461,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260831-prompt-provenance-1", html)
+        self.assertIn("20260831-prompt-provenance-2", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts"', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -509,8 +509,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260831-prompt-provenance-1", html)
-        self.assertIn('version: "2026-08-31-v32"', javascript)
+        self.assertIn("20260831-prompt-provenance-2", html)
+        self.assertIn('version: "2026-08-31-v33"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript
         )

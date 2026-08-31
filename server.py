@@ -2340,6 +2340,63 @@ def model_clarification_response(
     return response
 
 
+def unsourced_model_text(raw, conversation_history=None):
+    """Keep a safe model-authored reply when retrieval found no site record.
+
+    Ollama's structured-output mode can still return a plain answer or choose a
+    non-candidate ID for a conversation-only recall. With no candidate records,
+    preserving that model text cannot authorize a Digital Equity factual claim.
+    """
+
+    parsed = parse_selector_response(raw, set())
+    if parsed and parsed["pick"] == SELECTOR_ASK:
+        return parsed["answer"]
+    text = str(raw or "").strip()
+    answer = ""
+    match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
+    if match:
+        try:
+            value = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            value = None
+        answer = normalize_answer(value.get("answer")) if isinstance(value, dict) else ""
+    if "{" in text or "}" in text:
+        if not answer:
+            raise ModelResponseRejected("The model did not return a conversational answer")
+    else:
+        answer = normalize_answer(text)
+    if not answer:
+        raise ModelResponseRejected("The model did not return a conversational answer")
+    history_text = " ".join(
+        str(item.get("content") or "")
+        for item in list(conversation_history or [])
+        if isinstance(item, dict)
+    )
+    answer_terms = set(tokens(answer)).difference({
+        "asked", "earlier", "said", "start", "subject", "topic", "wanted",
+    })
+    history_terms = set(tokens(history_text))
+    overlap = answer_terms.intersection(history_terms)
+    if not history_text or len(overlap) < min(2, len(answer_terms)):
+        raise ModelResponseRejected("The model did not return a conversation-grounded answer")
+    return answer
+
+
+def model_unsourced_response(
+    question,
+    raw,
+    retrieval_scope="site",
+    conversation_history=None,
+):
+    """Return model text for ordinary conversation without inventing a source."""
+
+    return model_clarification_response(
+        question,
+        unsourced_model_text(raw, conversation_history),
+        retrieval_scope,
+    )
+
+
 def replay_response_is_current(response):
     """Allow only privacy holds or current model-authored turns to replay."""
 
@@ -2819,10 +2876,18 @@ def parse_model_selection(
     routing_question=None,
     prior_answer=None,
     require_answer=False,
+    conversation_history=None,
 ):
-    retrieved = list(retrieved or retrieve_sources(question))
+    retrieved = list(retrieve_sources(question) if retrieved is None else retrieved)
     interaction = dict(interaction or {})
     language_code = interaction.get("request_language") or "en"
+    if not retrieved:
+        return model_unsourced_response(
+            question,
+            raw,
+            retrieval_scope,
+            conversation_history,
+        )
     allowed = {source["id"]: source for source in retrieved}
     parsed = parse_selector_response(raw, allowed)
     if not parsed:
@@ -2867,6 +2932,7 @@ def model_selection_retry_reason(
     question="",
     routing_question="",
     require_answer=False,
+    conversation_history=None,
 ):
     """Validate only the provider response contract.
 
@@ -2878,6 +2944,16 @@ def model_selection_retry_reason(
     """
 
     interaction = dict(interaction or {})
+    if not retrieved:
+        try:
+            model_unsourced_response(
+                question,
+                raw,
+                conversation_history=conversation_history,
+            )
+        except ModelResponseRejected:
+            return "invalid response"
+        return ""
     allowed = {source["id"]: source for source in retrieved}
     parsed = parse_selector_response(raw, allowed)
     if not parsed:
@@ -3303,6 +3379,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 question,
                 evidence_query,
                 require_model_answer,
+                conversation_history=safe_history,
             )
             if retry_reason and MODEL_CALL_BUDGET.claim(client_identifier):
                 retry_messages = [
@@ -3324,6 +3401,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 question,
                 evidence_query,
                 require_model_answer,
+                conversation_history=safe_history,
             )
             response = parse_model_selection(
                 raw,
@@ -3334,6 +3412,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 routing_question=evidence_query,
                 prior_answer=prior_answer,
                 require_answer=require_model_answer,
+                conversation_history=safe_history,
             )
             if sensitive_request:
                 response["kind"] = "handoff"

@@ -8,7 +8,7 @@ the reviewable modules below; proposed text never enters this runtime compiler.
 from __future__ import annotations
 
 
-PROMPT_POLICY_VERSION = "2026-08-31-v32"
+PROMPT_POLICY_VERSION = "2026-08-31-v33"
 PROMPT_BEHAVIOR_RELEASE = "digital-equity-conversation-grounding"
 
 
@@ -28,16 +28,16 @@ IMMUTABLE_PROMPT_MODULES = {
         "When human action is needed, give the source-backed next step."
     ),
     "priority": (
-        "Resolve the latest message in its recent conversation context without requiring "
-        "the site's wording. Give the smallest complete answer that moves the exchange "
-        "forward. End there: no offer to help, generic question, or repeated summary. "
-        "ASK is a source-selection value, not an instruction to ask."
+        "Use recent conversation to resolve the latest message, including questions about "
+        "earlier turns. Do not turn recalled participant words into site claims. Give the "
+        "smallest complete answer, then stop: no offer, generic question, or recap. ASK is "
+        "a source-selection value, not an instruction to ask."
     ),
     "grounding": (
-        "Candidate records are the only evidence for Digital Equity facts. Read them all, "
-        "then pick the most specific current record. Use the live calendar for dates, "
-        "times, locations, current sessions, or registration; use class or support pages "
-        "for service details and the workshop directory for broad class choices. If one "
+        "Candidate records are the only evidence for Digital Equity facts. Pick the most "
+        "specific current record. Use the live calendar for dates, times, locations, "
+        "sessions, or registration; use class or support pages for details and the workshop "
+        "directory for broad choices. If one "
         "record supports a useful partial answer, pick "
         "it, answer that part, and name only the unconfirmed detail instead of using ASK. "
         "If records conflict, prefer the explicitly live, current, or more specific one; "
@@ -64,7 +64,8 @@ IMMUTABLE_PROMPT_MODULES = {
     ),
     "response_contract": (
         'Return only JSON: {"pick":"<candidate ID or ASK>",'
-        '"answer":"<direct response>"}'
+        '"answer":"<direct response>"}. With no candidate records, use ASK and put the '
+        "direct conversational response in answer."
     ),
 }
 

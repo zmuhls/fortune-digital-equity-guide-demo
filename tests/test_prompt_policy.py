@@ -23,7 +23,7 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v32")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v33")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -44,10 +44,10 @@ class PromptPolicyTests(unittest.TestCase):
     def test_selector_uses_compiled_reviewed_policy(self):
         self.assertEqual(source_selector.SYSTEM_PROMPT, prompt_policy.SYSTEM_PROMPT)
         self.assertIn("only evidence for Digital Equity facts", source_selector.SYSTEM_PROMPT)
-        self.assertIn("pick the most specific current record", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Pick the most specific current record", source_selector.SYSTEM_PROMPT)
         self.assertIn("Paraphrase direct implications naturally", source_selector.SYSTEM_PROMPT)
         self.assertIn("without making Digital Equity claims", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Resolve the latest message", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Use recent conversation", source_selector.SYSTEM_PROMPT)
         self.assertIn("active page matters only", source_selector.SYSTEM_PROMPT)
         self.assertIn("anywhere on the site", source_selector.SYSTEM_PROMPT)
         self.assertIn("stock refusal", source_selector.SYSTEM_PROMPT)
@@ -56,6 +56,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("one short sentence", source_selector.SYSTEM_PROMPT)
         self.assertIn("cannot enroll or book", source_selector.SYSTEM_PROMPT)
         self.assertIn("recent conversation", source_selector.SYSTEM_PROMPT)
+        self.assertIn("questions about earlier turns", source_selector.SYSTEM_PROMPT)
         self.assertIn("repeat a clarification", source_selector.SYSTEM_PROMPT)
         self.assertIn("live calendar", source_selector.SYSTEM_PROMPT)
         self.assertIn("never call a past event upcoming", source_selector.SYSTEM_PROMPT)
@@ -64,6 +65,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("one item per plain-text line", source_selector.SYSTEM_PROMPT)
         self.assertIn("closing invitations", source_selector.SYSTEM_PROMPT)
         self.assertIn("ASK is a source-selection value", source_selector.SYSTEM_PROMPT)
+        self.assertIn("With no candidate records, use ASK", source_selector.SYSTEM_PROMPT)
         self.assertIn("useful partial answer", source_selector.SYSTEM_PROMPT)
         self.assertLess(len(source_selector.SYSTEM_PROMPT.split()), 600)
         self.assertEqual(

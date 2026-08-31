@@ -20,11 +20,14 @@
   reading or deleting transcript content.
 - [x] Preserve v31 as an immutable compiled prompt artifact and update the
   shared Prompts view to the exact v32 runtime policy.
-- [x] Pass the complete v32 release suite: 362 Python, 30 frontend, and 18
+- [x] Pass the complete v33 release suite: 365 Python, 30 frontend, and 18
   source-snapshot checks, plus desktop, mobile, and reduced-motion launcher QA.
 - [x] Exclude two stale benchmark-ready turns from evaluator review without
   deleting their transcripts, notes, or provenance; retain public browser
   automation as visible and explicitly labeled.
+- [x] Publish prompt v33 after live eight-exchange QA exposed a ninth-turn
+  conversation-recall rejection; keep unsourced model text only when it is
+  grounded in the retained safe conversation, never as a site claim.
 
 ## Conversation-grounding release — 2026-08-31
 
