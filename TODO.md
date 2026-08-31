@@ -16,7 +16,7 @@
 - [x] Add a privacy-safe 24-hour review that summarizes prompt activity,
   reviewer feedback, attribution changes, and human/automated aggregates without
   selecting participant message text or exposing account data.
-- [ ] Push directly to `main`, deploy schema 012 only to the canonical zmuhls
+- [x] Push directly to `main`, deploy schema 012 only to the canonical zmuhls
   production service, verify existing transcript/review row counts are intact,
   and activate the 8:00 PM America/New_York review automation.
 
