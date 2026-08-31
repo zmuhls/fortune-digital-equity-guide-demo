@@ -132,6 +132,12 @@ MODEL_WARMUP_COOLDOWN = bounded_env_int(
     minimum=60,
     maximum=3600,
 )
+MODEL_NUM_PREDICT = bounded_env_int(
+    "FORTUNE_MODEL_NUM_PREDICT",
+    default=256,
+    minimum=96,
+    maximum=512,
+)
 MODEL_KEEP_ALIVE = os.environ.get("FORTUNE_MODEL_KEEP_ALIVE", "30m").strip() or "30m"
 CONVERSATION_RECORDER = ConversationRecorder(prompt_version=PROMPT_POLICY_VERSION)
 EVALUATION_STORE = EvaluationStore()
@@ -3053,6 +3059,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 "model_call_limits": {
                     "per_client_hour": MODEL_CALLS_PER_HOUR,
                     "shared_day": MODEL_CALLS_PER_DAY,
+                    "max_output_tokens": MODEL_NUM_PREDICT,
                 },
                 "chat_request_limits": {
                     "per_client_hour": CHAT_REQUESTS_PER_HOUR,
@@ -3875,6 +3882,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         )
 
     def _ollama(self, messages):
+        started_at = time.monotonic()
         data = ollama_request({
             "model": MODEL,
             "messages": messages,
@@ -3885,9 +3893,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "options": {
                 "temperature": 0,
                 "seed": MODEL_SEED,
+                "num_predict": MODEL_NUM_PREDICT,
             },
         })
         MODEL_WARMUP.mark_ready()
+        request_id = getattr(self, "_request_id", "")
+        if request_id:
+            print(json.dumps({
+                "event": "model_provider_timing",
+                "request_id": request_id,
+                "wall_ms": round((time.monotonic() - started_at) * 1000),
+                "provider_total_ms": round(float(data.get("total_duration") or 0) / 1_000_000),
+                "provider_load_ms": round(float(data.get("load_duration") or 0) / 1_000_000),
+                "prompt_tokens": int(data.get("prompt_eval_count") or 0),
+                "output_tokens": int(data.get("eval_count") or 0),
+                "done_reason": str(data.get("done_reason") or "")[:32],
+            }, separators=(",", ":")), flush=True)
         return data.get("message", {}).get("content") or ""
 
     def _client_identifier(self):

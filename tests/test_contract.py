@@ -2567,7 +2567,11 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         finally:
             server.ollama_request = original_request
         options = payloads[0]["options"]
-        self.assertEqual(options, {"temperature": 0, "seed": server.MODEL_SEED})
+        self.assertEqual(options, {
+            "temperature": 0,
+            "seed": server.MODEL_SEED,
+            "num_predict": server.MODEL_NUM_PREDICT,
+        })
         self.assertEqual(payloads[0]["format"], server.MODEL_OUTPUT_SCHEMA)
         self.assertFalse(payloads[0]["format"]["additionalProperties"])
         self.assertEqual(
@@ -3034,6 +3038,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("OLLAMA_API_KEY=", env_template)
         self.assertIn("FORTUNE_MODEL_WARMUP_COOLDOWN=900", env_template)
         self.assertIn("FORTUNE_MODEL_KEEP_ALIVE=30m", env_template)
+        self.assertIn("FORTUNE_MODEL_NUM_PREDICT=256", env_template)
         self.assertIn("FORTUNE_CONVERSATION_CAPTURE=none", env_template)
         self.assertIn("FORTUNE_CONVERSATION_TOKEN_SECRET=", env_template)
         self.assertIn("DATABASE_URL=", env_template)

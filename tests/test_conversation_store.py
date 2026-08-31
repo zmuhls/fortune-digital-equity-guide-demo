@@ -144,6 +144,18 @@ class ConversationStoreTests(unittest.TestCase):
             recorder = conversation_store.ConversationRecorder(mode="none")
         self.assertEqual(recorder.app_version, "deployment-2026-08-21")
 
+    def test_explicit_release_version_overrides_stale_railway_git_metadata(self):
+        with mock.patch.dict(
+            "os.environ",
+            {
+                "FORTUNE_APP_VERSION": "current-release",
+                "RAILWAY_GIT_COMMIT_SHA": "stale-connected-repository-sha",
+                "RAILWAY_DEPLOYMENT_ID": "deployment-fallback",
+            },
+        ):
+            recorder = conversation_store.ConversationRecorder(mode="none")
+        self.assertEqual(recorder.app_version, "current-release")
+
     def test_conversation_continuation_requires_the_server_token(self):
         recorder = conversation_store.ConversationRecorder(
             database_url="postgresql://not-used",

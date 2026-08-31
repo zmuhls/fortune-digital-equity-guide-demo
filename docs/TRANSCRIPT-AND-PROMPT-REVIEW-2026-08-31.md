@@ -134,30 +134,48 @@ at runtime and retains the rendered page schedule as a bounded fallback.
 
 | Action item | Status | Evidence and remaining boundary |
 | --- | --- | --- |
-| Fix shared evaluation view | Implemented; production verification required for this release | All accounts resolve the same admin-owned bucket set, transcript queue, notes, annotations, and prompt workspace. Automated cross-account tests pass. |
+| Fix shared evaluation view | Complete and production-verified | All three claimed accounts return the same 24 conversations in the same recency order, with identical bucket and placement digests. Eleven placements, two notes, and two annotations remain stored. |
 | Collate the compartmentalized system prompt into Google Doc tabs, tagged for review | Partial | The team Doc has nine tabs and a populated System Prompt tab, but the Customization tab is effectively empty and the modules are not yet separated into review-tagged tabs. This repository now provides the exact v31 modular source for that work. |
 | Document all prompt versions with change history | Complete in repository | The hash-verified manifest preserves every artifact through v31; v30 was frozen into its own compiled artifact before current.md advanced. |
-| Remove canned responses and restore dynamic model behavior | Implemented; production verification required for this release | Safe turns call the model. Tests reject the former canned strings, lexical response gate, and deterministic factual builders. |
+| Remove canned responses and restore dynamic model behavior | Complete and production-verified | Ten ordinary, identity, calendar, device, and multi-turn Excel requests all called the live model under v31. Tests reject the former canned strings, lexical response gate, and deterministic factual builders. |
 | Update the mock site for Jacob's Wix changes | Complete for the reviewed source release | The mirror contains the current four FAQs, revised workshop descriptions, 138 routes, and Wix revision 2063 provenance. |
-| Add reset/restart | Complete | Pages and Wix expose Start over, clear only local conversation state, and preserve unrelated site state. |
+| Add reset/restart | Complete and browser-verified | Pages and Wix expose Start over, clear only local conversation state, and preserve unrelated site state. The production browser cleared the visible turn and returned to the opening controls. |
 | Add transcript timestamps | Complete | Turn/message timestamps and prompt/build versions are stored and shown; queue ordering is newest-first. |
-| Maria and Sasha categorize transcripts | Partially evidenced | The shared production store contains placements and annotations. Final actor-level counts must be verified against the live store after deployment; no bucket will be moved as part of this review. |
+| Maria and Sasha categorize transcripts | Partial | Production attribution records four moves and one saved note by Sasha. No Maria categorization action is present in the current audit. Existing placement was not changed by this review. |
 | Maria and Sasha refine the shared prompt Doc | Partial | Maria-authored review activity is visible in the connected Doc. Sasha's individual contribution cannot be independently attributed from the available connector history, although shared team material is present. |
 
 ## Verification gates
 
 The pre-deployment suite passed:
 
-- 358 Python tests, including evaluation API, persistence, privacy, prompt
+- 359 Python tests, including evaluation API, persistence, privacy, prompt
   provenance, source retrieval, calendar, and multi-turn regression coverage;
 - 29 frontend tests, including model provenance, Enter-to-send, reset,
   six-exchange context, persistence across navigation, and removal of the former
   review/privacy banner;
 - 18 deterministic source-snapshot tests.
 
-Production acceptance still requires the exact deployed v31 health metadata, a
-real model call on ordinary conversation, a six-turn Excel continuity run, a
-current-calendar retrieval run, a shared-view digest from every claimed
-account, preservation of existing placements/notes/annotations, and an active
-unused invitation for Jacob. Those results belong in the release handoff and
-must not be inferred from local checks.
+Production acceptance passed:
+
+- health reports prompt v31, a ready live model, 138 indexed pages, a live
+  calendar refresh with 12 structured events, and ready transcript/evaluation
+  storage;
+- ten benchmark-only live requests returned HTTP 200, called the model on
+  every turn, used v31, and contained none of the former fallback copy;
+- a six-turn Excel conversation retained the same class evidence throughout,
+  advanced without an exact repeated answer, and ended with the correct site
+  route;
+- Return submitted in the production browser, Start over cleared the local
+  conversation, and a new conversation persisted while moving from Home to
+  About;
+- every browser and scripted QA conversation was retained as benchmark data
+  and excluded from the human review queue;
+- all three claimed evaluator accounts returned the same 24-conversation
+  digest and preserved 11 placements, two notes, and two annotations;
+- the replacement editor-three invitation for Jacob is active, unused, and
+  email-bound;
+- the runtime now prefers the explicit release version over stale Railway Git
+  metadata, so new transcript cards can be associated with the actual release;
+- provider output is capped at 256 tokens and privacy-safe timing logs record
+  only duration and token counts, allowing latency outliers to be diagnosed
+  without storing prompt or response text in application logs.

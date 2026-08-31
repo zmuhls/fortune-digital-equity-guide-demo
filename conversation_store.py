@@ -230,8 +230,8 @@ class ConversationRecorder:
         )
         self.app_version = str(
             app_version
-            or os.environ.get("RAILWAY_GIT_COMMIT_SHA")
             or os.environ.get("FORTUNE_APP_VERSION")
+            or os.environ.get("RAILWAY_GIT_COMMIT_SHA")
             or os.environ.get("RAILWAY_DEPLOYMENT_ID")
             or "local"
         )[:120]

@@ -14,18 +14,19 @@
 - [x] Update the dashboard Prompts preview to the exact v31 runtime policy.
 - [x] Record team-source contributions and the action-item audit in
   `docs/TRANSCRIPT-AND-PROMPT-REVIEW-2026-08-31.md`.
-- [x] Pass the complete local release suite: 358 Python, 29 frontend, and 18
+- [x] Pass the complete local release suite: 359 Python, 29 frontend, and 18
   source-snapshot checks.
-- [ ] Push v31 directly to `zmuhls/fortune-digital-equity-guide-demo` main and
+- [x] Push v31 directly to `zmuhls/fortune-digital-equity-guide-demo` main and
   deploy only the canonical zmuhls Railway production service.
-- [ ] Verify v31 health, model calls, Excel continuity, current calendar data,
+- [x] Verify v31 health, model calls, Excel continuity, current calendar data,
   reset, cross-account shared-view digests, preserved review state, and an
   active unused one-time invitation for Jacob.
 - [ ] Copy the exact modular v31 prompt into review-tagged Google Doc tabs. The
   existing System Prompt tab is populated, but Customization is still empty.
-- [ ] Confirm Sasha's individual prompt-Doc and transcript-categorization
-  activity; the connected audit currently proves shared team material and
-  Maria activity but does not independently attribute Sasha's edits.
+- [ ] Complete the remaining team-owned review work: the production audit
+  proves four moves and one note by Sasha but no Maria categorization action;
+  the connected Doc proves Maria review activity but does not independently
+  attribute a prompt revision to Sasha.
 
 ## Human transcript review — 2026-08-21
 
