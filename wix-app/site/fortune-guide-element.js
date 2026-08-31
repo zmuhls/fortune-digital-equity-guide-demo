@@ -8,7 +8,8 @@
 (() => {
   const TAG_NAME = "fortune-digital-equity-guide";
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 12;
+  const MAX_CONTEXT_MESSAGES = 16;
+  const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:wix:v20";
   const STARTERS = Object.freeze([
     { label: "Page summary", prompt: "What is the main information here?" },
@@ -41,9 +42,14 @@
       /(?<!\d)\d{3}[-‐‑‒–—.\s]?\d{3}(?!\d)/,
       /\b\d{3}[-. ]?\d{2}[-. ]?\d{4}\b/,
       /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
-      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number|name|address|phone|email)\b/i,
-      /\b(?:social security|ssn|date of birth|dob|password|passcode|my health|my diagnosis)\b/i,
-      /\b(?:call me at|my number is|i live at)\b/i
+      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number)\s*(?:is|=|:|#)\s*(?!(?:not|needed|required|unknown|forgotten)\b)[A-Z0-9][A-Z0-9-]*/i,
+      /\bmy name is\s+(?!needed\b|required\b)[^\s,.;!?]{2,}/i,
+      /\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten)\b)\S+/i,
+      /\b(?:my\s+)?(?:date of birth|dob)\s*(?:is|=|:)\s*(?:\d{1,4}[-/.]\d{1,2}(?:[-/.]\d{1,4})?|(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+\d{2,4})?)/i,
+      /(?<!\d)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3}[\s.-])\d{3}[\s.-]\d{4}(?!\d)/,
+      /\b(?:call|text) me at\s+\+?[0-9][0-9().\s-]{6,}[0-9]|\bmy (?:phone )?number is\s+\+?[0-9][0-9().\s-]{6,}[0-9]/i,
+      /\b(?:my address is|i live at)\s+\d{1,6}\s+\S+/i,
+      /\bmy diagnosis\s*(?:is|=|:)\s*\S+/i
     ];
     return patterns.some((pattern) => pattern.test(normalized));
   };
@@ -116,11 +122,13 @@
             inset: auto 18px 18px auto;
             z-index: 2147483000;
           }
+          :host(:not(.guide-open)) { inset: auto 34px 30px auto; }
           *, *::before, *::after { box-sizing: border-box; }
           button, textarea { font: inherit; }
           :focus-visible { outline: 3px solid var(--guide-ink); outline-offset: 3px; }
           .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
           .toggle {
+            position: relative;
             min-width: 56px;
             min-height: 44px;
             padding: 0 16px;
@@ -132,6 +140,39 @@
             font-weight: 700;
             cursor: pointer;
             transition: background .14s ease, color .14s ease;
+          }
+          .toggle-label { position: relative; z-index: 1; }
+          .guide-rays { position: absolute; inset: 0; pointer-events: none; color: var(--guide-ink); }
+          .guide-rays > span {
+            --ray-rotation: 0deg;
+            --ray-stagger: 0s;
+            position: absolute;
+            width: 18px;
+            height: 2px;
+            background: currentColor;
+            clip-path: polygon(0 38%, 100% 0, 94% 100%, 3% 68%);
+            opacity: 0;
+            transform: rotate(var(--ray-rotation)) scaleX(.05);
+            animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 3 both;
+          }
+          .guide-rays > span:nth-child(1) { top: 18%; left: -24px; width: 16px; --ray-rotation: 8deg; --ray-stagger: 0s; }
+          .guide-rays > span:nth-child(2) { top: 51%; left: -28px; width: 20px; --ray-rotation: -4deg; --ray-stagger: .16s; }
+          .guide-rays > span:nth-child(3) { top: 82%; left: -22px; width: 14px; --ray-rotation: -13deg; --ray-stagger: .34s; }
+          .guide-rays > span:nth-child(4) { top: 18%; right: -23px; width: 15px; --ray-rotation: -9deg; --ray-stagger: .09s; }
+          .guide-rays > span:nth-child(5) { top: 50%; right: -29px; width: 21px; --ray-rotation: 5deg; --ray-stagger: .27s; }
+          .guide-rays > span:nth-child(6) { top: 81%; right: -22px; width: 14px; --ray-rotation: 14deg; --ray-stagger: .46s; }
+          .guide-rays > span:nth-child(7) { top: -17px; left: 12%; width: 15px; --ray-rotation: 77deg; --ray-stagger: .12s; }
+          .guide-rays > span:nth-child(8) { top: -21px; left: 43%; width: 19px; --ray-rotation: 92deg; --ray-stagger: .39s; }
+          .guide-rays > span:nth-child(9) { top: -16px; left: 76%; width: 13px; --ray-rotation: 104deg; --ray-stagger: .21s; }
+          .guide-rays > span:nth-child(10) { bottom: -17px; left: 15%; width: 14px; --ray-rotation: 103deg; --ray-stagger: .31s; }
+          .guide-rays > span:nth-child(11) { bottom: -21px; left: 48%; width: 20px; --ray-rotation: 87deg; --ray-stagger: .06s; }
+          .guide-rays > span:nth-child(12) { right: 9%; bottom: -16px; width: 15px; --ray-rotation: 76deg; --ray-stagger: .43s; }
+          @keyframes guide-ray-burst {
+            0%, 11%, 100% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(.05); }
+            1.5% { opacity: .5; transform: rotate(var(--ray-rotation)) scaleX(.3); }
+            4% { opacity: .92; transform: rotate(var(--ray-rotation)) scaleX(1); }
+            7% { opacity: .62; transform: rotate(var(--ray-rotation)) scaleX(.9); }
+            10% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(1.08); }
           }
           .toggle:hover { color: var(--guide-ink); background: var(--guide-paper); }
           .panel {
@@ -361,6 +402,7 @@
           .contact { margin-left: auto; }
           @media (max-width: 520px) {
             :host { inset: auto 8px 8px 8px; }
+            :host(:not(.guide-open)) { inset: auto 30px 30px 8px; }
             .panel { width: 100%; max-height: calc(100dvh - 16px); }
             .panel.expanded { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
             .panel.expanded .transcript { padding: 14px; }
@@ -376,9 +418,16 @@
               transition-duration: .01ms !important;
               animation-duration: .01ms !important;
             }
+            .guide-rays > span { animation: none !important; opacity: 0 !important; }
           }
         </style>
-        <button class="toggle" id="fortune-guide-toggle" type="button" aria-controls="fortune-guide-panel" aria-expanded="false">Website Guide</button>
+        <button class="toggle" id="fortune-guide-toggle" type="button" aria-controls="fortune-guide-panel" aria-expanded="false">
+          <span class="guide-rays" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </span>
+          <span class="toggle-label">Website Guide</span>
+        </button>
         <section class="panel" id="fortune-guide-panel" role="dialog" aria-modal="false" aria-labelledby="fortune-guide-title" aria-hidden="true" hidden>
           <header class="head">
             <h2 id="fortune-guide-title">Website Guide</h2>
@@ -401,7 +450,7 @@
             <details class="meta">
               <summary>Info</summary>
               <div class="info">
-                <p class="context-count">Context · conversation · 0/6</p>
+                <p class="context-count">Context · conversation · 0/8</p>
                 <p class="model-status">Starting…</p>
               </div>
             </details>
@@ -485,6 +534,7 @@
     }
 
     open() {
+      this.classList.add("guide-open");
       this.panel.hidden = false;
       this.panel.setAttribute("aria-hidden", "false");
       this.toggleButton.hidden = true;
@@ -494,6 +544,7 @@
     }
 
     close() {
+      this.classList.remove("guide-open");
       this.panel.hidden = true;
       this.panel.setAttribute("aria-hidden", "true");
       this.toggleButton.hidden = false;
@@ -578,7 +629,7 @@
       try {
         storage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify({
           version: 1,
-          turns: this.turns.slice(-3).map((turn) => this.storedTurn(turn)).filter(Boolean),
+          turns: this.turns.slice(-MAX_CONTEXT_EXCHANGES).map((turn) => this.storedTurn(turn)).filter(Boolean),
           conversationId: this.conversationId,
           conversationToken: this.conversationToken
         }));
@@ -593,7 +644,7 @@
       try {
         const saved = JSON.parse(storage.getItem(CONVERSATION_STORAGE_KEY) || "null");
         if (saved?.version !== 1 || !Array.isArray(saved.turns)) return false;
-        const restored = saved.turns.slice(-3).map((turn) => this.storedTurn(turn));
+        const restored = saved.turns.slice(-MAX_CONTEXT_EXCHANGES).map((turn) => this.storedTurn(turn));
         if (!restored.length || restored.some((turn) => !turn)) {
           this.clearPersistedConversation();
           return false;
@@ -631,8 +682,8 @@
     }
 
     updateContextCount() {
-      const count = Math.min(MAX_CONTEXT_MESSAGES / 2, Math.floor(this.history.length / 2));
-      this.contextCount.textContent = `Context · conversation · ${count}/${MAX_CONTEXT_MESSAGES / 2}`;
+      const count = Math.min(MAX_CONTEXT_EXCHANGES, Math.floor(this.history.length / 2));
+      this.contextCount.textContent = `Context · conversation · ${count}/${MAX_CONTEXT_EXCHANGES}`;
     }
 
     resizeQuestionField() {
@@ -699,33 +750,11 @@
       this.input.value = "";
       this.resizeQuestionField();
 
-      if (editing) {
-        this.setEditStatus("Not sent. Remove personal information.");
-        return;
-      }
-
-      this.history = [];
-      this.turns = [{
-        question: "Not sent",
-        answer: "Remove personal information and try again.",
-        payload: {},
-        editable: false
-      }];
-      this.lastQuestion = "";
-      this.editingQuestion = "";
-      this.conversationId = "";
-      this.conversationToken = "";
-      this.clearPersistedConversation();
-      this.form.classList.remove("is-editing");
-      this.cancelEditButton.hidden = true;
-      this.questionLabel.textContent = "Question";
-      this.setEditStatus();
       this.suggestions.replaceChildren();
       this.panel.classList.add("expanded");
-      this.status.textContent = "";
+      this.setEditStatus("Private detail not sent. Remove it and resend.");
+      if (!editing) this.input.focus({ preventScroll: true });
       this.updateContextCount();
-      this.renderConversation();
-      this.revealResult();
     }
 
     async ask(rawQuestion, options = {}) {
@@ -768,6 +797,7 @@
             history: requestHistory,
             page_context: this.pageContext(),
             client_surface: "wix",
+            automation_source: window.navigator?.webdriver ? "browser-webdriver" : undefined,
             client_event_id: this.pendingClientEventId,
             conversation_id: editing ? undefined : this.conversationId || undefined,
             conversation_token: editing ? undefined : this.conversationToken || undefined
@@ -810,8 +840,8 @@
           { role: "assistant", content: answer }
         ).slice(-MAX_CONTEXT_MESSAGES);
         this.turns = editing
-          ? this.turns.slice(0, -1).concat(turn).slice(-3)
-          : this.turns.concat(turn).slice(-3);
+          ? this.turns.slice(0, -1).concat(turn).slice(-MAX_CONTEXT_EXCHANGES)
+          : this.turns.concat(turn).slice(-MAX_CONTEXT_EXCHANGES);
         this.lastQuestion = safeQuestion;
         this.conversationId = String(payload.conversation_id || (editing ? "" : this.conversationId));
         this.conversationToken = String(payload.conversation_token || (editing ? "" : this.conversationToken));

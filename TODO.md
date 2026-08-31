@@ -1,5 +1,28 @@
 # Website Guide — next steps
 
+## Prompt responsiveness and automation provenance — 2026-08-31
+
+- [x] Publish prompt v32 with evidence-exhausted clarification, current-source
+  specificity, concise answers, sitewide page access, and follow-up advancement.
+- [x] Compare v32 with v31 on the same isolated 41-case suite with no database
+  access: 36/41 versus 22/41 overall, 30/34 versus 20/34 required, fourteen
+  paired wins, zero paired losses, and zero excessive-length failures.
+- [x] Narrow the personal-information hold to disclosed values; preserve the
+  prior safe conversation and add no synthetic privacy transcript turn.
+- [x] Remove the repetitive post-model personal-information phrase evaluator
+  and its third retry; keep the value-based pre-send hold.
+- [x] Keep eight complete exchanges in Pages, Wix, tab persistence, and the
+  server prompt, dropping only the oldest exchange after the ninth response.
+- [x] Give the collapsed launcher three staggered, hand-drawn monochrome ray
+  bursts at fifteen-second intervals, with a reduced-motion opt-out.
+- [x] Store explicit automation provenance, show it on shared evaluator cards
+  and transcript details, and reconcile historical artifact-backed runs without
+  reading or deleting transcript content.
+- [x] Preserve v31 as an immutable compiled prompt artifact and update the
+  shared Prompts view to the exact v32 runtime policy.
+- [x] Pass the complete v32 release suite: 362 Python, 30 frontend, and 18
+  source-snapshot checks, plus desktop, mobile, and reduced-motion launcher QA.
+
 ## Conversation-grounding release — 2026-08-31
 
 - [x] Review all 29 current human production conversations without changing
@@ -7,11 +30,12 @@
 - [x] Keep every successful or mixed-result transcript, note, annotation, and
   timestamp; hide only the three failed-only reports from the review queue.
 - [x] Replace the short-follow-up classifier with bounded conversation-aware
-  retrieval and send six recent exchanges to the model.
+  retrieval; the current release sends eight recent exchanges to the model.
 - [x] Add regressions for Excel continuity, topic changes, support/page context,
   live calendar dates, failed-only cleanup, and the shared evaluator boundary.
 - [x] Publish prompt v31 and preserve v30 as an immutable compiled artifact.
-- [x] Update the dashboard Prompts preview to the exact v31 runtime policy.
+- [x] Update the dashboard Prompts preview to the exact v31 runtime policy
+  before the subsequent v32 review.
 - [x] Record team-source contributions and the action-item audit in
   `docs/TRANSCRIPT-AND-PROMPT-REVIEW-2026-08-31.md`.
 - [x] Pass the complete local release suite: 359 Python, 29 frontend, and 18

@@ -11,7 +11,7 @@
   <script>document.documentElement.classList.toggle("sidecar-embed", new URLSearchParams(window.location.search).get("embed") === "1");</script>
   <link rel="preconnect" href="https://guide-api-production-a1a1.up.railway.app" crossorigin>
   <link rel="dns-prefetch" href="//guide-api-production-a1a1.up.railway.app">
-  <link rel="stylesheet" href="styles.css?v=20260817-grounded-generation-1">
+  <link rel="stylesheet" href="styles.css?v=20260831-v32-1">
 </head>
 <body>
   <a class="skip-link" href="#page-content">Skip to page information</a>
@@ -92,8 +92,8 @@
         <details class="context-window" id="context-window">
           <summary>Info</summary>
           <div class="guide-info">
-            <p id="context-window-text">Context · conversation · 0/6</p>
-            <p id="context-window-copy">Up to 6 exchanges stay in this tab across pages.</p>
+            <p id="context-window-text">Context · conversation · 0/8</p>
+            <p id="context-window-copy">Up to 8 exchanges stay in this tab across pages.</p>
             <p id="model-status">Starting…</p>
           </div>
         </details>
@@ -102,15 +102,19 @@
       </footer>
     </section>
     <button class="guide-toggle" id="guide-toggle" type="button" aria-controls="guide-panel" aria-expanded="false">
-      <span>Website Guide</span>
+      <span class="guide-rays" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </span>
+      <span class="guide-toggle-label">Website Guide</span>
     </button>
   </aside>
 
   <!-- ROUTE_CONFIG -->
   <script src="config.js?v=20260813-source-free-2"></script>
-  <script src="guide-core.js?v=20260817-route-refresh-1"></script>
+  <script src="guide-core.js?v=20260831-v32-1"></script>
   <script src="site.js?v=20260817-route-refresh-1"></script>
-  <script src="app.js?v=20260821-open-conversation-1"></script>
+  <script src="app.js?v=20260831-v32-1"></script>
   <script src="embed-frame.js?v=20260803-replica-1"></script>
 </body>
 </html>

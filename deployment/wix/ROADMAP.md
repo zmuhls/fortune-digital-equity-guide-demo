@@ -17,7 +17,7 @@ Fortune page
   -> validated answer, sources, related routes, and handoff
 ```
 
-The browser sends the visitor's question, up to six recent in-memory messages, and a small page-context object:
+The browser sends the visitor's question, up to eight complete recent exchanges (sixteen messages), and a small page-context object:
 
 ```json
 {
@@ -31,7 +31,7 @@ The browser sends the visitor's question, up to six recent in-memory messages, a
 }
 ```
 
-The canonical backend resolves `page_context` against the approved site index and never treats browser-supplied text as a factual source. It sanitizes `history`, checks the current page first, and searches the broader approved index only when that page lacks the required information. Every successful non-private new request reaches the model with a bounded set of approved current records. The model writes the concise participant-facing answer or one clarifying question; the server validates its selected source, claims, privacy, and response shape. When lexical retrieval has no match, the model receives a bounded navigation set and must clarify rather than receiving a server-authored fallback.
+The canonical backend resolves `page_context` against the approved site index and never treats browser-supplied text as a factual source. It sanitizes `history` and searches current approved evidence across the site. Every successful non-private new request reaches the model with a bounded set of approved current records. The model writes the concise participant-facing answer or one clarifying question; the server validates its response shape and selected source without reclassifying the prose. When retrieval has no match, the model receives no factual records and responds conversationally rather than receiving a server-authored fallback.
 
 ## Optional Copilot Studio evaluation
 

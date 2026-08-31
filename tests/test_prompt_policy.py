@@ -23,7 +23,7 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v31")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v32")
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -43,35 +43,32 @@ class PromptPolicyTests(unittest.TestCase):
 
     def test_selector_uses_compiled_reviewed_policy(self):
         self.assertEqual(source_selector.SYSTEM_PROMPT, prompt_policy.SYSTEM_PROMPT)
-        self.assertIn("only evidence for factual claims", source_selector.SYSTEM_PROMPT)
-        self.assertIn("choose the record that best answers", source_selector.SYSTEM_PROMPT)
-        self.assertIn("answer in your own words", source_selector.SYSTEM_PROMPT)
-        self.assertIn("without making claims about Digital Equity", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Answer the participant's latest message naturally", source_selector.SYSTEM_PROMPT)
-        self.assertIn("active page is context, not a boundary", source_selector.SYSTEM_PROMPT)
-        self.assertIn("anywhere on the Digital Equity site", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Do not produce a stock refusal", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Website Guide for the Digital Equity site", source_selector.SYSTEM_PROMPT)
-        self.assertIn("You are an AI guide", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Do not call it the Fortune Society site", source_selector.SYSTEM_PROMPT)
-        self.assertIn("answer in one short sentence", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Your purpose is informational", source_selector.SYSTEM_PROMPT)
-        self.assertIn("cannot enroll or book someone", source_selector.SYSTEM_PROMPT)
+        self.assertIn("only evidence for Digital Equity facts", source_selector.SYSTEM_PROMPT)
+        self.assertIn("pick the most specific current record", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Paraphrase direct implications naturally", source_selector.SYSTEM_PROMPT)
+        self.assertIn("without making Digital Equity claims", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Resolve the latest message", source_selector.SYSTEM_PROMPT)
+        self.assertIn("active page matters only", source_selector.SYSTEM_PROMPT)
+        self.assertIn("anywhere on the site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("stock refusal", source_selector.SYSTEM_PROMPT)
+        self.assertIn("AI Website Guide for the Digital Equity site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Never call this the Fortune Society site", source_selector.SYSTEM_PROMPT)
+        self.assertIn("one short sentence", source_selector.SYSTEM_PROMPT)
+        self.assertIn("cannot enroll or book", source_selector.SYSTEM_PROMPT)
         self.assertIn("recent conversation", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Never repeat the same clarification", source_selector.SYSTEM_PROMPT)
-        self.assertIn("live calendar candidate", source_selector.SYSTEM_PROMPT)
-        self.assertIn("do not invent an event", source_selector.SYSTEM_PROMPT)
+        self.assertIn("repeat a clarification", source_selector.SYSTEM_PROMPT)
+        self.assertIn("live calendar", source_selector.SYSTEM_PROMPT)
+        self.assertIn("never call a past event upcoming", source_selector.SYSTEM_PROMPT)
         self.assertIn("Use plain, conversational language", source_selector.SYSTEM_PROMPT)
-        self.assertIn("list, schedule, comparison, or steps", source_selector.SYSTEM_PROMPT)
-        self.assertIn("plain text without Markdown formatting", source_selector.SYSTEM_PROMPT)
-        self.assertIn("every dated event and every recurring session", source_selector.SYSTEM_PROMPT)
-        self.assertIn("item on its own line", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Do not append an invitation", source_selector.SYSTEM_PROMPT)
-        self.assertIn("ASK is only the no-source routing value", source_selector.SYSTEM_PROMPT)
-        self.assertIn("stop instead of asking a question", source_selector.SYSTEM_PROMPT)
+        self.assertIn("full schedule, comparison, or steps", source_selector.SYSTEM_PROMPT)
+        self.assertIn("one item per plain-text line", source_selector.SYSTEM_PROMPT)
+        self.assertIn("closing invitations", source_selector.SYSTEM_PROMPT)
+        self.assertIn("ASK is a source-selection value", source_selector.SYSTEM_PROMPT)
+        self.assertIn("useful partial answer", source_selector.SYSTEM_PROMPT)
+        self.assertLess(len(source_selector.SYSTEM_PROMPT.split()), 600)
         self.assertEqual(
             set(prompt_policy.RETRY_INSTRUCTIONS),
-            {"invalid response", "personal detail request", "resolved source can answer"},
+            {"invalid response", "resolved source can answer"},
         )
         self.assertNotIn("conversation logs are recorded", source_selector.SYSTEM_PROMPT.lower())
         self.assertNotIn("988", source_selector.SYSTEM_PROMPT)
@@ -97,28 +94,28 @@ class PromptPolicyTests(unittest.TestCase):
         clarification = catalog["clarification"]
         self.assertEqual(
             clarification["current_variant"],
-            "evidence_first_clarification",
+            "evidence_exhausted_only",
         )
         self.assertEqual(
             clarification["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["clarification"]
-            ["evidence_first_clarification"],
+            ["evidence_exhausted_only"],
         )
-        self.assertIn("more than one plausible answer", clarification["current_value"])
-        self.assertIn("Never repeat", clarification["current_value"])
+        self.assertIn("no useful partial answer", clarification["current_value"])
+        self.assertIn("repeat a clarification", clarification["current_value"])
 
         page_awareness = catalog["page_awareness"]
         self.assertEqual(
             page_awareness["current_variant"],
-            "current_sitewide_evidence",
+            "freshest_specific_sitewide",
         )
         self.assertEqual(
             page_awareness["current_value"],
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["page_awareness"]
-            ["current_sitewide_evidence"],
+            ["freshest_specific_sitewide"],
         )
-        self.assertIn("anywhere on the Digital Equity site", page_awareness["current_value"])
-        self.assertIn("active page as a hint", page_awareness["current_value"])
+        self.assertIn("anywhere on the site", page_awareness["current_value"])
+        self.assertIn("active page matters only", page_awareness["current_value"])
 
     def test_runtime_prompt_includes_current_date_before_candidate_records(self):
         prompt = source_selector.build_prompt(
@@ -162,7 +159,7 @@ class PromptPolicyTests(unittest.TestCase):
             )
         self.assertIn('"compiled_prompt": SYSTEM_PROMPT', evaluation_source)
         self.assertIn("Website Guide for the Digital Equity site", javascript)
-        self.assertIn("live calendar candidate", javascript)
+        self.assertIn("live calendar", javascript)
 
     def test_retry_text_is_allowlisted_and_versioned(self):
         base = prompt_policy.SYSTEM_PROMPT + "\nCANDIDATE RECORDS:\n[]"

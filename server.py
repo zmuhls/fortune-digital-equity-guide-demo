@@ -4,7 +4,7 @@
 The browser receives no provider credential. A complete public-site index is
 searched locally for each question, and only the most relevant approved
 records are sent to Ollama Cloud. The server validates the model's source ID,
-JSON contract, and privacy boundary, then preserves the model-authored answer.
+JSON contract, then preserves the model-authored answer.
 """
 
 import collections
@@ -71,7 +71,7 @@ ALLOWED_ORIGINS = {
     if origin.strip()
 }
 MAX_BODY = 64 * 1024
-MAX_HISTORY = 12
+MAX_HISTORY = 16
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
 MAX_MODEL_EXCERPT_CHARS = 700
@@ -443,24 +443,44 @@ _VISUAL_SCAFFOLD = (
 
 _PERSONAL_PATTERNS = [
     re.compile(
-        r"\b(?:social security|ssn|date of birth|dob|password|passcode|my health|my diagnosis)\b",
+        r"\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)"
+        r"\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten)\b)\S+",
+        re.I,
+    ),
+    re.compile(
+        r"\b(?:my\s+)?(?:date of birth|dob)\s*(?:is|=|:)\s*"
+        r"(?:\d{1,4}[-/.]\d{1,2}(?:[-/.]\d{1,4})?|"
+        r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+        r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|"
+        r"dec(?:ember)?)\s+\d{1,2}(?:,?\s+\d{2,4})?)",
         re.I,
     ),
     re.compile(
         r"\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?"
-        r"(?:id|case number|name|address|phone|email)\b",
+        r"(?:id|case number)\s*(?:is|=|:|#)\s*"
+        r"(?!(?:not|needed|required|unknown|forgotten)\b)[A-Z0-9][A-Z0-9-]*",
         re.I,
     ),
+    re.compile(r"\bmy name is\s+(?!needed\b|required\b)[^\s,.;!?]{2,}", re.I),
     re.compile(r"(?<!\d)\d{3}(?:[-‐‑‒–—.\s]?\d{3})(?!\d)"),
     re.compile(r"\b\d{3}[-. ]?\d{2}[-. ]?\d{4}\b"),
     re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
-    re.compile(r"\b(?:my phone|call me at|my number is)\b", re.I),
-    re.compile(r"\b(?:my address is|i live at)\b", re.I),
+    re.compile(
+        r"(?<!\d)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3}[\s.-])"
+        r"\d{3}[\s.-]\d{4}(?!\d)"
+    ),
+    re.compile(
+        r"\b(?:call|text) me at\s+\+?[0-9][0-9().\s-]{6,}[0-9]"
+        r"|\bmy (?:phone )?number is\s+\+?[0-9][0-9().\s-]{6,}[0-9]",
+        re.I,
+    ),
+    re.compile(r"\b(?:my address is|i live at)\s+\d{1,6}\s+\S+", re.I),
+    re.compile(r"\bmy diagnosis\s*(?:is|=|:)\s*\S+", re.I),
 ]
 
 _HUMAN_HANDOFF_PATTERNS = [
     re.compile(r"\b(?:parole|probation|legal|lawyer|attorney|court|case-specific|case manager)\b", re.I),
-    re.compile(r"\b(?:housing|shelter|health|medical|doctor|benefits|snap|medicaid)\b", re.I),
+    re.compile(r"\b(?:housing|shelter|health|medical|doctor|diagnosis|benefits|snap|medicaid)\b", re.I),
     re.compile(r"\b(?:emergency|crisis|unsafe|suicid(?:e|al)|self-harm|hurt myself|harm someone)\b", re.I),
 ]
 
@@ -478,12 +498,12 @@ _ENGLISH_MARKERS = {
 
 PARTICIPANT_COPY = {
     "en": {
-        "privacy_message": "Remove personal information and try again.",
-        "privacy_reason": "Use Contact for personal help.",
+        "privacy_message": "Private detail not sent. Remove it and resend.",
+        "privacy_reason": "The private detail was not sent to the guide.",
     },
     "es": {
-        "privacy_message": "Quita los datos personales e inténtalo de nuevo.",
-        "privacy_reason": "Usa Contacto para ayuda personal.",
+        "privacy_message": "El dato privado no se envió. Quítalo y vuelve a enviar.",
+        "privacy_reason": "El dato privado no se envió a la guía.",
     },
 }
 
@@ -1011,8 +1031,8 @@ def likely_source_ids(text, fallback=True):
     # request can supersede a named class because those details live on the
     # calendar/contact pages.
     if registration_intent(lowered):
-        add("contact")
         add("calendar")
+        add("contact")
     if schedule_intent(lowered):
         add("calendar")
 
@@ -2041,10 +2061,10 @@ def guided_class_sources(question):
     destination_by_prompt = {
         "class topics": WORKSHOPS_URL,
         "dates locations": CALENDAR_URL,
-        "register": CONTACT_URL,
+        "register": CALENDAR_URL,
         "temas": WORKSHOPS_URL,
         "fechas y lugares": CALENDAR_URL,
-        "inscribirme": CONTACT_URL,
+        "inscribirme": CALENDAR_URL,
     }
     source_id = SOURCE_ID_BY_URL.get(destination_by_prompt.get(prompt, ""), "")
     source = SOURCE_BY_ID.get(source_id)
@@ -2062,7 +2082,7 @@ def registration_sources(question):
         return []
     return [
         SOURCE_BY_ID[source_id]
-        for source_id in ("contact", "calendar")
+        for source_id in ("calendar", "contact")
         if source_id in SOURCE_BY_ID
         and SOURCE_BY_ID[source_id].get("authority") == "answer"
         and SOURCE_BY_ID[source_id].get("status", 200) == 200
@@ -2304,7 +2324,6 @@ def model_clarification_response(
             r"\b(?:ignore|reveal|override) (?:the )?(?:prompt|instructions|rules|safety)\b",
             folded,
         )
-        or model_requests_personal_details(message)
     ):
         raise ModelResponseRejected("The model did not return a safe clarification")
     response = response_contract(
@@ -2333,44 +2352,6 @@ def replay_response_is_current(response):
         kind in {"answer", "clarify", "handoff"}
         and response.get("model_called") is True
         and response.get("prompt_policy_version") == PROMPT_POLICY_VERSION
-    )
-
-
-def model_requests_personal_details(text):
-    """Reject model copy that asks the participant to disclose private data."""
-
-    value = fold_text(text)
-    request = (
-        r"(?:what(?:'s| is)|share|provide|enter|send|give|tell me|write|"
-        r"cual es|comparte|proporciona|ingresa|envia|dime|escribe|dame)"
-    )
-    detail = (
-        r"(?:full name|name|phone number|phone|telephone number|email address|e-mail address|"
-        r"email|street address|home address|address|date of birth|birthday|age|zip code|"
-        r"postal code|fortune id|case number|member id|parole status|probation status|"
-        r"social security number|ssn|nombre completo|nombre|numero de telefono|telefono|"
-        r"correo electronico|correo|direccion|fecha de nacimiento|edad|codigo postal|"
-        r"id de fortune|numero de caso|libertad condicional|seguro social)"
-    )
-    possessive_detail = (
-        r"\b(?:your|tu|su) (?:full name|name|phone number|phone|email address|e-mail address|"
-        r"email|street address|home address|address|date of birth|birthday|age|zip code|"
-        r"postal code|fortune id|case number|member id|parole status|probation status|ssn|"
-        r"nombre completo|nombre|numero de telefono|telefono|correo electronico|correo|"
-        r"direccion|fecha de nacimiento|edad|codigo postal|id de fortune|numero de caso|"
-        r"libertad condicional|seguro social)\b"
-    )
-    return bool(
-        re.search(rf"\b{request}\b.{{0,48}}\b{detail}\b", value)
-        or re.search(possessive_detail, value)
-        or re.search(r"\bwhere (?:do|did) you live\b", value)
-        or re.search(r"\bhow old are you\b", value)
-        or re.search(r"\bare you (?:on )?(?:parole|probation)\b", value)
-        or re.search(r"\b(?:who are you|where are you|what is your information)\b", value)
-        or re.search(
-            r"\bwhich (?:email|phone|address|name)\b.{0,32}\b(?:share|provide|use)\b",
-            value,
-        )
     )
 
 
@@ -2857,8 +2838,6 @@ def parse_model_selection(
         )
     selected = allowed[selected_id]
     answer_text = parsed["answer"]
-    if model_requests_personal_details(answer_text):
-        raise ModelResponseRejected("The model asked for participant information")
     # The selected ID is the grounding contract. The model has already seen the
     # full candidate record, and the system prompt forbids outside facts. A
     # second lexical classifier rejected valid paraphrases in production, so
@@ -2889,7 +2868,7 @@ def model_selection_retry_reason(
     routing_question="",
     require_answer=False,
 ):
-    """Validate only the provider contract and participant privacy boundary.
+    """Validate only the provider response contract.
 
     The model is responsible for reading the supplied records and writing the
     answer.  Do not run its prose through a second lexical classifier: natural
@@ -2909,12 +2888,8 @@ def model_selection_retry_reason(
         try:
             model_clarification_response(question, parsed["answer"])
         except ModelResponseRejected:
-            if model_requests_personal_details(parsed["answer"]):
-                return "personal detail request"
             return "invalid response"
         return ""
-    if model_requests_personal_details(parsed["answer"]):
-        return "personal detail request"
     return ""
 
 
@@ -3187,6 +3162,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 client_event_id=request.get("client_event_id"),
                 page_context=capture_page_context(page_context),
                 client_surface=request.get("client_surface"),
+                automation_source=request.get("automation_source"),
                 history_context=safe_history,
                 interaction_context=interaction,
             )
@@ -3349,30 +3325,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 evidence_query,
                 require_model_answer,
             )
-            if (
-                final_validation_reason
-                and require_model_answer
-                and MODEL_CALL_BUDGET.claim(client_identifier)
-            ):
-                raw = self._ollama([
-                    {
-                        "role": "system",
-                        "content": build_retry_prompt(
-                            messages[0]["content"], "personal detail request"
-                        ),
-                    },
-                    messages[1],
-                ])
-                model_attempts = 3
-                final_validation_reason = model_selection_retry_reason(
-                    raw,
-                    model_sources,
-                    interaction,
-                    prior_answer,
-                    question,
-                    evidence_query,
-                    require_model_answer,
-                )
             response = parse_model_selection(
                 raw,
                 question,

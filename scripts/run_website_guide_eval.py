@@ -927,6 +927,7 @@ def run(args: argparse.Namespace) -> int:
             "history": case.get("history", []),
             "client_event_id": str(uuid.uuid4()),
             "client_surface": "benchmark",
+            "automation_source": "fixed-suite",
         }
         status, response, latency_ms, transport_error = json_request(
             base_url + "/api/chat",

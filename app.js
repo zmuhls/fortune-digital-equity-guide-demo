@@ -20,7 +20,7 @@
   const resetButton = document.querySelector("#guide-reset");
   const API_BASE = String(window.FORTUNE_GUIDE_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 12;
+  const MAX_CONTEXT_MESSAGES = 16;
   const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:replica:v20";
 
@@ -428,29 +428,9 @@
     questionField.value = "";
     resizeQuestionField();
 
-    if (editing) {
-      setEditStatus("Not sent. Remove personal information.");
-      return;
-    }
-
     suggestions.replaceChildren();
-    appendMessage("user", "Not sent");
-    appendMessage(
-      "assistant",
-      "Remove personal information and try again.",
-      {
-        destination: distinctDestination({ related: [{ title: "Contact", url: CONTACT_URL }] }),
-        scope: "staff",
-        revealStart: true,
-      },
-    );
-    history = [];
-    turns = [];
-    latestTurn = null;
-    conversationId = "";
-    conversationToken = "";
-    clearPersistedConversation();
-    transcript.querySelectorAll(".chat-message-actions").forEach(actions => actions.remove());
+    setEditStatus("Private detail not sent. Remove it and resend.");
+    if (!editing) questionField.focus({ preventScroll: true });
     updateContextWindow();
   }
 
@@ -463,6 +443,7 @@
         history: options.history || history,
         page_context: pageContext(),
         client_surface: "replica",
+        automation_source: window.navigator?.webdriver ? "browser-webdriver" : undefined,
         client_event_id: clientEventId,
         conversation_id: options.startNew ? undefined : conversationId || undefined,
         conversation_token: options.startNew ? undefined : conversationToken || undefined,

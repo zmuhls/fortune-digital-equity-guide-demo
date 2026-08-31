@@ -100,6 +100,8 @@ def run_audit(database_url: str) -> dict:
                     t.privacy_state,
                     t.review_state,
                     c.client_surface,
+                    c.is_automated,
+                    c.automation_source,
                     COUNT(m.id)::INTEGER AS message_count,
                     COUNT(*) FILTER (
                         WHERE m.ordinal = 0 AND m.role = 'user'
@@ -112,7 +114,8 @@ def run_audit(database_url: str) -> dict:
                 FROM conversation_turns AS t
                 JOIN conversations AS c ON c.id = t.conversation_id
                 LEFT JOIN conversation_messages AS m ON m.turn_id = t.id
-                GROUP BY t.id, c.client_surface
+                GROUP BY t.id, c.client_surface, c.is_automated,
+                         c.automation_source
             )
             SELECT
                 COUNT(*) FILTER (
@@ -148,7 +151,14 @@ def run_audit(database_url: str) -> dict:
                 COUNT(*) FILTER (
                     WHERE review_state = 'ready'
                       AND (privacy_state <> 'clear' OR message_count <> 2)
-                )::INTEGER AS unsafe_ready_turns
+                )::INTEGER AS unsafe_ready_turns,
+                COUNT(*) FILTER (
+                    WHERE client_surface IN ('benchmark', 'synthetic')
+                      AND NOT is_automated
+                )::INTEGER AS unmarked_known_automation,
+                COUNT(*) FILTER (
+                    WHERE is_automated AND automation_source IS NULL
+                )::INTEGER AS automated_without_source
             FROM message_counts
         """,
         "latency": """
@@ -168,6 +178,10 @@ def run_audit(database_url: str) -> dict:
             FROM (
                 SELECT 'surface' AS dimension, client_surface AS value, COUNT(*)::INTEGER AS count
                 FROM conversations GROUP BY client_surface
+                UNION ALL
+                SELECT 'automation', CASE WHEN is_automated THEN 'automated' ELSE 'not_marked' END,
+                       COUNT(*)::INTEGER
+                FROM conversations GROUP BY is_automated
                 UNION ALL
                 SELECT 'request_kind', request_kind, COUNT(*)::INTEGER
                 FROM conversation_turns GROUP BY request_kind
@@ -227,6 +241,20 @@ def run_audit(database_url: str) -> dict:
                         GROUP BY c.id
                     ) AS visible
                 )::INTEGER AS visible_human_conversations,
+                (
+                    SELECT COUNT(*) FROM (
+                        SELECT c.id
+                        FROM conversations AS c
+                        JOIN conversation_turns AS t ON t.conversation_id = c.id
+                        WHERE c.capture_mode = 'transcript'
+                          AND c.client_surface IN ('replica', 'wix')
+                          AND c.is_automated
+                          AND c.expires_at > NOW()
+                          AND c.last_turn_at <= NOW() - INTERVAL '60 seconds'
+                          AND {VISIBLE_HUMAN_TURN_PREDICATE}
+                        GROUP BY c.id
+                    ) AS automated_visible
+                )::INTEGER AS visible_automated_conversations,
                 (
                     SELECT COUNT(*) FROM conversation_evaluations AS e
                     LEFT JOIN evaluation_buckets AS b

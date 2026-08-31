@@ -631,13 +631,24 @@ test("other obvious personal-information forms are held", () => {
     "My SSN is 123-45-6789",
     "My case number is ABC-12",
     "My name is Rosa",
-    "Their phone is in my contacts",
-    "My email is not working",
     "My address is 123 Example Street",
-    "I need help with my health",
     "My diagnosis is private",
+    "Call me at 212-555-0199",
+    "212-555-0118",
   ]) {
     assert.equal(Core.personalInformationDetected(value), true, value);
+  }
+  for (const value of [
+    "Their phone is in my contacts",
+    "My email is not working",
+    "I need help with my health",
+    "I forgot my password",
+    "My password is not working",
+    "My ID is required for registration",
+    "My date of birth is required for registration",
+    "Do I need to share my date of birth?",
+  ]) {
+    assert.equal(Core.personalInformationDetected(value), false, value);
   }
 });
 
@@ -746,6 +757,40 @@ test("Pages and Wix accept one Return submission and preserve model provenance",
   assert.equal(wixAssistants[0].dataset.modelCalled, "true");
   const wixSession = JSON.parse([...wix.storage.values.values()][0]);
   assert.equal(wixSession.turns[0].payload.model_called, true);
+});
+
+test("Pages and Wix send eight prior exchanges and then discard only the oldest", async () => {
+  const pages = await pagesHarness({ chatPayload: validModelAnswer });
+  for (let number = 1; number <= 9; number += 1) {
+    pages.input.value = `Question ${number}`;
+    pages.input.dispatchEvent(keyEvent("Enter"));
+    await waitFor(
+      () => pages.chatRequests.length === number && !pages.window.FortuneGuide.state().answering,
+      `Pages turn ${number} did not settle`,
+    );
+  }
+  assert.equal(pages.chatRequests[8].history.length, 16);
+  assert.equal(pages.chatRequests[8].history[0].content, "Question 1");
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 8);
+  const pageSession = JSON.parse([...pages.storage.values.values()][0]);
+  assert.equal(pageSession.turns.length, 8);
+  assert.equal(pageSession.turns[0].question, "Question 2");
+
+  const wix = await wixHarness({ chatPayload: validModelAnswer });
+  for (let number = 1; number <= 9; number += 1) {
+    wix.input.value = `Question ${number}`;
+    wix.input.dispatchEvent(keyEvent("Enter"));
+    await waitFor(
+      () => wix.chatRequests.length === number && !wix.guide.answering,
+      `Wix turn ${number} did not settle`,
+    );
+  }
+  assert.equal(wix.chatRequests[8].history.length, 16);
+  assert.equal(wix.chatRequests[8].history[0].content, "Question 1");
+  assert.equal(wix.guide.turns.length, 8);
+  const wixSession = JSON.parse([...wix.storage.values.values()][0]);
+  assert.equal(wixSession.turns.length, 8);
+  assert.equal(wixSession.turns[0].question, "Question 2");
 });
 
 test("Pages and Wix reject successful nonprivacy payloads outside the model contract", async t => {
@@ -923,16 +968,36 @@ test("Pages and Wix keep transport failures out of the Guide transcript", async 
   assert.equal(wix.guide.modelStatus.textContent, "Unavailable");
 });
 
-test("Pages and Wix block personal information before any chat POST", async () => {
+test("Pages and Wix hold private values without erasing the safe conversation", async () => {
   const pages = await pagesHarness({ chatPayload: validModelAnswer });
+  pages.input.value = "What classes are available?";
+  pages.input.dispatchEvent(keyEvent("Enter"));
+  await waitFor(
+    () => pages.chatRequests.length === 1 && !pages.window.FortuneGuide.state().answering,
+    "Pages safe turn did not settle",
+  );
   pages.input.value = "My Fortune ID is 123456";
   pages.input.dispatchEvent(keyEvent("Enter"));
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(pages.chatRequests.length, 0);
+  assert.equal(pages.chatRequests.length, 1);
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 1);
+  assert.equal(pages.window.FortuneGuide.state().historyLength, 2);
+  assert.equal(pages.editStatus.textContent, "Private detail not sent. Remove it and resend.");
+  assert.equal(descendants(pages.transcript).filter(element => element.classList.contains("assistant")).length, 1);
 
   const wix = await wixHarness({ chatPayload: validModelAnswer });
+  wix.input.value = "What classes are available?";
+  wix.input.dispatchEvent(keyEvent("Enter"));
+  await waitFor(
+    () => wix.chatRequests.length === 1 && !wix.guide.answering,
+    "Wix safe turn did not settle",
+  );
   wix.input.value = "My Fortune ID is 123456";
   wix.input.dispatchEvent(keyEvent("Enter"));
   await new Promise(resolve => setImmediate(resolve));
-  assert.equal(wix.chatRequests.length, 0);
+  assert.equal(wix.chatRequests.length, 1);
+  assert.equal(wix.guide.turns.length, 1);
+  assert.equal(wix.guide.history.length, 2);
+  assert.equal(wix.guide.editStatus.textContent, "Private detail not sent. Remove it and resend.");
+  assert.equal(descendants(wix.transcript).filter(element => element.classList.contains("assistant")).length, 1);
 });

@@ -4,7 +4,7 @@ This is the operator contract for PostgreSQL evidence capture and the evaluator 
 
 ## Current implementation slice
 
-The first migration creates `conversations`, `conversation_turns`, and `conversation_messages`; later migrations add server-approved page context, evaluator data, bounded interaction labels, and the human-only review gate. Each turn records opening or follow-up stage, request type, request and response language, retrieval scope, app version, and prompt-policy version. Every accepted chat response receives UUIDs for its conversation, turn, client event, user message, and assistant message. Clients keep a server-signed conversation continuation token and reuse one client event ID across retries.
+The first migration creates `conversations`, `conversation_turns`, and `conversation_messages`; later migrations add server-approved page context, evaluator data, bounded interaction labels, the human-review gate, and explicit automation provenance. Each turn records opening or follow-up stage, request type, request and response language, retrieval scope, app version, and prompt-policy version. Conversations record `is_automated` plus a bounded non-identifying `automation_source`; the value comes from the calling surface or explicit test harness, never transcript wording. Every accepted chat response receives UUIDs for its conversation, turn, client event, user message, and assistant message. Clients keep a server-signed conversation continuation token and reuse one client event ID across retries.
 
 The server reserves a turn before generating an answer and completes storage before returning it. If capture is required and PostgreSQL is unavailable, `/health` and `/api/chat` return `503` rather than creating an unlogged conversation. Request limits, a 50-turn conversation bound, request fingerprints, and expiring turn leases limit duplicate or unbounded writes. The server stores no IP address, user agent, device identifier, or provider credential.
 
@@ -14,7 +14,7 @@ Capture modes are explicit:
 - `metadata`: IDs, page record, routing/result fields, model state, timing, and privacy/review state; no question or answer text.
 - `transcript`: the metadata above plus question and answer text for completed turns classified `clear` by the automated privacy hold. If a clear request from a public human surface fails before an answer completes, the visitor question and failure metadata are retained without an assistant message. Blocked or sensitive turns contain no message rows.
 
-`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. Capture mode must not inject status or review copy into the compact participant interface. Privacy-clear conversations and failed attempts from the public `replica` and `wix` surfaces enter the shared queue. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue.
+`transcript` is not an anonymization guarantee. Fortune approved production capture for the shared human-conversation review pilot on August 21, 2026. Capture mode must not inject status or review copy into the compact participant interface. Privacy-clear conversations and failed attempts from the public `replica` and `wix` surfaces enter the shared queue. Automated `benchmark`, legacy `synthetic`, and direct API traffic never enter the evaluator queue. Public-surface browser automation is retained but explicitly labeled in every evaluator account.
 
 Captured conversations receive `expires_at`; the server purges expired conversations at startup and at most hourly while serving capture traffic. The default is 90 days and can be shortened for a pilot.
 
@@ -61,14 +61,14 @@ A staging release is accepted only after all of these are true:
 
 1. The local Python and JavaScript suites pass.
 2. The Railway deployment reaches terminal `SUCCESS`.
-3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=009_human_review_capture` without revealing database or token values.
+3. `/health` returns `200`, `capture_mode=transcript`, `database_ready=true`, `enabled=true`, and `schema_version=010_automation_provenance` without revealing database or token values.
 4. Re-running the migration reports a current schema.
 5. One invented `benchmark` question produces stable UUIDs and exactly two message rows while remaining review-pending and absent from the evaluator.
 6. Replaying its client event ID returns the same turn and response without another row.
 7. Reusing that event ID with different input returns `409`.
 8. A synthetic six-digit-ID sentinel produces an excluded turn and zero message rows; the sentinel is absent from all persisted JSON and text fields.
 9. Human `replica`/`wix` conversations are visible for review when they contain a complete clear turn or a clear failed attempt; `benchmark`, `synthetic`, direct API, blocked, and sensitive turns are not.
-10. `python3 scripts/audit_conversation_quality.py` passes without selecting message content.
+10. `python3 scripts/audit_conversation_quality.py` passes without selecting message content and reports zero known automation without a provenance flag or source.
 
 ## Dashboard migrations that come next
 

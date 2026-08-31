@@ -60,13 +60,15 @@ Only a conversation satisfying every condition enters the shared review queue:
 
 Clear failed attempts remain visible so a model or service failure cannot silently remove a human submission from review. Earlier failed attempts may have metadata only because prior releases did not retain their visitor message. New failed attempts retain the privacy-clear visitor question without an invented assistant response.
 
-Privacy-held turns are withheld in full; their presence does not suppress other visible turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards identify the number of turns grouped into each browser conversation, show failed-attempt counts, and refresh periodically from PostgreSQL. Cards and transcript details show the stored date, prompt-policy version, and app version. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
+Privacy-held turns are withheld in full; their presence does not suppress other visible turns in the same conversation. Automated `benchmark`, legacy `synthetic`, and direct API conversations remain review-pending and cannot satisfy the queue gate. Browser automation on a public `replica` or `wix` surface remains in the shared queue with an **Automated** badge and bounded source label. Every authenticated evaluator receives the same placements, buckets, conversation notes, and message annotations. Cards identify the number of turns grouped into each browser conversation, show failed-attempt counts, and refresh periodically from PostgreSQL. Cards and transcript details show the stored date, prompt-policy version, app version, and automation provenance when present. Annotation rows reference canonical message IDs and never copy transcript text. Mutations retain evaluator attribution in the append-only audit log. All evaluation records cascade away when the conversation expires.
 
-Automated suites and capture verification use `client_surface='benchmark'`.
-Those rows remain available to aggregate audits but never satisfy the shared
-review-queue gate. Use `scripts/exclude_evaluation_runs.py` to reclassify only
-artifact-backed historical runs; it is dry-run by default, skips records with
-review history, and does not delete transcripts.
+Automated suites and capture verification use `client_surface='benchmark'`
+and an explicit `automation_source`. Those rows remain available to aggregate
+audits but never satisfy the shared review-queue gate. Public browser harnesses
+set `automation_source='browser-webdriver'`. Use
+`scripts/reconcile_automation_provenance.py` to flag only conversation IDs in
+versioned evaluation artifacts; it is dry-run by default and never reads or
+deletes transcript content.
 
 The shared review taxonomy includes **Success**, **Needs work**, the virtual **Not yet reviewed** area, and custom buckets. Migration `008_remove_handoff_bucket.sql` returns old Handoff placements to Not yet reviewed and archives the old bucket rows without deleting their history.
 
@@ -89,11 +91,11 @@ Prompts never edits the compiled system prompt and has no activation or publishi
 
 1. Run `./run.sh test` and both snapshot checks.
 2. Apply migrations through Railway's pre-deploy command.
-3. Confirm `/health` reports evaluation schema `009_human_review_capture`, four total slots, and the expected claimed/unassigned slot counts.
+3. Confirm `/health` reports evaluation schema `010_automation_provenance`, four total slots, and the expected claimed/unassigned slot counts.
 4. Confirm `/server.py`, `/.env.example`, `/migrations/003_evaluator_identity.sql`, `/migrations/009_human_review_capture.sql`, and `/scripts/issue_evaluator_invite.py` return `404`.
 5. Confirm `/evaluation` shows the login surface and no reviewer data without a session.
 6. Claim the admin account, create one editor link from **Account**, and verify first-use registration signs the editor in without exposing the token in an HTTP request path or server log.
 7. Save a bucket placement, note, and annotation as one evaluator; sign in as another evaluator and confirm the same state is visible. Make a second change and confirm the first evaluator sees it after reload. Confirm both users see the same newest-first human transcript set, timestamps, prompt versions, and app versions.
 8. Create, revise, and comment on one Prompts proposal as an editor; confirm another evaluator sees it, confirm an editor cannot change its status, and confirm the administrator can mark it ready without activating it.
 9. Confirm the same invitation cannot be claimed twice, then leave the remaining invitation fields null until Fortune names the recipients.
-10. Submit one automated smoke with `client_surface='benchmark'` and confirm it is persisted for aggregate auditing but absent from every evaluator account.
+10. Submit one automated smoke with `client_surface='benchmark'` and `automation_source='capture-verification'`; confirm it is persisted for aggregate auditing but absent from every evaluator account. Submit one browser-automation smoke on `replica` and confirm every evaluator sees the same **Automated** label.

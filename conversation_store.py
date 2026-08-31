@@ -13,6 +13,7 @@ import hmac
 import json
 import os
 import pathlib
+import re
 import threading
 import time
 import uuid
@@ -24,7 +25,7 @@ from prompt_policy import PROMPT_POLICY_VERSION
 
 CAPTURE_MODES = {"none", "metadata", "transcript"}
 HUMAN_REVIEW_SURFACES = frozenset({"replica", "wix"})
-SCHEMA_VERSION = "009_human_review_capture"
+SCHEMA_VERSION = "010_automation_provenance"
 
 
 class CaptureUnavailable(RuntimeError):
@@ -68,6 +69,25 @@ def sanitized_surface(value: Any) -> str:
     return surface if surface in allowed else "unknown"
 
 
+def sanitized_automation_source(value: Any) -> str:
+    """Retain only a short, non-identifying automation label."""
+
+    source = re.sub(r"[^a-z0-9._-]+", "-", str(value or "").strip().lower())
+    return source.strip("-.")[:80]
+
+
+def automation_provenance(client_surface: Any, automation_source: Any = None) -> tuple[bool, str]:
+    """Mark known automation without inferring identity from transcript text."""
+
+    surface = sanitized_surface(client_surface)
+    source = sanitized_automation_source(automation_source)
+    if surface in {"benchmark", "synthetic"}:
+        return True, source or surface
+    if source:
+        return True, source
+    return False, ""
+
+
 def fingerprint_request(
     secret: str,
     *,
@@ -75,6 +95,7 @@ def fingerprint_request(
     page_context: dict | None,
     client_surface: Any,
     history_context: list[dict] | None,
+    automation_source: Any = None,
 ) -> str:
     """Bind idempotency to every input that can affect the model response."""
 
@@ -85,6 +106,7 @@ def fingerprint_request(
                 "message": str(question),
                 "page_context": page_context or {},
                 "client_surface": sanitized_surface(client_surface),
+                "automation_source": sanitized_automation_source(automation_source),
                 "history": history_context or [],
             },
             ensure_ascii=False,
@@ -105,6 +127,8 @@ class TurnReservation:
     lease_id: str
     capture_mode: str
     client_surface: str = "unknown"
+    is_automated: bool = False
+    automation_source: str = ""
     persisted: bool = False
     duplicate_response: dict | None = None
     in_progress: bool = False
@@ -115,7 +139,9 @@ def new_reservation(
     client_event_id: Any = None,
     mode: str = "none",
     client_surface: Any = None,
+    automation_source: Any = None,
 ) -> TurnReservation:
+    is_automated, source = automation_provenance(client_surface, automation_source)
     return TurnReservation(
         conversation_id=canonical_uuid(conversation_id),
         turn_id=canonical_uuid(),
@@ -125,6 +151,8 @@ def new_reservation(
         lease_id=canonical_uuid(),
         capture_mode=capture_mode(mode),
         client_surface=sanitized_surface(client_surface),
+        is_automated=is_automated,
+        automation_source=source,
     )
 
 
@@ -360,6 +388,7 @@ class ConversationRecorder:
         client_event_id: Any = None,
         page_context: dict | None = None,
         client_surface: Any = None,
+        automation_source: Any = None,
         history_context: list[dict] | None = None,
         interaction_context: dict | None = None,
     ) -> TurnReservation:
@@ -372,6 +401,7 @@ class ConversationRecorder:
             client_event_id,
             self.mode,
             client_surface,
+            automation_source,
         )
         if not self.required:
             return reservation
@@ -384,6 +414,7 @@ class ConversationRecorder:
             page_context=page_context,
             client_surface=client_surface,
             history_context=history_context,
+            automation_source=automation_source,
         )
         try:
             with self._pool.connection() as connection:
@@ -393,12 +424,24 @@ class ConversationRecorder:
                             """
                             INSERT INTO conversations (
                                 id, capture_mode, client_surface, page_context,
-                                app_version, expires_at
+                                app_version, is_automated, automation_source,
+                                expires_at
                             ) VALUES (
-                                %s, %s, %s, %s, %s,
+                                %s, %s, %s, %s, %s, %s, %s,
                                 NOW() + (%s * INTERVAL '1 day')
                             )
-                            ON CONFLICT (id) DO UPDATE SET last_seen_at = NOW()
+                            ON CONFLICT (id) DO UPDATE SET
+                                last_seen_at = NOW(),
+                                is_automated = conversations.is_automated
+                                    OR EXCLUDED.is_automated,
+                                automation_source = CASE
+                                    WHEN EXCLUDED.is_automated
+                                      THEN COALESCE(
+                                        NULLIF(EXCLUDED.automation_source, ''),
+                                        conversations.automation_source
+                                      )
+                                    ELSE conversations.automation_source
+                                END
                             """,
                             (
                                 reservation.conversation_id,
@@ -406,6 +449,8 @@ class ConversationRecorder:
                                 sanitized_surface(client_surface),
                                 self._jsonb(page_context or {}),
                                 self.app_version,
+                                reservation.is_automated,
+                                reservation.automation_source or None,
                                 self.retention_days,
                             ),
                         )
@@ -472,7 +517,8 @@ class ConversationRecorder:
                             SELECT t.id, t.conversation_id, t.user_message_id,
                                    t.assistant_message_id, t.request_fingerprint,
                                    t.lease_id, t.capture_mode, t.status, t.response_json,
-                                   c.client_surface,
+                                   c.client_surface, c.is_automated,
+                                   c.automation_source,
                                    t.created_at < NOW() - (%s * INTERVAL '1 second')
                                        AS lease_expired
                             FROM conversation_turns t
@@ -528,6 +574,8 @@ class ConversationRecorder:
                                     lease_id=reservation.lease_id,
                                     capture_mode=str(existing["capture_mode"]),
                                     client_surface=str(existing["client_surface"]),
+                                    is_automated=bool(existing["is_automated"]),
+                                    automation_source=str(existing["automation_source"] or ""),
                                     persisted=True,
                                 )
                         if existing["status"] == "failed":
@@ -540,6 +588,8 @@ class ConversationRecorder:
                                 lease_id=str(existing["lease_id"]),
                                 capture_mode=str(existing["capture_mode"]),
                                 client_surface=str(existing["client_surface"]),
+                                is_automated=bool(existing["is_automated"]),
+                                automation_source=str(existing["automation_source"] or ""),
                                 persisted=True,
                                 duplicate_response={
                                     "error": "This turn already failed. Send it again as a new turn."
@@ -554,6 +604,8 @@ class ConversationRecorder:
                             lease_id=str(existing["lease_id"]),
                             capture_mode=str(existing["capture_mode"]),
                             client_surface=str(existing["client_surface"]),
+                            is_automated=bool(existing["is_automated"]),
+                            automation_source=str(existing["automation_source"] or ""),
                             persisted=True,
                             duplicate_response=existing["response_json"],
                             in_progress=existing["status"] != "complete",

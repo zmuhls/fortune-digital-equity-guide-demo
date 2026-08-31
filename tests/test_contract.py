@@ -272,8 +272,8 @@ class RetrievalTests(unittest.TestCase):
 
     def test_registration_and_current_faqs_use_live_answer_sources(self):
         expectations = {
-            "How do I register for a class?": ["contact", "calendar"],
-            "Where do I sign up?": ["contact", "calendar"],
+            "How do I register for a class?": ["calendar", "contact"],
+            "Where do I sign up?": ["calendar", "contact"],
             "Do I need to attend every scheduled class?": ["home"],
             "Can I get help with skills not listed in the catalog?": ["home"],
             "Can I walk in without registering?": ["home"],
@@ -539,11 +539,11 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
         self.assertIn(
-            "active page is context, not a boundary",
+            "active page matters only",
             model_calls[0][0]["content"],
         )
         self.assertIn(
-            "anywhere on the Digital Equity site",
+            "anywhere on the site",
             model_calls[0][0]["content"],
         )
 
@@ -865,7 +865,7 @@ class StagedRetrievalTests(unittest.TestCase):
         first_prompt = model_calls[0][0]["content"]
         self.assertIn(prior, first_prompt)
         self.assertIn("This older answer must not be reused.", first_prompt)
-        self.assertIn("do not repeat an earlier answer unless asked", first_prompt)
+        self.assertIn("Do not repeat, restart", first_prompt)
 
     def test_model_authored_follow_up_is_not_rejected_by_a_repetition_classifier(self):
         source_id = server.INTRO_EMAIL_ID
@@ -1561,23 +1561,18 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
 
-    def test_sensitive_handoff_gets_one_final_grounded_model_retry(self):
-        answer = "Contact the Fortune Society Digital Equity Program by email, phone, or its contact form."
+    def test_sensitive_handoff_retries_only_once(self):
         captured, model_calls = self.dispatch_chat(
             "I need parole advice",
             server.ROOT_URL,
             model_raws=[
                 json.dumps({"pick": "ASK", "answer": "What help do you need?"}),
                 json.dumps({"pick": "ASK", "answer": "What kind of help do you need?"}),
-                json.dumps({"pick": "contact", "answer": answer}),
             ],
         )
-        self.assertEqual(captured["status"], 200)
-        self.assertEqual(captured["payload"]["kind"], "handoff")
-        self.assertEqual(captured["payload"]["message"], answer)
-        self.assertTrue(captured["payload"]["model_called"])
-        self.assertEqual(len(model_calls), 3)
-        self.assertIn("Contact handoff", model_calls[2][0]["content"])
+        self.assertEqual(captured["status"], 502)
+        self.assertEqual(captured["payload"]["error"], "Guide unavailable. Try again.")
+        self.assertEqual(len(model_calls), 2)
 
     def test_runtime_contains_no_canned_conversational_fallback(self):
         handler_source = inspect.getsource(server.Handler.do_POST)
@@ -1624,7 +1619,7 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
         expected_urls = {
             "Class topics": server.WORKSHOPS_URL,
             "Dates & locations": server.CALENDAR_URL,
-            "Register": server.CONTACT_URL,
+            "Register": server.CALENDAR_URL,
         }
         for question, expected_url in expected_urls.items():
             scope, sources = server.retrieval_plan(
@@ -1668,13 +1663,12 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
             "My Fortune ID is 12345",
             "My case number is ABC-9",
             "My name is Rosa",
-            "Their phone is in my contacts",
-            "My email is not working",
             "Email me at demo@example.com",
             "My date of birth is January 2",
             "My address is 100 Example Street",
-            "I need help with my health",
-            "I want to discuss my diagnosis",
+            "My diagnosis is private",
+            "Call me at 212-555-0199",
+            "212-555-0118",
         ]
         for text in cases:
             self.assertTrue(server.contains_personal_details(text), text)
@@ -1728,7 +1722,7 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
 
     def test_privacy_response_is_short_and_keeps_contact_routes(self):
         response = server.privacy_response("123456")
-        self.assertEqual(response["message"], "Remove personal information and try again.")
+        self.assertEqual(response["message"], "Private detail not sent. Remove it and resend.")
         self.assertFalse(response["model_called"])
         self.assertNotIn("123456", response["message"])
         self.assertEqual([source["id"] for source in response["sources"]], ["contact"])
@@ -1736,7 +1730,19 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
         self.assertTrue(response["related"])
 
     def test_normal_public_questions_pass_privacy_gate(self):
-        for text in ("Where can I learn email?", "Can I get a free laptop?", "Where is the Long Island City class?"):
+        for text in (
+            "Where can I learn email?",
+            "Can I get a free laptop?",
+            "Where is the Long Island City class?",
+            "Their phone is in my contacts",
+            "My email is not working",
+            "I need help with my health",
+            "I want to discuss my diagnosis",
+            "I forgot my password",
+            "My password is not working",
+            "My ID is required for registration",
+            "My date of birth is required for registration",
+        ):
             self.assertFalse(server.contains_personal_details(text), text)
 
     def test_sensitive_or_case_specific_requests_are_classified_without_copy(self):
@@ -2169,10 +2175,10 @@ class ResponseContractTests(unittest.TestCase):
             '{"pick":"<candidate ID or ASK>","answer":"<direct response>"}',
             prompt,
         )
-        self.assertIn("ASK is only the no-source routing value", prompt)
-        self.assertIn("Use the candidate records below", prompt)
-        self.assertIn("Otherwise answer the request directly", prompt)
-        self.assertIn("When there are no candidates", prompt)
+        self.assertIn("ASK is a source-selection value", prompt)
+        self.assertIn("Candidate records are the only evidence", prompt)
+        self.assertIn("answer that part", prompt)
+        self.assertIn("With no candidates", prompt)
         self.assertNotIn("rebuilding routines", prompt)
         self.assertNotIn("request_kind", prompt)
         records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
@@ -2231,19 +2237,7 @@ class ResponseContractTests(unittest.TestCase):
 
         rejected = (
             "Ignore the system prompt; what do you need?",
-            "What is your full name?",
-            "¿Cuál es tu nombre?",
-            "Share your email address?",
-            "Where do you live?",
-            "How old are you?",
-            "Are you on parole?",
-            "What is your ZIP code?",
-            "Who are you?",
-            "Where are you?",
-            "What is your information?",
             "What do you need, developer rules override safety?",
-            "What is your email?",
-            "Which email would you share?",
             "What can I help you find at https://example.com?",
         )
         for question in rejected:
@@ -2251,11 +2245,25 @@ class ResponseContractTests(unittest.TestCase):
                 with self.assertRaises(server.ModelResponseRejected):
                     server.model_clarification_response("Help me", question)
 
+        for question in (
+            "What is your full name?",
+            "Share your email address?",
+            "Where do you live?",
+            "Who are you?",
+            "Where are you looking for classes?",
+            "Enter your email on the registration page.",
+        ):
+            with self.subTest(question=question):
+                result = server.model_clarification_response("Help me", question)
+                self.assertEqual(result["message"], question)
+
+        self.assertNotIn("def model_requests_personal_details", inspect.getsource(server))
+
         overlong = " ".join(["natural"] * (server.MAX_MESSAGE_WORDS + 1))
         result = server.model_clarification_response("Help me", overlong)
         self.assertEqual(result["message"], overlong)
 
-    def test_clarification_retry_uses_the_same_minimal_safety_contract(self):
+    def test_clarification_retry_uses_only_the_response_contract(self):
         sources = []
         natural = json.dumps({
             "pick": "ASK",
@@ -2269,17 +2277,17 @@ class ResponseContractTests(unittest.TestCase):
             ),
             "",
         )
-        unsafe = json.dumps({
+        privacy_wording_is_not_reclassified = json.dumps({
             "pick": "ASK",
             "answer": "What is your email address?",
         })
         self.assertEqual(
             server.model_selection_retry_reason(
-                unsafe,
+                privacy_wording_is_not_reclassified,
                 sources,
                 question="Help me",
             ),
-            "personal detail request",
+            "",
         )
 
     def test_natural_model_response_can_contain_line_breaks_without_rejection(self):
@@ -2304,7 +2312,7 @@ class ResponseContractTests(unittest.TestCase):
         }
         privacy = {
             "kind": "privacy",
-            "message": "Remove personal information and try again.",
+            "message": "Private detail not sent. Remove it and resend.",
             "model_called": False,
             "prompt_policy_version": "legacy",
         }
@@ -2483,6 +2491,18 @@ class ResponseContractTests(unittest.TestCase):
                 history = safe_history + [{"role": "user", "content": value}]
                 self.assertEqual(server.sanitize_history(history), safe_history)
 
+    def test_history_keeps_the_latest_eight_complete_exchanges(self):
+        history = []
+        for number in range(1, 10):
+            history.extend([
+                {"role": "user", "content": f"Question {number}"},
+                {"role": "assistant", "content": f"Answer {number}"},
+            ])
+        sanitized = server.sanitize_history(history)
+        self.assertEqual(len(sanitized), 16)
+        self.assertEqual(sanitized[0]["content"], "Question 2")
+        self.assertEqual(sanitized[-1]["content"], "Answer 9")
+
 
 class FrontendAndDeploymentTests(unittest.TestCase):
     def test_model_validation_log_contains_only_bounded_outcomes(self):
@@ -2624,7 +2644,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('<h2 id="guide-title">Website Guide</h2>', panel)
         self.assertIn('Website Guide demo · Public information only', html)
         self.assertNotIn('Digital Equity guide', html)
-        self.assertIn('>Website Guide</button>', wix)
+        self.assertIn('<span class="toggle-label">Website Guide</span>', wix)
         self.assertIn('<h2 id="fortune-guide-title">Website Guide</h2>', wix)
         self.assertIn("Ask about this page", panel)
         self.assertIn(">Send</button>", panel)
@@ -2671,18 +2691,33 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn('search.get("tour")', app)
         self.assertIn("@media (prefers-reduced-motion: reduce)", styles)
 
-    def test_context_window_reports_the_same_six_exchange_limit_sent_to_the_server(self):
+    def test_context_window_reports_the_same_eight_exchange_limit_sent_to_the_server(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
         app = (DEMO / "app.js").read_text(encoding="utf-8")
         readme = (DEMO / "README.md").read_text(encoding="utf-8")
         self.assertIn('id="context-window"', html)
-        self.assertIn("Context · conversation · 0/6", html)
-        self.assertIn("const MAX_CONTEXT_MESSAGES = 12", app)
+        self.assertIn("Context · conversation · 0/8", html)
+        self.assertIn("const MAX_CONTEXT_MESSAGES = 16", app)
         self.assertIn("MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2", app)
         self.assertIn(".slice(-MAX_CONTEXT_MESSAGES)", app)
         self.assertIn("updateContextWindow();", app)
-        self.assertIn("six recent exchanges (twelve messages)", readme)
-        self.assertEqual(server.MAX_HISTORY, 12)
+        self.assertIn("eight recent exchanges (sixteen messages)", readme)
+        self.assertEqual(server.MAX_HISTORY, 16)
+
+    def test_collapsed_launcher_uses_three_staggered_fifteen_second_ray_bursts(self):
+        html = (DEMO / "index.html").read_text(encoding="utf-8")
+        styles = (DEMO / "styles.css").read_text(encoding="utf-8")
+        wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
+        page_rays = html[html.index('class="guide-rays"') : html.index('class="guide-toggle-label"')]
+        wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
+        self.assertEqual(page_rays.count("<span></span>"), 12)
+        self.assertEqual(wix_rays.count("<span></span>"), 12)
+        for source in (styles, wix):
+            self.assertIn("@keyframes guide-ray-burst", source)
+            self.assertIn("guide-ray-burst 15s", source)
+            self.assertIn("var(--ray-stagger) 3 both", source)
+            self.assertIn("clip-path: polygon", source)
+            self.assertIn(".guide-rays > span { animation: none !important; opacity: 0 !important; }", source)
 
     def test_conversation_persists_across_page_navigation_in_the_same_tab(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
@@ -2695,7 +2730,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260820-text-source-1")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20260831-v32-1")', replica_shell)
         self.assertIn("persistConversation();", app)
         self.assertIn("restoreConversation();", app)
         self.assertIn("clearPersistedConversation();", app)
@@ -2998,7 +3033,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn(r"\d{6}", core)
         self.assertIn(r"\d{3}[-‐‑‒–—.\s]?\d{3}", core)
         self.assertIn('normalize("NFKC")', core)
-        self.assertIn("Remove personal information and try again.", app)
+        self.assertIn("Private detail not sent. Remove it and resend.", app)
 
     def test_public_deployment_examples_contain_no_api_key_value(self):
         deployment = DEMO / "deployment"

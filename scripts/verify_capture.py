@@ -53,6 +53,7 @@ def main() -> int:
     first_payload = {
         "message": "What does the Digital Equity Program offer?",
         "client_surface": "benchmark",
+        "automation_source": "capture-verification",
         "client_event_id": event_id,
         "page_context": {
             "url": "https://www.fortunedigitalequity.org/",

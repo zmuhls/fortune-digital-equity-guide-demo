@@ -62,10 +62,10 @@ class EvaluationSchemaTests(unittest.TestCase):
         list_source = inspect.getsource(evaluation_store.EvaluationStore.list_buckets)
         self.assertIn("b.archived_at IS NULL", list_source)
 
-    def test_evaluation_schema_version_tracks_the_human_review_migration(self):
+    def test_evaluation_schema_version_tracks_automation_provenance(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "009_human_review_capture",
+            "010_automation_provenance",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 
@@ -93,6 +93,16 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertIn("c.client_surface IN ('replica', 'wix')", source)
             self.assertNotIn("benchmark", source)
             self.assertNotIn("synthetic", source)
+        self.assertIn("c.is_automated", eligible_source)
+        self.assertIn("c.automation_source", eligible_source)
+
+    def test_automated_review_surface_conversations_are_visibly_labeled(self):
+        javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
+        css = (DEMO / "evaluation.css").read_text(encoding="utf-8")
+        self.assertIn('conversation.is_automated ? "Automated"', javascript)
+        self.assertIn("automation_source", javascript)
+        self.assertIn("automation-badge", javascript)
+        self.assertIn(".automation-badge", css)
 
     def test_failed_only_reports_are_hidden_but_mixed_failures_remain_visible(self):
         predicate = evaluation_store.REVIEWABLE_TURN_PREDICATE
@@ -451,7 +461,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260831-conversation-grounding-1", html)
+        self.assertIn("20260831-prompt-provenance-1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts"', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -499,17 +509,17 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260831-conversation-grounding-1", html)
-        self.assertIn('version: "2026-08-31-v31"', javascript)
+        self.assertIn("20260831-prompt-provenance-1", html)
+        self.assertIn('version: "2026-08-31-v32"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript
         )
         self.assertIn(
-            'current_variant: "evidence_first_clarification"',
+            'current_variant: "evidence_exhausted_only"',
             javascript,
         )
-        self.assertIn('current_variant: "conversation_continuity"', javascript)
-        self.assertIn('current_variant: "current_sitewide_evidence"', javascript)
+        self.assertIn('current_variant: "advance_or_name_limit"', javascript)
+        self.assertIn('current_variant: "freshest_specific_sitewide"', javascript)
         self.assertIn("Production changes still require code review", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)

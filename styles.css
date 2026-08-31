@@ -269,8 +269,10 @@ a:hover { text-decoration-thickness: 2px; }
   color: var(--guide-ink);
   font-family: "Avenir Next", Avenir, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+.guide:has(.guide-toggle:not([hidden])) { right: 34px; bottom: 30px; }
 .guide :focus-visible { outline: 3px solid var(--guide-ink); outline-offset: 3px; }
 .guide-toggle {
+  position: relative;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -284,6 +286,44 @@ a:hover { text-decoration-thickness: 2px; }
   font-size: 13px;
   font-weight: 700;
   transition: background .14s ease, color .14s ease;
+}
+.guide-toggle-label { position: relative; z-index: 1; }
+.guide-rays {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--guide-ink);
+}
+.guide-rays > span {
+  --ray-rotation: 0deg;
+  --ray-stagger: 0s;
+  position: absolute;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  clip-path: polygon(0 38%, 100% 0, 94% 100%, 3% 68%);
+  opacity: 0;
+  transform: rotate(var(--ray-rotation)) scaleX(.05);
+  animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 3 both;
+}
+.guide-rays > span:nth-child(1) { top: 18%; left: -24px; width: 16px; --ray-rotation: 8deg; --ray-stagger: 0s; }
+.guide-rays > span:nth-child(2) { top: 51%; left: -28px; width: 20px; --ray-rotation: -4deg; --ray-stagger: .16s; }
+.guide-rays > span:nth-child(3) { top: 82%; left: -22px; width: 14px; --ray-rotation: -13deg; --ray-stagger: .34s; }
+.guide-rays > span:nth-child(4) { top: 18%; right: -23px; width: 15px; --ray-rotation: -9deg; --ray-stagger: .09s; }
+.guide-rays > span:nth-child(5) { top: 50%; right: -29px; width: 21px; --ray-rotation: 5deg; --ray-stagger: .27s; }
+.guide-rays > span:nth-child(6) { top: 81%; right: -22px; width: 14px; --ray-rotation: 14deg; --ray-stagger: .46s; }
+.guide-rays > span:nth-child(7) { top: -17px; left: 12%; width: 15px; --ray-rotation: 77deg; --ray-stagger: .12s; }
+.guide-rays > span:nth-child(8) { top: -21px; left: 43%; width: 19px; --ray-rotation: 92deg; --ray-stagger: .39s; }
+.guide-rays > span:nth-child(9) { top: -16px; left: 76%; width: 13px; --ray-rotation: 104deg; --ray-stagger: .21s; }
+.guide-rays > span:nth-child(10) { bottom: -17px; left: 15%; width: 14px; --ray-rotation: 103deg; --ray-stagger: .31s; }
+.guide-rays > span:nth-child(11) { bottom: -21px; left: 48%; width: 20px; --ray-rotation: 87deg; --ray-stagger: .06s; }
+.guide-rays > span:nth-child(12) { right: 9%; bottom: -16px; width: 15px; --ray-rotation: 76deg; --ray-stagger: .43s; }
+@keyframes guide-ray-burst {
+  0%, 11%, 100% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(.05); }
+  1.5% { opacity: .5; transform: rotate(var(--ray-rotation)) scaleX(.3); }
+  4% { opacity: .92; transform: rotate(var(--ray-rotation)) scaleX(1); }
+  7% { opacity: .62; transform: rotate(var(--ray-rotation)) scaleX(.9); }
+  10% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(1.08); }
 }
 .guide-toggle:hover {
   color: var(--guide-ink);
@@ -681,6 +721,7 @@ a:hover { text-decoration-thickness: 2px; }
     animation-iteration-count: 1 !important;
   }
   .guide-panel { animation: none; }
+  .guide-rays > span { animation: none !important; opacity: 0 !important; }
 }
 
 @media (forced-colors: active) {

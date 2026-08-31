@@ -101,6 +101,20 @@ class ConversationStoreTests(unittest.TestCase):
             frozenset({"replica", "wix"}),
         )
         self.assertEqual(conversation_store.sanitized_surface("not-allowed"), "unknown")
+        self.assertEqual(
+            conversation_store.automation_provenance("benchmark"),
+            (True, "benchmark"),
+        )
+        self.assertEqual(
+            conversation_store.automation_provenance(
+                "replica", "browser webdriver"
+            ),
+            (True, "browser-webdriver"),
+        )
+        self.assertEqual(
+            conversation_store.automation_provenance("wix"),
+            (False, ""),
+        )
 
     def test_capture_is_disabled_by_default_and_needs_no_database(self):
         recorder = conversation_store.ConversationRecorder(
@@ -189,6 +203,12 @@ class ConversationStoreTests(unittest.TestCase):
         )
         self.assertEqual(len(first), 64)
         self.assertNotEqual(first, changed)
+        automated = conversation_store.fingerprint_request(
+            **base,
+            history_context=[{"role": "user", "content": "I need a class."}],
+            automation_source="fixed-suite",
+        )
+        self.assertNotEqual(first, automated)
 
     def test_duplicate_turn_query_qualifies_columns_shared_with_conversations(self):
         source = (DEMO / "conversation_store.py").read_text(encoding="utf-8")
@@ -385,7 +405,14 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertIn("SET review_state = 'pending'", human_review)
         self.assertIn("SET review_state = 'ready'", human_review)
         self.assertNotIn("DELETE FROM conversation", human_review)
-        self.assertEqual(conversation_store.SCHEMA_VERSION, "009_human_review_capture")
+        automation = (
+            DEMO / "migrations" / "010_automation_provenance.sql"
+        ).read_text(encoding="utf-8")
+        self.assertIn("ADD COLUMN is_automated BOOLEAN", automation)
+        self.assertIn("automation_source", automation)
+        self.assertIn("client_surface IN ('benchmark', 'synthetic')", automation)
+        self.assertNotIn("conversation_messages", automation)
+        self.assertEqual(conversation_store.SCHEMA_VERSION, "010_automation_provenance")
 
 
 if __name__ == "__main__":

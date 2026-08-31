@@ -381,6 +381,7 @@ def run(args: argparse.Namespace) -> int:
                 "history": list(history),
                 "client_event_id": event_id,
                 "client_surface": "benchmark",
+                "automation_source": "multiturn-suite",
             }
             if conversation_id:
                 payload["conversation_id"] = conversation_id

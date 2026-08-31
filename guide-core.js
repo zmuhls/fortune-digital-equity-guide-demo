@@ -242,9 +242,14 @@
       /(?<!\d)\d{3}[-‐‑‒–—.\s]?\d{3}(?!\d)/,
       /\b\d{3}[-. ]?\d{2}[-. ]?\d{4}\b/,
       /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
-      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number|name|address|phone|email)\b/i,
-      /\b(?:social security|ssn|date of birth|dob|password|passcode|my health|my diagnosis)\b/i,
-      /\b(?:call me at|my number is|i live at)\b/i,
+      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number)\s*(?:is|=|:|#)\s*(?!(?:not|needed|required|unknown|forgotten)\b)[A-Z0-9][A-Z0-9-]*/i,
+      /\bmy name is\s+(?!needed\b|required\b)[^\s,.;!?]{2,}/i,
+      /\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten)\b)\S+/i,
+      /\b(?:my\s+)?(?:date of birth|dob)\s*(?:is|=|:)\s*(?:\d{1,4}[-/.]\d{1,2}(?:[-/.]\d{1,4})?|(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+\d{2,4})?)/i,
+      /(?<!\d)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3}[\s.-])\d{3}[\s.-]\d{4}(?!\d)/,
+      /\b(?:call|text) me at\s+\+?[0-9][0-9().\s-]{6,}[0-9]|\bmy (?:phone )?number is\s+\+?[0-9][0-9().\s-]{6,}[0-9]/i,
+      /\b(?:my address is|i live at)\s+\d{1,6}\s+\S+/i,
+      /\bmy diagnosis\s*(?:is|=|:)\s*\S+/i,
     ];
     return patterns.some(pattern => pattern.test(normalized));
   }

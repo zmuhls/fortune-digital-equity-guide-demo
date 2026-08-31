@@ -20,7 +20,7 @@ from prompt_policy import (
 )
 
 
-EVALUATION_SCHEMA_VERSION = "009_human_review_capture"
+EVALUATION_SCHEMA_VERSION = "010_automation_provenance"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -1312,6 +1312,8 @@ class EvaluationStore:
                 SELECT c.id,
                        MAX(COALESCE(t.completed_at, t.created_at)) AS last_turn_at,
                        c.client_surface,
+                       c.is_automated,
+                       c.automation_source,
                        COUNT(t.id)::INTEGER AS turn_count,
                        COUNT(t.id) FILTER (WHERE t.status = 'complete')::INTEGER
                          AS complete_turn_count,
@@ -1330,7 +1332,8 @@ class EvaluationStore:
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
                   AND {VISIBLE_HUMAN_TURN_PREDICATE}
-                GROUP BY c.id, c.client_surface
+                GROUP BY c.id, c.client_surface, c.is_automated,
+                         c.automation_source
                 HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0
             )
         """
@@ -1342,6 +1345,7 @@ class EvaluationStore:
                    e.complete_turn_count, e.failed_turn_count,
                    e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
+                   e.is_automated, e.automation_source,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    ce.bucket_id, COALESCE(ce.version, 0) AS evaluation_version
             FROM eligible e
@@ -1364,6 +1368,7 @@ class EvaluationStore:
                    e.complete_turn_count, e.failed_turn_count,
                    e.transcript_version,
                    e.app_version, e.prompt_policy_version, e.client_surface,
+                   e.is_automated, e.automation_source,
                    COALESCE(e.page_context ->> 'title', 'Unknown page') AS page_title,
                    s.id AS bucket_set_id, ce.bucket_id, ce.note,
                    COALESCE(ce.version, 0) AS evaluation_version
