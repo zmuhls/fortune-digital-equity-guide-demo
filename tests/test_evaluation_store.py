@@ -450,7 +450,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('aria-current="page"', javascript)
         self.assertIn('class="pagination-button pagination-next"', javascript)
         self.assertIn(".bucket-pagination", css)
-        self.assertIn("min-height: 44px", css)
+        self.assertIn(".pagination-button {\n  min-width: 32px;\n  min-height: 32px", css)
+        self.assertIn("font-size: 12px", css)
         pagination_handler = javascript.split(
             'board.querySelectorAll(".bucket-pagination [data-page]")', 1
         )[1].split("async function moveConversation", 1)[0]
@@ -497,7 +498,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260901-type-rhythm-1", html)
+        self.assertIn("20260901-pagination-rhythm-1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -563,7 +564,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260901-type-rhythm-1", html)
+        self.assertIn("20260901-pagination-rhythm-1", html)
         self.assertIn('version: "2026-08-31-v33"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript
