@@ -497,7 +497,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260831-compact-review-1", html)
+        self.assertIn("20260901-type-rhythm-1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -506,6 +506,19 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("The request stopped before the Website Guide model ran.", javascript)
         self.assertIn('state.transcriptView.filter === "failed"', javascript)
         self.assertIn('state.transcriptView.order === "newest"', javascript)
+
+    def test_conversation_cards_keep_compact_readable_type_rhythm(self):
+        css = (DEMO / "evaluation.css").read_text(encoding="utf-8")
+
+        self.assertIn('--font-sans: "Source Sans 3 Variable", "Avenir Next"', css)
+        self.assertIn("font-synthesis: none", css)
+        self.assertIn(
+            "grid-template-columns: max-content minmax(128px, 1fr)",
+            css,
+        )
+        self.assertIn(".open-transcript { min-height: 32px", css)
+        self.assertIn(".card-move {", css)
+        self.assertIn("min-height: 32px", css)
 
     def test_conversation_queue_refreshes_when_reviewers_return_to_it(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")
@@ -550,7 +563,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260831-compact-review-1", html)
+        self.assertIn("20260901-type-rhythm-1", html)
         self.assertIn('version: "2026-08-31-v33"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript
