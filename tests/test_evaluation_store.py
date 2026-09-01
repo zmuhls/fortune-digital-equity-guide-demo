@@ -62,6 +62,14 @@ class EvaluationSchemaTests(unittest.TestCase):
         list_source = inspect.getsource(evaluation_store.EvaluationStore.list_buckets)
         self.assertIn("b.archived_at IS NULL", list_source)
 
+    def test_custom_bucket_archiving_preserves_conversations(self):
+        source = inspect.getsource(evaluation_store.EvaluationStore.archive_bucket)
+        self.assertIn("Standard buckets cannot be removed.", source)
+        self.assertIn("SET bucket_id = NULL", source)
+        self.assertIn("'bucket.archive'", source)
+        self.assertIn("moved_to_unreviewed", source)
+        self.assertNotIn("DELETE FROM evaluation_buckets", source)
+
     def test_evaluation_schema_version_tracks_shared_prompt_and_review_history(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
@@ -454,7 +462,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("font-size: 12px", css)
         pagination_handler = javascript.split(
             'board.querySelectorAll(".bucket-pagination [data-page]")', 1
-        )[1].split("async function moveConversation", 1)[0]
+        )[1].split('\n    });\n\n', 1)[0]
         self.assertNotIn("api(", pagination_handler)
         self.assertNotIn("previewSave", pagination_handler)
         store_source = (DEMO / "evaluation_store.py").read_text(encoding="utf-8")
@@ -498,7 +506,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail, true)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260901-pagination-rhythm-1", html)
+        self.assertIn("20260901-bucket-controls-1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -564,7 +572,11 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("<h2>Prompts</h2>", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260901-pagination-rhythm-1", html)
+        self.assertIn("20260901-bucket-controls-1", html)
+        self.assertIn("Describe what changed concisely", html)
+        self.assertIn("data-archive-bucket", javascript)
+        self.assertIn("async function archiveBucket", javascript)
+        self.assertIn("window.confirm", javascript)
         self.assertIn('version: "2026-08-31-v33"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript

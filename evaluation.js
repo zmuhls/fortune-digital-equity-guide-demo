@@ -531,11 +531,17 @@
     board.innerHTML = columns.map(bucket => {
       const items = conversations.filter(item => (item.bucket_id || null) === bucket.id);
       const page = paginatedItems(bucket, items);
+      const removeControl = bucket.id && !bucket.standard_key
+        ? `<button class="bucket-delete" type="button" data-archive-bucket="${escapeHtml(bucket.id)}">Remove</button>`
+        : "";
       return `
         <section class="bucket" data-bucket-id="${escapeHtml(bucket.id || "")}" data-color="${escapeHtml(bucket.color_key || "blue")}" aria-labelledby="bucket-${escapeHtml(bucket.id || "unsorted")}">
           <header class="bucket-header">
             <h2 id="bucket-${escapeHtml(bucket.id || "unsorted")}">${escapeHtml(bucket.label)}</h2>
-            <span class="bucket-count" aria-label="${items.length} conversations">${items.length}</span>
+            <div class="bucket-header-meta">
+              <span class="bucket-count" aria-label="${items.length} conversations">${items.length}</span>
+              ${removeControl}
+            </div>
           </header>
           <div class="bucket-cards">${page.items.map(cardHtml).join("")}</div>
           ${page.pagination}
@@ -936,6 +942,41 @@
         board.querySelector('.bucket-pagination [aria-current="page"]')?.focus();
       });
     });
+
+    board.querySelectorAll("[data-archive-bucket]").forEach(button => {
+      button.addEventListener("click", () => archiveBucket(button.dataset.archiveBucket));
+    });
+  }
+
+  async function archiveBucket(bucketId) {
+    const bucket = state.buckets.find(item => item.id === bucketId);
+    if (!bucket || bucket.standard_key) return;
+    const movedCount = state.conversations.filter(item => item.bucket_id === bucketId).length;
+    const noun = movedCount === 1 ? "conversation" : "conversations";
+    const outcome = movedCount
+      ? `${movedCount} ${noun} will return to Not yet reviewed.`
+      : "No conversations will move.";
+    if (!window.confirm(`Remove “${bucket.label}”? ${outcome}`)) return;
+    try {
+      if (localPreview) {
+        state.conversations = state.conversations.map(item => (
+          item.bucket_id === bucketId ? { ...item, bucket_id: null } : item
+        ));
+        state.buckets = state.buckets.filter(item => item.id !== bucketId);
+        state.unreviewedPage = 1;
+        previewSave();
+        renderBoard();
+      } else {
+        await api(`/api/evaluation/buckets/${encodeURIComponent(bucketId)}/archive`, {
+          method: "POST",
+          body: JSON.stringify({ operation_id: crypto.randomUUID() }),
+        });
+        await loadConversationWorkspace();
+      }
+      moveStatus.textContent = `Removed ${bucket.label}. ${outcome}`;
+    } catch (error) {
+      moveStatus.textContent = `Bucket could not be removed. ${error.message}`;
+    }
   }
 
   async function moveConversation(conversationId, bucketId) {

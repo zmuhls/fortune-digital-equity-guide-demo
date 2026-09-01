@@ -164,13 +164,13 @@ h1, h2, p { margin-top: 0; }
 .form-status.is-error { color: #a22b24; }
 
 .workspace {
-  padding: clamp(28px, 3vw, 42px) clamp(18px, 3vw, 42px) 56px;
+  padding: clamp(20px, 2vw, 28px) clamp(18px, 3vw, 42px) 48px;
 }
 
-.workspace-heading { margin: 0 auto 18px; max-width: 1440px; }
+.workspace-heading { margin: 0 auto 8px; max-width: 1440px; }
 
 .workspace-heading h1 {
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   font-size: clamp(28px, 3vw, 34px);
   font-weight: 600;
   letter-spacing: -.02em;
@@ -185,10 +185,10 @@ h1, h2, p { margin-top: 0; }
 }
 
 .workspace-tabs button {
-  min-height: 44px;
+  min-height: 38px;
   border: 0;
   border-bottom: 3px solid transparent;
-  padding: 8px 14px;
+  padding: 6px 14px;
   color: var(--muted);
   background: transparent;
   cursor: pointer;
@@ -206,8 +206,8 @@ h1, h2, p { margin-top: 0; }
   grid-template-columns: minmax(300px, 1fr) auto auto;
   gap: 12px;
   align-items: center;
-  margin-bottom: 18px;
-  padding: 14px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
   background: var(--white);
   box-shadow: var(--shadow);
@@ -277,7 +277,7 @@ h1, h2, p { margin-top: 0; }
   gap: 20px;
 }
 
-.prompt-lab-heading { margin-bottom: 22px; }
+.prompt-lab-heading { margin: 4px 0 14px; }
 .prompt-lab-heading h2,
 .proposal-heading h3,
 .prompt-proposal h3 { margin-bottom: 6px; }
@@ -465,7 +465,21 @@ h1, h2, p { margin-top: 0; }
 }
 
 .bucket-header h2 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.25; }
+.bucket-header-meta { display: flex; align-items: center; gap: 8px; }
 .bucket-count { color: var(--muted); font-size: 13px; font-weight: 650; }
+.bucket-delete {
+  min-height: 24px;
+  padding: 2px 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.bucket-delete:hover,
+.bucket-delete:focus-visible { color: var(--ink); text-decoration: underline; }
 
 .bucket-cards { padding: 4px 12px 12px; }
 .bucket-cards:empty { display: none; }

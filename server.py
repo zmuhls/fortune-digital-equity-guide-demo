@@ -3838,6 +3838,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 )
                 self._json(201, {"bucket": bucket})
                 return
+            bucket_archive_match = re.fullmatch(
+                r"/api/evaluation/buckets/([0-9a-fA-F-]{36})/archive",
+                path,
+            )
+            if bucket_archive_match:
+                account, _ = self._require_evaluation_account(mutation=True)
+                if not account:
+                    return
+                request = self._read_json()
+                bucket = EVALUATION_STORE.archive_bucket(
+                    account["slot_key"],
+                    bucket_archive_match.group(1),
+                    request.get("operation_id"),
+                )
+                self._json(200, {"bucket": bucket})
+                return
             if path == "/api/evaluation/prompt-proposals":
                 account, _ = self._require_evaluation_account(mutation=True)
                 if not account:

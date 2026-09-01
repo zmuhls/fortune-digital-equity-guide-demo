@@ -25,6 +25,7 @@ class _FakeEvaluationStore:
         self.invited_email = None
         self.prompt_proposals = {}
         self.review_notes = {}
+        self.archived_buckets = []
         self.shared_prompt_draft = {
             "scope_key": "shared",
             "release_number": 1,
@@ -137,6 +138,15 @@ class _FakeEvaluationStore:
 
     def list_buckets(self, _slot):
         return []
+
+    def archive_bucket(self, slot, bucket_id, operation_id):
+        self.archived_buckets.append((slot, bucket_id, operation_id))
+        return {
+            "id": bucket_id,
+            "label": "Temporary review",
+            "moved_to_unreviewed": 2,
+            "archived_at": "2026-09-01T00:45:00Z",
+        }
 
     def list_conversations(self, _slot, _limit):
         return []
@@ -496,6 +506,36 @@ class EvaluationApiTests(unittest.TestCase):
             headers,
         )
         self.assertEqual(status, 403)
+
+    def test_custom_bucket_removal_requires_csrf_and_returns_placements_to_queue(self):
+        store = server.EVALUATION_STORE
+        bucket_id = "11111111-1111-4111-8111-111111111111"
+        operation_id = "22222222-2222-4222-8222-222222222222"
+        path = f"/api/evaluation/buckets/{bucket_id}/archive"
+        status, _, _ = self.request(
+            "POST",
+            path,
+            {"operation_id": operation_id},
+            {
+                **self.same_origin_headers(),
+                "Cookie": "__Host-fs_eval=session-token",
+            },
+        )
+        self.assertEqual(status, 403)
+        status, _, body = self.request(
+            "POST",
+            path,
+            {"operation_id": operation_id},
+            {
+                **self.same_origin_headers(),
+                "Cookie": "__Host-fs_eval=session-token",
+                "X-CSRF-Token": "csrf-token",
+            },
+        )
+        self.assertEqual(status, 200)
+        archived = json.loads(body)["bucket"]
+        self.assertEqual(archived["moved_to_unreviewed"], 2)
+        self.assertEqual(store.archived_buckets[-1], ("editor-1", bucket_id, operation_id))
 
         status, _, _ = self.request(
             "GET",

@@ -1524,6 +1524,84 @@ class EvaluationStore:
             connection.commit()
         return _json_value(bucket)
 
+    def archive_bucket(
+        self,
+        account_slot: str,
+        bucket_value: Any,
+        operation_value: Any,
+    ) -> dict:
+        """Archive one custom bucket while preserving every review record."""
+
+        bucket_id = _uuid(bucket_value, "bucket_id")
+        operation_id = _uuid(operation_value, "operation_id")
+        with self._pool.connection() as connection:
+            with connection.cursor(row_factory=self._dict_row) as cursor:
+                set_id = self._bucket_set_id(cursor, account_slot)
+                cursor.execute(
+                    """
+                    SELECT id, standard_key, label, archived_at
+                    FROM evaluation_buckets
+                    WHERE id = %s AND bucket_set_id = %s
+                    FOR UPDATE
+                    """,
+                    (bucket_id, set_id),
+                )
+                bucket = cursor.fetchone()
+                if not bucket or bucket["archived_at"] is not None:
+                    raise EvaluationValidation("That bucket is not available.")
+                if bucket["standard_key"] is not None:
+                    raise EvaluationValidation("Standard buckets cannot be removed.")
+                cursor.execute(
+                    "SELECT metadata FROM evaluation_audit_events WHERE operation_id = %s",
+                    (operation_id,),
+                )
+                prior_event = cursor.fetchone()
+                if prior_event:
+                    metadata = prior_event["metadata"] or {}
+                    return _json_value({
+                        "id": bucket_id,
+                        "label": bucket["label"],
+                        "moved_to_unreviewed": int(metadata.get("moved_to_unreviewed", 0)),
+                    })
+                cursor.execute(
+                    """
+                    UPDATE conversation_evaluations
+                    SET bucket_id = NULL,
+                        version = version + 1,
+                        updated_by = %s,
+                        updated_at = NOW()
+                    WHERE bucket_set_id = %s AND bucket_id = %s
+                    """,
+                    (account_slot, set_id, bucket_id),
+                )
+                moved_count = cursor.rowcount
+                cursor.execute(
+                    """
+                    UPDATE evaluation_buckets
+                    SET archived_at = NOW(), version = version + 1, updated_at = NOW()
+                    WHERE id = %s AND bucket_set_id = %s
+                    RETURNING id, label, archived_at
+                    """,
+                    (bucket_id, set_id),
+                )
+                archived = dict(cursor.fetchone())
+                metadata = {"moved_to_unreviewed": moved_count}
+                cursor.execute(
+                    """
+                    INSERT INTO evaluation_audit_events (
+                        id, operation_id, actor_slot, action,
+                        bucket_set_id, bucket_id, metadata
+                    ) VALUES (%s, %s, %s, 'bucket.archive', %s, %s, %s)
+                    """,
+                    (
+                        str(uuid.uuid4()), operation_id, account_slot,
+                        set_id, bucket_id, self._jsonb(metadata),
+                    ),
+                )
+            connection.commit()
+        archived["moved_to_unreviewed"] = moved_count
+        return _json_value(archived)
+
     @staticmethod
     def _eligible_cte() -> str:
         return f"""
