@@ -10,7 +10,8 @@
 - [x] Update the live Prompts compiler and version artifacts to v1.34 without overwriting the team's shared draft.
 - [x] Pass 385 Python tests, 53 JavaScript checks, and browser draft-recovery checks.
 - [x] Complete 18 real-model test turns: eight-turn Coursera and Excel episodes plus calendar requests; all returned 200 without repair generations.
-- [ ] Verify the deployed commit, Prompts version, shared board and retained data against production.
+- [x] Verify the deployed commit, Prompts version, shared board and retained data against production: 24 conversations / 86 turns shared across three claimed accounts; team draft unchanged.
+- [ ] Reduce provider latency further: initial production single-generation run completed 12/12 turns but had a 17.1-second median and 64.7-second full-calendar response. GLM requires reasoning; use its supported low setting, never an unadvertised effort or a repair loop.
 - [ ] Continue evaluating repetition and unsupported promises about what staff will do after contact; successful HTTP responses are not proof of perfect grounding.
 
 ## Shared prompt and nightly review — 2026-08-31

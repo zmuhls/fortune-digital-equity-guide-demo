@@ -76,6 +76,7 @@ class RevisionSweepTests(unittest.TestCase):
         self.assertEqual(call.call_count, 1)
         payload = json.loads(call.call_args.args[0].data)
         self.assertEqual(payload["model"], "glm-5.3-flash")
+        self.assertEqual(payload["reasoning"]["effort"], "low")
         self.assertFalse(payload["provider"]["allow_fallbacks"])
         enum = payload["response_format"]["json_schema"]["schema"]["properties"]["pick"]["enum"]
         self.assertEqual(enum, ["ASK", "page-opportunities-34b5847f"])

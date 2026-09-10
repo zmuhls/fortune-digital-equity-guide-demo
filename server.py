@@ -430,7 +430,7 @@ def cail_completion(messages):
     payload = {
         "model": CAIL_MODEL, "messages": messages, "stream": False,
         "temperature": 0, "max_tokens": max(4096, MODEL_NUM_PREDICT),
-        "reasoning": {"effort": "minimal", "exclude": True},
+        "reasoning": {"effort": "low", "exclude": True},
         "provider": {"allow_fallbacks": False, "sort": "throughput"},
         "response_format": {"type": "json_schema", "json_schema": {
             "name": "website_guide", "strict": True, "schema": schema,
