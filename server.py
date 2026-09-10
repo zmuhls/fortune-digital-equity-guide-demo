@@ -9,6 +9,7 @@ JSON contract, then preserves the model-authored answer.
 
 import collections
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 import http.server
 import http.cookies
 import json
@@ -52,8 +53,6 @@ from prompt_policy import (
     PROMPT_EDIT_NUMBER,
     PROMPT_POLICY_VERSION,
     PROMPT_RELEASE_NUMBER,
-    RETRY_INSTRUCTIONS,
-    build_retry_prompt,
 )
 from source_selector import ASK as SELECTOR_ASK
 from source_selector import SYSTEM_PROMPT as SELECTOR_SYSTEM_PROMPT
@@ -75,6 +74,10 @@ FALLBACK_MODEL = os.environ.get(
 ).strip() or "z-ai/glm-5.3-flash"
 KEY = os.environ.get("OLLAMA_API_KEY", "").strip()
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
+CAIL_KEY = os.environ.get("CAIL_API_KEY", "").strip()
+CAIL_API_BASE = "https://tools.ailab.gc.cuny.edu/v1"
+CAIL_MODEL = os.environ.get("FORTUNE_GATEWAY_MODEL", "glm-5.3-flash").strip() or "glm-5.3-flash"
+SITE_TIMEZONE = ZoneInfo("America/New_York")
 ALLOWED_ORIGINS = {
     origin.strip().rstrip("/")
     for origin in os.environ.get("FORTUNE_ALLOWED_ORIGINS", "").split(",")
@@ -84,7 +87,7 @@ MAX_BODY = 64 * 1024
 MAX_HISTORY = 16
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
-MAX_MODEL_EXCERPT_CHARS = 700
+MAX_MODEL_EXCERPT_CHARS = 1800
 MAX_MESSAGE_WORDS = 40
 MAX_REASON_WORDS = 18
 MAX_EVIDENCE_WORDS = 40
@@ -106,7 +109,11 @@ class ModelResponseRejected(RuntimeError):
 
 
 def model_available():
-    return bool(KEY or OPENROUTER_KEY)
+    return bool(CAIL_KEY or KEY or OPENROUTER_KEY)
+
+
+def site_today(now=None):
+    return (now or datetime.now(timezone.utc)).astimezone(SITE_TIMEZONE).date()
 
 def bounded_env_int(name, default, minimum, maximum):
     try:
@@ -412,27 +419,64 @@ def openrouter_completion(messages):
     }
 
 
-def model_completion(messages, *, prefer_fallback=False):
-    providers = []
-    if KEY:
-        providers.append(("ollama", ollama_completion))
-    if OPENROUTER_KEY:
-        providers.append(("openrouter", openrouter_completion))
-    if prefer_fallback:
-        providers.sort(key=lambda item: item[0] != "openrouter")
-    if not providers:
-        raise RuntimeError("No model provider is configured")
+def cail_completion(messages):
+    """One gateway generation, with the actual candidate IDs in the schema."""
+    prompt = messages[0]["content"]
+    records = json.loads(prompt.rsplit("\nCANDIDATE RECORDS:\n", 1)[1])
+    schema = {**MODEL_OUTPUT_SCHEMA, "properties": {
+        **MODEL_OUTPUT_SCHEMA["properties"],
+        "pick": {"type": "string", "enum": [SELECTOR_ASK, *[r["id"] for r in records]]},
+    }}
+    payload = {
+        "model": CAIL_MODEL, "messages": messages, "stream": False,
+        "temperature": 0, "max_tokens": max(4096, MODEL_NUM_PREDICT),
+        "reasoning": {"effort": "minimal", "exclude": True},
+        "provider": {"allow_fallbacks": False, "sort": "throughput"},
+        "response_format": {"type": "json_schema", "json_schema": {
+            "name": "website_guide", "strict": True, "schema": schema,
+        }},
+    }
+    request = urllib.request.Request(
+        CAIL_API_BASE + "/chat/completions", data=json.dumps(payload).encode(),
+        headers={"Authorization": "Bearer " + CAIL_KEY, "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=35) as response:
+            data = json.load(response)
+    except urllib.error.HTTPError as error:
+        print(json.dumps({"event": "model_provider_error", "provider": "cail", "http_status": error.code}), flush=True)
+        raise RuntimeError("CAIL gateway rejected the request") from error
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        raise RuntimeError("CAIL gateway could not complete the request") from error
+    choices = data.get("choices") or []
+    choice = choices[0] if choices else {}
+    content = (choice.get("message") or {}).get("content") or ""
+    if not str(content).strip():
+        raise RuntimeError("CAIL gateway returned no content")
+    usage = data.get("usage") or {}
+    return {
+        "provider": "cail", "model": str(data.get("model") or CAIL_MODEL)[:120],
+        "content": str(content), "provider_total_ms": 0, "provider_load_ms": 0,
+        "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+        "output_tokens": int(usage.get("completion_tokens") or 0),
+        "done_reason": str(choice.get("finish_reason") or "")[:32],
+    }
 
-    attempted = []
-    for provider, completion in providers:
-        attempted.append(provider)
-        try:
-            result = completion(messages)
-            result["attempted_providers"] = list(attempted)
-            return result
-        except RuntimeError:
-            continue
-    raise RuntimeError("All configured model providers failed")
+
+def model_completion(messages, *, prefer_fallback=False):
+    # Choose once. Neither provider errors nor output validation starts another
+    # generation. Legacy credentials are inactive whenever CAIL is configured.
+    if CAIL_KEY:
+        provider, completion = "cail", cail_completion
+    elif KEY:
+        provider, completion = "ollama", ollama_completion
+    elif OPENROUTER_KEY:
+        provider, completion = "openrouter", openrouter_completion
+    else:
+        raise RuntimeError("No model provider is configured")
+    result = completion(messages)
+    result["attempted_providers"] = [provider]
+    return result
 
 
 def preload_model():
@@ -446,7 +490,7 @@ def preload_model():
 
 
 def warm_model_quietly():
-    if not KEY:
+    if CAIL_KEY or not KEY:
         return
     try:
         MODEL_WARMUP.ensure(preload_model)
@@ -1561,7 +1605,7 @@ def calendar_evidence_blocks(source, query, today=None):
 
     if source.get("id") != "calendar":
         return []
-    current = today or datetime.now(timezone.utc).date()
+    current = today or site_today()
     blocks = []
     if source.get("calendar_source") == "live_downloadable_calendar":
         schedule = source.get("calendar_schedule") or {}
@@ -1601,7 +1645,7 @@ def calendar_evidence_blocks(source, query, today=None):
         except ValueError:
             continue
         label = str(event.get("label") or "").strip()
-        if label and event_date >= current:
+        if label:
             events.append((event_date, label))
     events.sort(key=lambda row: (row[0], row[1]))
 
@@ -1630,8 +1674,6 @@ def calendar_evidence_blocks(source, query, today=None):
             try:
                 explicit_year = int(match.group(2)) if match.group(2) else None
                 exact_date = date(explicit_year or current.year, number, int(match.group(1)))
-                if explicit_year is None and exact_date < current:
-                    exact_date = date(current.year + 1, number, int(match.group(1)))
             except ValueError:
                 exact_date = None
             break
@@ -1651,7 +1693,7 @@ def calendar_evidence_blocks(source, query, today=None):
                 events = [row for row in events if row[0] >= exact_date]
             else:
                 events = [row for row in events if row[0] == exact_date]
-            blocks.extend(label for _, label in events[:24])
+            blocks.extend(label for _, label in events)
             return blocks
         requested_months = {
             number
@@ -1660,6 +1702,8 @@ def calendar_evidence_blocks(source, query, today=None):
         }
         if requested_months:
             events = [row for row in events if row[0].month in requested_months]
+            if re.search(r"\b(?:upcoming|remaining|next)\b", query_value):
+                events = [row for row in events if row[0] >= current]
         else:
             weekday_names = {
                 name.lower(): index
@@ -1674,6 +1718,9 @@ def calendar_evidence_blocks(source, query, today=None):
             }
             if requested_weekdays:
                 events = [row for row in events if row[0].weekday() in requested_weekdays]
+            full_calendar = bool(re.search(r"\b(?:all|full|entire|whole|complete)\b", query_value))
+            if not full_calendar:
+                events = [row for row in events if row[0] >= current]
             query_terms = expanded_query_terms(query).difference({
                 "calendar", "class", "classes", "date", "dates", "event", "events",
                 "next", "schedule", "scheduled", "today", "tomorrow", "upcoming",
@@ -1683,13 +1730,13 @@ def calendar_evidence_blocks(source, query, today=None):
                 row for row in events
                 if query_terms.intersection(expanded_query_terms(row[1]))
             ]
-            if matching:
+            if matching and not full_calendar:
                 events = matching
-    blocks.extend(label for _, label in events[:24])
+    blocks.extend(label for _, label in events)
     return blocks
 
 
-def source_excerpt(source, query, limit=1800):
+def source_excerpt(source, query, limit=1800, today=None):
     query_terms = expanded_query_terms(query)
     query_value = fold_text(semantic_question(query))
     if re.search(
@@ -1704,7 +1751,11 @@ def source_excerpt(source, query, limit=1800):
         r"tomorrow|when)\b",
         query_value,
     ))
-    calendar_blocks = calendar_evidence_blocks(source, query)
+    calendar_blocks = calendar_evidence_blocks(source, query, today=today)
+    if source.get("id") == "calendar" and calendar_blocks:
+        # Keep complete schedule rows in source order. Do not mix the current
+        # downloadable calendar with dated rows from the old rendered snapshot.
+        return "\n".join(calendar_blocks)
     raw_blocks = (
         calendar_blocks
         + [source.get("description", "")]
@@ -1810,9 +1861,10 @@ def source_excerpt(source, query, limit=1800):
         candidates.append((priorities[index] + overlap + status_bonus, -index, block))
     candidates.sort(reverse=True)
     selected = []
+    selected_blocks = set()
     length = 0
-    for _, _, block in candidates:
-        if block in selected:
+    for _, negative_index, block in candidates:
+        if block in selected_blocks:
             continue
         separator = 1 if selected else 0
         remaining = limit - length - separator
@@ -1825,11 +1877,14 @@ def source_excerpt(source, query, limit=1800):
         )
         if not fragment:
             continue
-        selected.append(fragment)
+        selected.append((-negative_index, fragment))
+        selected_blocks.add(block)
         length += separator + len(fragment)
         if length >= limit:
             break
-    return "\n".join(selected)
+    # Rank for inclusion, not presentation: headings, conditions and actions
+    # must retain their original relationships in the page.
+    return "\n".join(fragment for _, fragment in sorted(selected))
 
 
 def grounded_evidence_sentences(
@@ -2265,10 +2320,10 @@ def retired_class_sources(question):
     ]
 
 
-def retrieval_plan(question, page_context=None, history=None):
+def _retrieval_plan(question, page_context=None, history=None):
     """Choose the narrowest approved evidence scope that can answer a question."""
     question = semantic_question(question)
-    guided = guided_class_sources(question)
+    guided = guided_class_sources(question) if not history else []
     if guided:
         return "site", guided
 
@@ -2283,19 +2338,29 @@ def retrieval_plan(question, page_context=None, history=None):
     faq = current_faq_sources(question)
     if faq:
         return "site", faq
-    registration = registration_sources(question)
-    if registration:
-        return "site", registration
     retired = retired_class_sources(question)
     if retired:
         return "site", retired
 
     site_sources = retrieve_conversation_sources(question, history)
+    # Signup evidence supplements the established topic, never replaces it.
+    registration = registration_sources(question)
+    if registration:
+        site_sources = list({source["id"]: source for source in [*site_sources, *registration]}.values())
     if current and site_sources and site_sources[0]["url"] == current["url"]:
         return "page", [current]
     if site_sources:
         return "site", site_sources
     return "staff", []
+
+
+def retrieval_plan(question, page_context=None, history=None):
+    scope, sources = _retrieval_plan(question, page_context, history)
+    if any(source.get("volatile") or source.get("id") == "support" for source in sources):
+        if not any(source.get("id") == "calendar" for source in sources):
+            sources = [*sources, SOURCE_BY_ID["calendar"]]
+            scope = "site"
+    return scope, sources
 
 
 def related_links(question, sources, limit=3):
@@ -2388,6 +2453,7 @@ def retrieval_prompt(
     current_date="",
     conversation_history=None,
 ):
+    today = date.fromisoformat(current_date) if current_date else site_today()
     records = []
     for source in sources:
         record = {
@@ -2399,7 +2465,8 @@ def retrieval_prompt(
             "content": source_excerpt(
                 source,
                 query,
-                limit=(3000 if source.get("id") == "calendar" else MAX_MODEL_EXCERPT_CHARS),
+                limit=(6000 if source.get("id") == "calendar" else MAX_MODEL_EXCERPT_CHARS),
+                today=today,
             ),
         }
         if source.get("id") == "calendar":
@@ -2407,6 +2474,7 @@ def retrieval_prompt(
                 "calendar_source": source.get("calendar_source") or "rendered_snapshot",
                 "source_fetched_at": source.get("source_fetched_at"),
                 "source_captured_at": source.get("source_captured_at"),
+                "calendar_freshness": source.get("calendar_freshness", "snapshot"),
                 "calendar_document_url": source.get("calendar_document_url"),
             })
         records.append(record)
@@ -2415,7 +2483,8 @@ def retrieval_prompt(
         records,
         current_page_id=current["id"] if current else "",
         previous_answer=re.sub(r"\s+", " ", str(previous_answer or "")).strip(),
-        current_date=current_date or datetime.now(timezone.utc).date().isoformat(),
+        current_date=today.isoformat(),
+        current_time="" if current_date else datetime.now(SITE_TIMEZONE).isoformat(timespec="minutes"),
         conversation_history=list(conversation_history or []),
     )
 
@@ -3226,18 +3295,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             )
             self._json(200 if service_ready else 503, {
                 "status": "ok" if service_ready else "unavailable",
-                "model": MODEL,
+                "model": CAIL_MODEL if CAIL_KEY else MODEL,
                 "model_enabled": model_available(),
                 "model_providers": {
                     "primary": {
-                        "provider": "ollama",
-                        "model": MODEL,
-                        "configured": bool(KEY),
+                        "provider": "cail" if CAIL_KEY else "ollama",
+                        "model": CAIL_MODEL if CAIL_KEY else MODEL,
+                        "configured": bool(CAIL_KEY or KEY),
                     },
                     "fallback": {
                         "provider": "openrouter",
                         "model": FALLBACK_MODEL,
                         "configured": bool(OPENROUTER_KEY),
+                        "enabled": False,
                     },
                 },
                 "index_loaded": SITE_INDEX_PATH.exists(),
@@ -3257,7 +3327,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 "model_call_limits": {
                     "per_conversation_hour": MODEL_CALLS_PER_HOUR,
                     "shared_day": MODEL_CALLS_PER_DAY,
-                    "max_output_tokens": MODEL_NUM_PREDICT,
+                    "max_output_tokens": max(4096, MODEL_NUM_PREDICT) if CAIL_KEY else MODEL_NUM_PREDICT,
+                    "max_generations_per_turn": 1,
+                    "automatic_repair": False,
                     "repair_calls_counted_separately": False,
                 },
                 "chat_request_limits": {
@@ -3266,7 +3338,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     "max_turns_per_conversation": CONVERSATION_RECORDER.max_turns,
                 },
                 "model_warmup": {
-                    "status": MODEL_WARMUP.status(),
+                    "status": "configured" if CAIL_KEY else MODEL_WARMUP.status(),
                     "cooldown_seconds": MODEL_WARMUP_COOLDOWN,
                     "keep_alive": MODEL_KEEP_ALIVE,
                 },
@@ -3325,6 +3397,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json(403, {"error": "This browser origin is not allowed."})
             return
         if path == "/api/warmup":
+            CALENDAR_CACHE.source(SOURCE_BY_ID["calendar"])
+            if CAIL_KEY:
+                self._json(200, {
+                    "status": "configured", "model": CAIL_MODEL,
+                    "provider": "cail", "warmed": False,
+                })
+                return
             if not KEY:
                 self._json(200, {
                     "status": "fallback_ready" if OPENROUTER_KEY else "disabled",
@@ -3542,31 +3621,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 require_model_answer,
                 conversation_history=safe_history,
             )
-            # A contract repair belongs to the already-authorized participant
-            # turn. Charging it again caused unrelated testers behind one NAT
-            # address to exhaust the model budget before their own model call.
-            if retry_reason:
-                retry_messages = [
-                    {
-                        "role": "system",
-                        "content": build_retry_prompt(
-                            messages[0]["content"], retry_reason
-                        ),
-                    },
-                    messages[1],
-                ]
-                raw = self._model_completion(retry_messages, prefer_fallback=True)
-                model_attempts = 2
-            final_validation_reason = model_selection_retry_reason(
-                raw,
-                model_sources,
-                interaction,
-                prior_answer,
-                question,
-                evidence_query,
-                require_model_answer,
-                conversation_history=safe_history,
-            )
+            # Validate the single result, never request a repair generation.
+            final_validation_reason = retry_reason
             response = parse_model_selection(
                 raw,
                 question,
@@ -4043,6 +4099,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         interaction = dict(interaction or {})
         response = dict(response)
         if response.get("model_called"):
+            response["model_generations"] = 1
             response["model"] = getattr(self, "_model_used", MODEL)
             response["model_provider"] = getattr(self, "_model_provider", "ollama")
         response.update({
@@ -4232,8 +4289,9 @@ if __name__ == "__main__":
     EVALUATION_STORE.open()
     print("Digital Equity Website Guide")
     print("  http://%s:%d" % (HOST, PORT))
-    print("  model=%s  ollama=%s  openrouter=%s  indexed_pages=%d  answer_sources=%d" % (
-        MODEL,
+    print("  model=%s  cail=%s  ollama=%s  openrouter=%s  indexed_pages=%d  answer_sources=%d" % (
+        CAIL_MODEL if CAIL_KEY else MODEL,
+        "set" if CAIL_KEY else "MISSING",
         "set" if KEY else "MISSING",
         "set" if OPENROUTER_KEY else "MISSING",
         SITE_INDEX.get("unique_urls", len(SOURCE_BY_ID)),

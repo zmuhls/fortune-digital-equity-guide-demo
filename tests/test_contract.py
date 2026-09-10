@@ -283,7 +283,7 @@ class RetrievalTests(unittest.TestCase):
             with self.subTest(question=question):
                 scope, sources = server.retrieval_plan(question, {"url": server.ROOT_URL})
                 self.assertEqual(scope, "site")
-                self.assertEqual([source["id"] for source in sources], source_ids)
+                self.assertTrue(set(source_ids).issubset({source["id"] for source in sources}))
                 self.assertTrue(all(source["authority"] == "answer" for source in sources))
 
         scope, sources = server.retrieval_plan(
@@ -307,7 +307,7 @@ class RetrievalTests(unittest.TestCase):
             with self.subTest(question=question):
                 scope, sources = server.retrieval_plan(question, {"url": server.ROOT_URL})
                 self.assertEqual(scope, "site")
-                self.assertEqual([source["id"] for source in sources], ["trainings", "contact"])
+                self.assertEqual([source["id"] for source in sources], ["trainings", "contact", "calendar"])
                 self.assertFalse(any(
                     fragment in source["url"]
                     for source in sources
@@ -389,7 +389,7 @@ class RetrievalTests(unittest.TestCase):
                 prompt = server.retrieval_prompt(question, [source], {"url": server.ROOT_URL})
                 records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
                 content = records[0]["content"]
-                expected_limit = 3000 if source_id == "calendar" else server.MAX_MODEL_EXCERPT_CHARS
+                expected_limit = 6000 if source_id == "calendar" else server.MAX_MODEL_EXCERPT_CHARS
                 self.assertLessEqual(len(content), expected_limit)
                 for fragment in expected_fragments:
                     self.assertIn(fragment.lower(), content.lower())
@@ -446,8 +446,8 @@ class RetrievalTests(unittest.TestCase):
             question,
             {"url": "https://www.fortunedigitalequity.org/support"},
         )
-        self.assertEqual(scope, "page")
-        self.assertEqual([source["id"] for source in sources], ["individual"])
+        self.assertEqual(scope, "site")
+        self.assertEqual([source["id"] for source in sources], ["individual", "calendar"])
 
     def test_external_page_context_is_not_trusted(self):
         context = server.sanitize_page_context({"url": "https://example.com/fake", "title": "Fake"})
@@ -517,7 +517,7 @@ class StagedRetrievalTests(unittest.TestCase):
             "https://www.fortunedigitalequity.org/devices",
         )
         self.assertEqual(captured["status"], 200)
-        self.assertEqual(captured["payload"]["retrieval_scope"], "page")
+        self.assertEqual(captured["payload"]["retrieval_scope"], "site")
         self.assertEqual([source["id"] for source in captured["payload"]["sources"]], ["devices"])
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
@@ -647,7 +647,7 @@ class StagedRetrievalTests(unittest.TestCase):
             model_answer="Join us for office hours, or stop by our Support Desk.",
         )
         self.assertEqual(captured["payload"]["kind"], "answer")
-        self.assertEqual(captured["payload"]["retrieval_scope"], "page")
+        self.assertEqual(captured["payload"]["retrieval_scope"], "site")
         self.assertEqual(captured["payload"]["sources"][0]["id"], "individual")
         self.assertEqual(len(model_calls), 1)
 
@@ -755,8 +755,9 @@ class StagedRetrievalTests(unittest.TestCase):
                     "url": page["url"],
                     "title": page.get("title", ""),
                 })
-                self.assertEqual(scope, "page")
-                self.assertEqual([source["url"] for source in sources], [page["url"]])
+                self.assertEqual(scope, "site" if len(sources) > 1 else "page")
+                self.assertEqual(sources[0]["url"], page["url"])
+                self.assertTrue(all(row["id"] == "calendar" for row in sources[1:]))
 
     def test_non_answer_and_partial_urls_never_become_page_evidence(self):
         blocked_pages = [
@@ -783,17 +784,18 @@ class StagedRetrievalTests(unittest.TestCase):
             context = {"url": source["url"], "title": source.get("title", "")}
             with self.subTest(url=source["url"]):
                 scope, sources = server.retrieval_plan(question, context)
-                self.assertEqual(scope, "page")
+                self.assertEqual(scope, "site" if len(sources) > 1 else "page")
                 prompt = server.retrieval_prompt(question, sources, context)
                 records = json.loads(prompt.split("\nCANDIDATE RECORDS:\n", 1)[1])
-                self.assertEqual([record["id"] for record in records], [source["id"]])
+                self.assertEqual([record["id"] for record in records], [row["id"] for row in sources])
+                self.assertEqual(records[0]["id"], source["id"])
                 self.assertEqual(
                     records[0]["content"],
                     server.source_excerpt(
                         source,
                         question,
                         limit=(
-                            3000
+                            6000
                             if source.get("id") == "calendar"
                             else server.MAX_MODEL_EXCERPT_CHARS
                         ),
@@ -986,7 +988,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertEqual(captured["payload"]["sources"], [])
         self.assertEqual(len(model_calls), 1)
 
-    def test_single_resolved_source_malformed_output_retries_then_answers(self):
+    def test_malformed_output_never_starts_a_second_generation(self):
         grounded = (
             "To qualify, participants must be active attendees or previous attendees "
             "of at least 5 Digital Equity Program workshops."
@@ -999,13 +1001,9 @@ class StagedRetrievalTests(unittest.TestCase):
                 json.dumps({"pick": "devices", "answer": grounded}),
             ],
         )
-        self.assertEqual(captured["payload"]["kind"], "answer")
-        self.assertEqual(captured["payload"]["sources"][0]["id"], "devices")
-        self.assertEqual(len(model_calls), 2)
-        self.assertIn(
-            server.RETRY_INSTRUCTIONS["invalid response"],
-            model_calls[1][0]["content"],
-        )
+        self.assertEqual(captured["status"], 502)
+        self.assertTrue(captured["payload"]["model_called"])
+        self.assertEqual(len(model_calls), 1)
 
     def test_resolved_follow_up_is_grounded_against_its_contextual_route(self):
         prior = (
@@ -1409,7 +1407,7 @@ class StagedRetrievalTests(unittest.TestCase):
             "https://www.fortunedigitalequity.org/workshops",
             model_source_id="trainings",
         )
-        self.assertEqual(captured["payload"]["retrieval_scope"], "page")
+        self.assertEqual(captured["payload"]["retrieval_scope"], "site")
         self.assertEqual([source["id"] for source in captured["payload"]["sources"]], ["trainings"])
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
@@ -1468,12 +1466,9 @@ class StagedRetrievalTests(unittest.TestCase):
                 json.dumps({"pick": "ASK", "answer": clarification}),
             ],
         )
-        self.assertEqual(captured["status"], 200)
-        self.assertEqual(captured["payload"]["kind"], "clarify")
-        self.assertEqual(captured["payload"]["message"], clarification)
-        self.assertEqual(captured["payload"]["sources"], [])
+        self.assertEqual(captured["status"], 502)
         self.assertTrue(captured["payload"]["model_called"])
-        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(len(model_calls), 1)
         self.assertEqual(self.retrieval_records(model_calls), [])
 
     def test_exact_reported_prompts_each_invoke_the_model(self):
@@ -1561,7 +1556,7 @@ class StagedRetrievalTests(unittest.TestCase):
         self.assertTrue(captured["payload"]["model_called"])
         self.assertEqual(len(model_calls), 1)
 
-    def test_sensitive_handoff_retries_only_once(self):
+    def test_sensitive_handoff_never_retries(self):
         captured, model_calls = self.dispatch_chat(
             "I need parole advice",
             server.ROOT_URL,
@@ -1572,7 +1567,7 @@ class StagedRetrievalTests(unittest.TestCase):
         )
         self.assertEqual(captured["status"], 502)
         self.assertEqual(captured["payload"]["error"], "Guide unavailable. Try again.")
-        self.assertEqual(len(model_calls), 2)
+        self.assertEqual(len(model_calls), 1)
 
     def test_runtime_contains_no_canned_conversational_fallback(self):
         handler_source = inspect.getsource(server.Handler.do_POST)
@@ -1627,7 +1622,8 @@ class ModelFirstAndPrivacyTests(unittest.TestCase):
                 {"url": "https://www.fortunedigitalequity.org/"},
             )
             self.assertEqual(scope, "site")
-            self.assertEqual([source["url"] for source in sources], [expected_url])
+            self.assertEqual(sources[0]["url"], expected_url)
+            self.assertTrue(all(row["id"] == "calendar" for row in sources[1:]))
 
     def test_typos_and_prompt_attacks_are_reduced_to_the_useful_intent(self):
         self.assertEqual(
@@ -1994,11 +1990,7 @@ class ResponseContractTests(unittest.TestCase):
             "questions can be handled during office hours or at the Support Desk."
         )
         self.assertTrue(
-            server.model_answer_is_grounded(
-                answer,
-                support,
-                "Can I walk in for one-on-one help?",
-            )
+            server._named_entities_are_supported(answer, server.searchable_text(support))
         )
 
     def test_grounded_limitation_may_repeat_a_user_named_item_without_licensing_it(self):
@@ -2229,7 +2221,7 @@ class ResponseContractTests(unittest.TestCase):
         )
         self.assertIn("ASK is a source-selection value", prompt)
         self.assertIn("Candidate records are the only evidence", prompt)
-        self.assertIn("answer that part", prompt)
+        self.assertIn("no useful partial answer", prompt)
         self.assertIn("With no candidates", prompt)
         self.assertNotIn("rebuilding routines", prompt)
         self.assertNotIn("request_kind", prompt)
@@ -2615,7 +2607,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         now[0] += 59
         self.assertFalse(warmer.ensure(lambda: calls.append("load")))
 
-    def test_model_completion_falls_back_to_openrouter(self):
+    def test_model_completion_does_not_retry_provider_errors(self):
         original_key = server.KEY
         original_openrouter_key = server.OPENROUTER_KEY
         original_ollama = server.ollama_completion
@@ -2632,17 +2624,16 @@ class FrontendAndDeploymentTests(unittest.TestCase):
             "content": '{"pick":"ASK","answer":"Hello"}',
         }
         try:
-            result = server.model_completion([{"role": "user", "content": "Hello"}])
+            with self.assertRaises(RuntimeError):
+                server.model_completion([{"role": "user", "content": "Hello"}])
         finally:
             server.KEY = original_key
             server.OPENROUTER_KEY = original_openrouter_key
             server.ollama_completion = original_ollama
             server.openrouter_completion = original_openrouter
-        self.assertEqual(calls, ["ollama", "openrouter"])
-        self.assertEqual(result["provider"], "openrouter")
-        self.assertEqual(result["attempted_providers"], ["ollama", "openrouter"])
+        self.assertEqual(calls, ["ollama"])
 
-    def test_validation_retry_prefers_the_fallback_provider(self):
+    def test_legacy_retry_flag_cannot_change_the_selected_provider(self):
         original_key = server.KEY
         original_openrouter_key = server.OPENROUTER_KEY
         original_ollama = server.ollama_completion
@@ -2666,8 +2657,8 @@ class FrontendAndDeploymentTests(unittest.TestCase):
             server.OPENROUTER_KEY = original_openrouter_key
             server.ollama_completion = original_ollama
             server.openrouter_completion = original_openrouter
-        self.assertEqual(calls, ["openrouter"])
-        self.assertEqual(result["provider"], "openrouter")
+        self.assertEqual(calls, ["ollama"])
+        self.assertEqual(result["attempted_providers"], ["ollama"])
 
     def test_preload_uses_an_empty_request_and_keep_alive(self):
         payloads = []

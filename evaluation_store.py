@@ -1788,7 +1788,7 @@ class EvaluationStore:
                 messages = [dict(row) for row in cursor.fetchall()]
                 cursor.execute(
                     f"""
-                    SELECT t.id, t.sequence, t.status, t.error_code,
+                    SELECT t.id, t.sequence, t.status, t.error_code, t.model_called,
                            t.created_at, t.completed_at,
                            COUNT(m.id)::INTEGER AS message_count
                     FROM conversation_turns t

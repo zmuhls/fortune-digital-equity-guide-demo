@@ -1,5 +1,18 @@
 # Website Guide — next steps
 
+## Evaluation follow-through — 2026-09-10
+
+- [x] Preserve signup topic/goal evidence and page-section ordering; retain eight exchanges.
+- [x] Keep account-scoped drafts across tabs, filters, reloads and conflicts; retain expanded cards.
+- [x] Use New York date/time, retain complete requested months, and identify stale calendar evidence.
+- [x] Show recorded model-call state instead of inferring it from failures.
+- [x] Use one structured GLM-5.3-Flash generation through CAIL; disable automatic repairs and provider retries.
+- [x] Update the live Prompts compiler and version artifacts to v1.34 without overwriting the team's shared draft.
+- [x] Pass 385 Python tests, 53 JavaScript checks, and browser draft-recovery checks.
+- [x] Complete 18 real-model test turns: eight-turn Coursera and Excel episodes plus calendar requests; all returned 200 without repair generations.
+- [ ] Verify the deployed commit, Prompts version, shared board and retained data against production.
+- [ ] Continue evaluating repetition and unsupported promises about what staff will do after contact; successful HTTP responses are not proof of perfect grounding.
+
 ## Shared prompt and nightly review — 2026-08-31
 
 - [x] Make the complete system prompt an editable shared draft in **Prompts**

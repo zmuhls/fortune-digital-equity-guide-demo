@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-08-31-v33")
-        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.33")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-10-v34")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.34")
         self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
-        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 33)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 34)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -106,7 +106,7 @@ class PromptPolicyTests(unittest.TestCase):
             prompt_policy.TEAM_TUNABLE_PROMPT_MODULES["clarification"]
             ["evidence_exhausted_only"],
         )
-        self.assertIn("no useful partial answer", clarification["current_value"])
+        self.assertIn("when its answer changes the result", clarification["current_value"])
         self.assertIn("repeat a clarification", clarification["current_value"])
 
         page_awareness = catalog["page_awareness"]

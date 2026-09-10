@@ -480,13 +480,16 @@ class LiveCalendarCache:
                 name="digital-equity-calendar-refresh",
                 daemon=True,
             ).start()
-        return source or dict(base_source)
+        result = source or dict(base_source)
+        result["calendar_freshness"] = "stale" if source and stale else "live" if source else "snapshot"
+        return result
 
     def status(self) -> dict:
         with self._lock:
             source = self._source or {}
+            fresh = bool(source) and time.monotonic() - self._refreshed_at < self.ttl_seconds
             return {
-                "status": "live" if source else ("refreshing" if self._refreshing else "snapshot"),
+                "status": ("live" if fresh else "stale") if source else ("refreshing" if self._refreshing else "snapshot"),
                 "source_fetched_at": source.get("source_fetched_at"),
                 "extracted_characters": source.get("calendar_extracted_characters", 0),
                 "structured_events": len(source.get("calendar_events", [])),

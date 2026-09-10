@@ -25,7 +25,7 @@ The runner sends only invented questions. It records the API response, timing, d
 
 ## Multi-turn retrieval
 
-The sequential suite contains 14 synthetic conversations and 59 turns. It reuses one conversation ID per episode and sends only the latest three user-assistant exchanges, matching the published client. The cases cover explicit retrieval, deictic follow-ups, topic shifts, stale-context eviction, registration, current schedules, Spanish, model-backed source selection, and deep-page retrieval across Tech Fair Q&A and About/team content.
+The sequential suite contains 14 synthetic conversations and 59 turns. It reuses one conversation ID per episode and sends the latest eight user-assistant exchanges, matching the published client. The cases cover explicit retrieval, deictic follow-ups, topic shifts, stale-context eviction, registration, current schedules, Spanish, model-backed source selection, and deep-page retrieval across Tech Fair Q&A and About/team content.
 
 Validate it without network access:
 

@@ -22,7 +22,7 @@ except ModuleNotFoundError:  # Direct execution from the repository root.
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_CASES = ROOT / "evals" / "website-guide" / "multiturn-cases.json"
 DEFAULT_SPEC = ROOT / "evals" / "website-guide" / "multiturn-spec.json"
-MAX_HISTORY_MESSAGES = 12
+MAX_HISTORY_MESSAGES = 16
 LEVELS = {"hard", "release", "diagnostic"}
 
 

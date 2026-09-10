@@ -131,7 +131,7 @@ class MultiTurnRetrievalTests(unittest.TestCase):
         question = "Is there a class about writing resumes with AI?"
         scope, sources = server.retrieval_plan(question, HOME)
         self.assertEqual(scope, "site")
-        self.assertEqual([source["id"] for source in sources], ["trainings", "contact"])
+        self.assertEqual([source["id"] for source in sources], ["trainings", "contact", "calendar"])
 
     def test_word_certification_follow_up_prefers_word_certification_page(self):
         history = [

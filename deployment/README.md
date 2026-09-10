@@ -2,7 +2,7 @@
 
 This directory separates the public guide from the service that calls the model. Browser code receives an API base URL. The Ollama key stays in Wix Secrets Manager or in the environment of an external backend. The maintained Wix implementation subset now lives at [`../wix-app/`](../wix-app/); the files under `deployment/wix/` preserve the earlier portability examples and roadmap.
 
-The shared backend also accepts `POST /api/warmup` from approved origins. The request has no user content and no credential. It asks Ollama to preload the configured model, applies a global cooldown, and keeps the model loaded for the configured duration. The server performs the same warm-up after startup. `FORTUNE_MODEL_WARMUP_COOLDOWN` defaults to 900 seconds and `FORTUNE_MODEL_KEEP_ALIVE` defaults to `30m`.
+The shared backend accepts `POST /api/warmup` from approved origins without user content or a credential. With CAIL configured, this refreshes calendar evidence and reports provider configuration without requesting a generation. Legacy Ollama-only configurations retain their empty preload behavior.
 
 ## Paths
 
@@ -17,7 +17,7 @@ The shared backend also accepts `POST /api/warmup` from approved origins. The re
 
 ## Shared API contract
 
-The Wix and GitHub Pages clients send the same request shape. History stays in browser memory and is capped at six user or assistant messages:
+The Wix and GitHub Pages clients send the same request shape. History persists in tab-scoped session storage and is capped at eight exchanges (sixteen messages):
 
 ```json
 {
@@ -46,7 +46,9 @@ The server returns this response shape:
   "related": [{ "title": "Next section", "url": "https://www.fortunedigitalequity.org/..." }],
   "choices": [],
   "handoff_url": "https://www.fortunedigitalequity.org/contact",
-  "model": "glm-5.2",
+  "model": "z-ai/glm-5.3-flash",
+  "model_provider": "cail",
+  "model_generations": 1,
   "model_called": true,
   "conversation_id": "d6b917ca-a830-4be7-a184-05cfdb683741",
   "turn_id": "0a9f33fb-6068-4577-8a4d-96ad2d93ee13",

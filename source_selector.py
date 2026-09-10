@@ -28,6 +28,7 @@ def build_prompt(
     previous_answer: str = "",
     current_date: str = "",
     conversation_history: list[dict] | None = None,
+    current_time: str = "",
 ) -> str:
     """Build a grounded prompt with bounded, server-sanitized conversation context."""
 
@@ -35,6 +36,8 @@ def build_prompt(
         SYSTEM_PROMPT
         + "\nCURRENT DATE:\n"
         + json.dumps(current_date or None)
+        + "\nCURRENT TIME (America/New_York; an ended session is not upcoming):\n"
+        + json.dumps(current_time or None)
         + "\nCURRENT PAGE ID:\n"
         + json.dumps(current_page_id or None)
         + "\nPREVIOUS GUIDE ANSWER:\n"
