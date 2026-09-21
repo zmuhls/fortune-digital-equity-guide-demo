@@ -36,13 +36,14 @@ SHARED_ASSETS = (
     "site-index.json",
     "replica-manifest.json",
     "replica-shell.css",
+    "replica-widget.css",
     "replica-shell.js",
     "embed-frame.js",
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
-REPLICA_SHELL_JS_VERSION = "20260820-text-source-1"
+REPLICA_SHELL_JS_VERSION = "20260921-wix-visual-1"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
@@ -1824,6 +1825,94 @@ def render_text_page(
 """
 
 
+def render_visual_snapshot_page(
+    route: dict,
+    asset_base: str,
+    routes: list[dict],
+    snapshot_html: str,
+) -> str:
+    """Publish the reviewed inert Wix capture with its original visual design.
+
+    Capture already removes executable Wix code, forms, tokens, trackers, and
+    active embeds.  The build keeps the captured layout and public assets,
+    rewrites approved internal navigation to the local mirror, restores native
+    disclosure behavior, and adds only the isolated Website Guide runtime.
+    """
+
+    source_url = route["sourceUrl"]
+    page_id = route["pageId"]
+    route_by_path = {candidate["path"]: candidate for candidate in routes}
+
+    def rewrite_internal_href(match: re.Match[str]) -> str:
+        prefix, value, suffix = match.groups()
+        parsed = urllib.parse.urlsplit(html.unescape(value))
+        path = re.sub(r"/+", "/", parsed.path or "/")
+        if path != "/":
+            path = path.rstrip("/")
+        if path not in route_by_path:
+            return match.group(0)
+        destination = static_href(asset_base, path)
+        if parsed.query:
+            destination += "?" + parsed.query
+        if parsed.fragment:
+            destination += "#" + parsed.fragment
+        return f"{prefix}{html.escape(destination, quote=True)}{suffix}"
+
+    rendered = re.sub(
+        r'''(href\s*=\s*["'])(https://(?:www\.)?fortunedigitalequity\.org[^"']*)(["'])''',
+        rewrite_internal_href,
+        snapshot_html,
+        flags=re.IGNORECASE,
+    )
+
+    def close_static_disclosure(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        return re.sub(
+            r'''\s+open(?:\s*=\s*(?:""|''|"open"|'open'|open))?''',
+            "",
+            tag,
+            flags=re.IGNORECASE,
+        )
+
+    rendered = re.sub(
+        r"<details\b[^>]*data-replica-static-(?:disclosure|menu)[^>]*>",
+        close_static_disclosure,
+        rendered,
+        flags=re.IGNORECASE,
+    )
+    rendered = re.sub(
+        r"<html\b([^>]*)>",
+        rf'<html\1 {REPLICA_MARKER} data-fortune-visual-mirror="true">',
+        rendered,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    head_addition = (
+        f'\n<meta name="fortune-replica-source" content="{html.escape(source_url, quote=True)}">'
+        f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-widget.css", quote=True)}">'
+    )
+    rendered = re.sub(
+        r"</head>",
+        head_addition + "\n</head>",
+        rendered,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    script = (
+        f'<script src="{html.escape(asset_base + "replica-shell.js?v=" + REPLICA_SHELL_JS_VERSION, quote=True)}" '
+        f'data-source-url="{html.escape(source_url, quote=True)}" '
+        f'data-page-id="{html.escape(page_id, quote=True)}"></script>'
+    )
+    rendered = re.sub(
+        r"</body>",
+        script + "\n</body>",
+        rendered,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+    return rendered
+
+
 def expected_files(routes: list[dict[str, str]]) -> set[pathlib.PurePosixPath]:
     expected = {pathlib.PurePosixPath(asset) for asset in SHARED_ASSETS}
     expected.add(pathlib.PurePosixPath(SIDECAR_OUTPUT))
@@ -1864,12 +1953,10 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
         shell = (site_root / pathlib.Path(shell_path.as_posix())).read_text(encoding="utf-8")
         if REPLICA_MARKER not in shell:
             raise BuildError(f"replica marker is missing from {shell_path}")
-        if 'data-fortune-text-view="true"' not in shell:
-            raise BuildError(f"text-source marker is missing from {shell_path}")
+        if 'data-fortune-visual-mirror="true"' not in shell:
+            raise BuildError(f"visual-mirror marker is missing from {shell_path}")
         if shell.lower().count("<script") != 1 or "replica-shell.js" not in shell:
             raise BuildError(f"unexpected executable scripts in {shell_path}")
-        if re.search(r"<\s*(?:img|picture|svg)\b|<\s*style\b", shell, re.IGNORECASE):
-            raise BuildError(f"visual or inline-style markup found in {shell_path}")
         for forbidden in ("wix-viewer-model", "X-XSRF-TOKEN", "OLLAMA_API_KEY"):
             if forbidden.lower() in shell.lower():
                 raise BuildError(f"private or runtime-only value found in {shell_path}: {forbidden}")
@@ -1911,13 +1998,11 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
             prefix = "../" * depth
             if route["sourceUrl"] not in snapshots:
                 raise BuildError(f"missing reviewed snapshot for {route['sourceUrl']}")
-            rendered = render_text_page(
+            rendered = render_visual_snapshot_page(
                 route,
                 prefix,
                 routes,
                 snapshots[route["sourceUrl"]]["html"],
-                navigation_snapshot_html,
-                calendar_source,
             )
             destination.write_text(rendered, encoding="utf-8")
         counts = validate_output(temporary, routes)

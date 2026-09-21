@@ -8,7 +8,7 @@
 (() => {
   const TAG_NAME = "fortune-digital-equity-guide";
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 16;
+  const MAX_CONTEXT_MESSAGES = 10;
   const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:wix:v20";
   const STARTERS = Object.freeze([
@@ -401,16 +401,26 @@
           .reset:disabled { color: var(--guide-muted); cursor: wait; }
           .contact { margin-left: auto; }
           @media (max-width: 520px) {
-            :host { inset: auto 8px 8px 8px; }
-            :host(:not(.guide-open)) { inset: auto 30px 30px 8px; }
+            :host { inset: auto max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+            :host(:not(.guide-open)) { inset: auto max(30px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
             .panel { width: 100%; max-height: calc(100dvh - 16px); }
             .panel.expanded { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
             .panel.expanded .transcript { padding: 14px; }
             form { padding: 10px 14px 8px; }
-            .row { grid-template-columns: minmax(0, 1fr) 74px; }
-            form.is-editing .row { grid-template-columns: minmax(0, 1fr) 70px 62px; }
-            .send { width: 74px; padding-inline: 8px; }
+            .row { grid-template-columns: minmax(0, 1fr) 68px; }
+            form.is-editing .row { grid-template-columns: minmax(0, 1fr) 64px 58px; }
+            .send { min-width: 0; width: 68px; padding-inline: 7px; }
+            form.is-editing .send { width: 64px; }
+            .cancel-edit { min-width: 0; width: 58px; padding-inline: 5px; }
             .footer { padding: 0 14px; }
+          }
+          @media (max-width: 360px) {
+            form { padding-inline: 10px; }
+            .row { gap: 5px; grid-template-columns: minmax(0, 1fr) 62px; }
+            form.is-editing .row { grid-template-columns: minmax(0, 1fr) 58px 54px; }
+            .send { width: 62px; }
+            form.is-editing .send { width: 58px; }
+            .cancel-edit { width: 54px; }
           }
           @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -450,11 +460,11 @@
             <details class="meta">
               <summary>Info</summary>
               <div class="info">
-                <p class="context-count">Context · conversation · 0/8</p>
+                <p class="context-count">Context · conversation · 0/5</p>
                 <p class="model-status">Starting…</p>
               </div>
             </details>
-            <button class="reset" type="button" aria-label="Start a new conversation" hidden>Start over</button>
+            <button class="reset" type="button" aria-label="Start a new conversation" hidden>New chat</button>
             <a class="contact" href="${CONTACT_URL}">Contact</a>
           </footer>
         </section>

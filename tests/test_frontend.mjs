@@ -543,7 +543,7 @@ test("canonical URLs stay on the approved public host", () => {
   assert.equal(Core.canonicalUrl("/about/partners"), "https://www.fortunedigitalequity.org/about");
 });
 
-test("all 138 routes receive one of the reviewed page families", () => {
+test("all 150 routes receive one of the reviewed page families", () => {
   const counts = {};
   for (const page of pages) {
     const family = Core.pageFamily(page);
@@ -555,12 +555,12 @@ test("all 138 routes receive one of the reviewed page families", () => {
     action: 3,
     directory: 6,
     support: 2,
-    event: 4,
+    event: 5,
     archive: 21,
     news: 9,
-    service: 72,
+    service: 83,
   });
-  assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 138);
+  assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 150);
 });
 
 test("every page has a tailored heading, placeholder, and exactly two prompts", () => {
@@ -759,7 +759,7 @@ test("Pages and Wix accept one Return submission and preserve model provenance",
   assert.equal(wixSession.turns[0].payload.model_called, true);
 });
 
-test("Pages and Wix send eight prior exchanges and then discard only the oldest", async () => {
+test("Pages and Wix retain the latest five prior exchanges and then discard only the oldest", async () => {
   const pages = await pagesHarness({ chatPayload: validModelAnswer });
   for (let number = 1; number <= 9; number += 1) {
     pages.input.value = `Question ${number}`;
@@ -769,12 +769,12 @@ test("Pages and Wix send eight prior exchanges and then discard only the oldest"
       `Pages turn ${number} did not settle`,
     );
   }
-  assert.equal(pages.chatRequests[8].history.length, 16);
-  assert.equal(pages.chatRequests[8].history[0].content, "Question 1");
-  assert.equal(pages.window.FortuneGuide.state().turnCount, 8);
+  assert.equal(pages.chatRequests[8].history.length, 10);
+  assert.equal(pages.chatRequests[8].history[0].content, "Question 4");
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 5);
   const pageSession = JSON.parse([...pages.storage.values.values()][0]);
-  assert.equal(pageSession.turns.length, 8);
-  assert.equal(pageSession.turns[0].question, "Question 2");
+  assert.equal(pageSession.turns.length, 5);
+  assert.equal(pageSession.turns[0].question, "Question 5");
 
   const wix = await wixHarness({ chatPayload: validModelAnswer });
   for (let number = 1; number <= 9; number += 1) {
@@ -785,12 +785,12 @@ test("Pages and Wix send eight prior exchanges and then discard only the oldest"
       `Wix turn ${number} did not settle`,
     );
   }
-  assert.equal(wix.chatRequests[8].history.length, 16);
-  assert.equal(wix.chatRequests[8].history[0].content, "Question 1");
-  assert.equal(wix.guide.turns.length, 8);
+  assert.equal(wix.chatRequests[8].history.length, 10);
+  assert.equal(wix.chatRequests[8].history[0].content, "Question 4");
+  assert.equal(wix.guide.turns.length, 5);
   const wixSession = JSON.parse([...wix.storage.values.values()][0]);
-  assert.equal(wixSession.turns.length, 8);
-  assert.equal(wixSession.turns[0].question, "Question 2");
+  assert.equal(wixSession.turns.length, 5);
+  assert.equal(wixSession.turns[0].question, "Question 5");
 });
 
 test("Pages and Wix reject successful nonprivacy payloads outside the model contract", async t => {

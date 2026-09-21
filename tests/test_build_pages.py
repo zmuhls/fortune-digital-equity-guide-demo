@@ -109,12 +109,12 @@ def calendar_source_fixture(source_url="https://www.fortunedigitalequity.org/cal
 
 
 class IndexRouteTests(unittest.TestCase):
-    def test_real_index_loads_all_138_current_public_html_routes(self):
+    def test_real_index_loads_all_150_current_public_html_routes(self):
         routes = build_pages.load_routes()
 
-        self.assertEqual(len(routes), 138)
-        self.assertEqual(len({route["path"] for route in routes}), 138)
-        self.assertEqual(len({route["pageId"] for route in routes}), 138)
+        self.assertEqual(len(routes), 150)
+        self.assertEqual(len({route["path"] for route in routes}), 150)
+        self.assertEqual(len({route["pageId"] for route in routes}), 150)
         self.assertIn("/", {route["path"] for route in routes})
 
     def test_route_path_canonicalizes_trailing_slash(self):
@@ -155,6 +155,37 @@ class IndexRouteTests(unittest.TestCase):
 
 
 class SnapshotRenderingTests(unittest.TestCase):
+    def test_visual_snapshot_keeps_wix_design_and_adds_only_guide_runtime(self):
+        route = dict(HOME_ROUTE)
+        snapshot = (
+            '<!doctype html><html lang="en" data-replica-snapshot="true"><head>'
+            '<title>Digital Equity</title><style>.hero{background:#bcecff}</style></head>'
+            '<body><main><img src="https://static.wixstatic.com/hero.jpg" alt="Hero">'
+            '<a href="https://www.fortunedigitalequity.org/about">About</a>'
+            '<details open="" data-replica-static-disclosure="true"><summary>FAQ</summary>'
+            '<p>Answer</p></details></main></body></html>'
+        )
+        about = {
+            "path": "/about",
+            "sourceUrl": "https://www.fortunedigitalequity.org/about",
+            "pageId": "page-about",
+            "page": {"title": "About", "authority": "answer", "status": 200},
+        }
+
+        rendered = build_pages.render_visual_snapshot_page(
+            route, "", [route, about], snapshot
+        )
+
+        self.assertIn(build_pages.REPLICA_MARKER, rendered)
+        self.assertIn('data-fortune-visual-mirror="true"', rendered)
+        self.assertIn('<style>.hero{background:#bcecff}</style>', rendered)
+        self.assertIn('https://static.wixstatic.com/hero.jpg', rendered)
+        self.assertIn('href="about/"', rendered)
+        self.assertNotRegex(rendered, r'<details[^>]*\sopen(?:=|\s|>)')
+        self.assertIn('href="replica-widget.css"', rendered)
+        self.assertEqual(rendered.lower().count("<script"), 1)
+        self.assertIn("replica-shell.js", rendered)
+
     def test_text_shell_css_is_small_and_contains_no_visual_assets(self):
         shell_css = (DEMO / "replica-shell.css").read_text(encoding="utf-8")
 
@@ -576,7 +607,7 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn('<ul class="source-list">', content)
         self.assertIn("All Services", content)
         self.assertIn("Digital Knowledge Base", content)
-        self.assertEqual(content.count('<li><a href="service-page/'), 64)
+        self.assertEqual(content.count('<li><a href="service-page/'), 68)
         self.assertIn(
             '<li><a href="service-page/intro-to-email/">Intro to Email</a></li>',
             content,
@@ -752,7 +783,10 @@ class ArtifactTests(unittest.TestCase):
             self.assertEqual(counts["replica_routes"], 2)
             self.assertEqual(counts["total_files"], len(routes) + len(build_pages.SHARED_ASSETS) + 1)
             self.assertTrue((output / "sidecar.html").is_file())
-            self.assertIn(build_pages.REPLICA_MARKER, (output / "about" / "index.html").read_text())
+            about_html = (output / "about" / "index.html").read_text()
+            self.assertIn(build_pages.REPLICA_MARKER, about_html)
+            self.assertIn('data-fortune-visual-mirror="true"', about_html)
+            self.assertIn("@font-face", about_html)
             published_text = "\n".join(
                 path.read_text(encoding="utf-8")
                 for path in output.rglob("*")
@@ -768,7 +802,7 @@ class ArtifactTests(unittest.TestCase):
                 (root / asset).write_text("public\n", encoding="utf-8")
             (root / build_pages.SIDECAR_OUTPUT).write_text("sidecar\n", encoding="utf-8")
             (root / "index.html").write_text(
-                f"<html {build_pages.REPLICA_MARKER} data-fortune-text-view=\"true\"><body>"
+                f"<html {build_pages.REPLICA_MARKER} data-fortune-visual-mirror=\"true\"><body>"
                 '<script src="replica-shell.js"></script></body></html>',
                 encoding="utf-8",
             )

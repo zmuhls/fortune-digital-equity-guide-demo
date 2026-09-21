@@ -85,16 +85,14 @@ class ReplicaContentCoverageTests(unittest.TestCase):
                 self.assertGreater(progressive["after"]["service_page_links"], progressive["before"]["service_page_links"])
                 self.assertNotIn("load-services-button-button", html)
 
-    def test_calendar_is_a_bounded_current_slice_with_a_live_continuation(self):
+    def test_calendar_preserves_the_full_captured_wix_agenda(self):
         html = self.html_for("/calendar")
         progressive = self.static_content_for("/calendar")["progressive_collections"]
-        horizon = progressive["calendar_horizon"]
-        self.assertEqual(horizon["clicks"], 9)
-        self.assertEqual(horizon["limit"], 9)
-        self.assertTrue(horizon["continuation_removed"])
+        self.assertEqual(progressive["load_more_clicks"], 9)
+        self.assertIsNone(progressive["calendar_horizon"])
         self.assertGreater(progressive["after"]["visible_text_characters"], progressive["before"]["visible_text_characters"])
-        self.assertIn("data-replica-live-calendar-note", html)
-        self.assertIn("View the live calendar at Fortune.", html)
+        self.assertIn("September 21", self.visible_text_for("/calendar"))
+        self.assertIn("October 26", self.visible_text_for("/calendar"))
         self.assertNotIn("daily-agenda-load-more-button", html)
 
     def test_progressive_tech_fair_galleries_keep_their_public_media(self):

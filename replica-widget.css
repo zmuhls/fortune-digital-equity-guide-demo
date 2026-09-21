@@ -1,0 +1,90 @@
+#fortune-sidecar-host {
+  position: fixed;
+  z-index: 2147483000;
+  right: 0;
+  bottom: 0;
+  width: min(360px, 100vw);
+  height: 78px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#fortune-sidecar-host[data-expanded="true"] {
+  width: min(480px, 100vw);
+  height: min(700px, 100dvh);
+}
+
+#fortune-sidecar-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+}
+
+details[data-replica-static-menu] > summary,
+details[data-replica-static-disclosure] > summary {
+  list-style: none;
+}
+
+details[data-replica-static-menu] > summary::-webkit-details-marker,
+details[data-replica-static-disclosure] > summary::-webkit-details-marker {
+  display: none;
+}
+
+details[data-replica-static-menu] > summary {
+  color: #281a39;
+  font: inherit !important;
+  font-size: 16px !important;
+  text-transform: uppercase;
+}
+
+details[data-replica-static-disclosure] > summary {
+  position: relative;
+  min-height: 72px;
+  padding: 24px 54px 24px 32px !important;
+  color: #f6f6f6;
+  border-bottom: 1px solid rgba(246, 246, 246, 0.8);
+  font: inherit !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+}
+
+details[data-replica-static-disclosure] > summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-65%) rotate(45deg);
+}
+
+details[data-replica-static-disclosure][open] > summary::after {
+  transform: translateY(-35%) rotate(225deg);
+}
+
+details[data-replica-static-disclosure] > [data-replica-static-content="true"] {
+  padding: 8px 32px 24px !important;
+  color: #f6f6f6;
+}
+
+@media (max-width: 520px) {
+  #fortune-sidecar-host {
+    right: max(0px, env(safe-area-inset-right));
+    bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  #fortune-sidecar-host[data-expanded="true"] {
+    width: 100%;
+    height: 100dvh;
+  }
+}
+
+@media print {
+  #fortune-sidecar-host { display: none; }
+}

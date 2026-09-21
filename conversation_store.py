@@ -698,8 +698,20 @@ class ConversationRecorder:
             with self._pool.connection() as connection:
                 with connection.transaction():
                     with connection.cursor() as cursor:
+                        # Evaluation audit rows are immutable. Their foreign key uses
+                        # ON DELETE SET NULL, which would attempt to update an audit
+                        # row and correctly trip the append-only trigger. Retain those
+                        # audited conversations and purge only unreferenced expired rows.
                         cursor.execute(
-                            "DELETE FROM conversations WHERE expires_at <= NOW()"
+                            """
+                            DELETE FROM conversations c
+                            WHERE c.expires_at <= NOW()
+                              AND NOT EXISTS (
+                                  SELECT 1
+                                  FROM evaluation_audit_events e
+                                  WHERE e.conversation_id = c.id
+                              )
+                            """
                         )
                         deleted = max(0, int(cursor.rowcount))
             self._last_purge = now

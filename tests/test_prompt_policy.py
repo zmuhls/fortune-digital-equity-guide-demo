@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-10-v34")
-        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.34")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-21-v35")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.35")
         self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
-        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 34)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 35)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -50,7 +50,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("Pick the most specific current record", source_selector.SYSTEM_PROMPT)
         self.assertIn("Paraphrase direct implications naturally", source_selector.SYSTEM_PROMPT)
         self.assertIn("without making Digital Equity claims", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Use recent conversation", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Use the latest five exchanges", source_selector.SYSTEM_PROMPT)
         self.assertIn("active page matters only", source_selector.SYSTEM_PROMPT)
         self.assertIn("anywhere on the site", source_selector.SYSTEM_PROMPT)
         self.assertIn("stock refusal", source_selector.SYSTEM_PROMPT)
@@ -58,7 +58,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("Never call this the Fortune Society site", source_selector.SYSTEM_PROMPT)
         self.assertIn("one short sentence", source_selector.SYSTEM_PROMPT)
         self.assertIn("cannot enroll or book", source_selector.SYSTEM_PROMPT)
-        self.assertIn("recent conversation", source_selector.SYSTEM_PROMPT)
+        self.assertIn("latest five exchanges", source_selector.SYSTEM_PROMPT)
         self.assertIn("questions about earlier turns", source_selector.SYSTEM_PROMPT)
         self.assertIn("repeat a clarification", source_selector.SYSTEM_PROMPT)
         self.assertIn("live calendar", source_selector.SYSTEM_PROMPT)

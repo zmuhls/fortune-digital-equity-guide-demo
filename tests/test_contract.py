@@ -34,14 +34,14 @@ def model_response(source, question="", answer=""):
 class SiteIndexTests(unittest.TestCase):
     def test_current_public_sitemap_inventory_is_present(self):
         self.assertTrue(server.SITE_INDEX_PATH.exists())
-        self.assertEqual(server.SITE_INDEX["unique_urls"], 138)
-        self.assertEqual(server.SITE_INDEX["sitemap_entries"], 151)
-        self.assertEqual(len(server.SITE_INDEX["pages"]), 138)
+        self.assertEqual(server.SITE_INDEX["unique_urls"], 150)
+        self.assertEqual(server.SITE_INDEX["sitemap_entries"], 163)
+        self.assertEqual(len(server.SITE_INDEX["pages"]), 150)
 
     def test_authority_boundary_is_explicit(self):
         self.assertEqual(
             server.SITE_INDEX["authority_counts"],
-            {"answer": 90, "excluded": 18, "archive": 21, "navigation": 9},
+            {"answer": 90, "excluded": 30, "archive": 21, "navigation": 9},
         )
         self.assertGreaterEqual(len(server.ANSWER_SOURCES), 90)
         self.assertTrue(all(source["authority"] == "answer" for source in server.ANSWER_SOURCES))
@@ -370,7 +370,7 @@ class RetrievalTests(unittest.TestCase):
             (
                 "calendar",
                 "What is the current class schedule?",
-                ("August Training Schedule", "TUE, WED & THU", "2:00 PM to 3:30 PM"),
+                ("Click a date to see available classes", "TUE, WED & THU", "2:00 PM to 3:30 PM"),
             ),
             (
                 "home",
@@ -764,7 +764,7 @@ class StagedRetrievalTests(unittest.TestCase):
             page for page in server.SITE_INDEX["pages"]
             if page.get("authority") != "answer" or page.get("status") != 200
         ]
-        self.assertEqual(len(blocked_pages), 48)
+        self.assertEqual(len(blocked_pages), 60)
         self.assertEqual(
             {page.get("authority") for page in blocked_pages},
             {"archive", "excluded", "navigation"},
@@ -2091,15 +2091,14 @@ class ResponseContractTests(unittest.TestCase):
         )
 
     def test_clock_times_are_not_misread_as_session_counts(self):
-        source = server.SOURCE_BY_ID["calendar"]
+        source = copy.deepcopy(server.SOURCE_BY_ID["calendar"])
+        source["description"] = "Digital Equity classes run from 2:00 PM to 3:30 PM."
+        source["blocks"] = [source["description"]]
+        source["facts"] = []
         question = "What current schedule is shown on this page?"
         answers = (
-            "The page shows August training sessions in Long Island City on "
-            "Tuesday, Wednesday, and Thursday from 2:00 PM to 3:30 PM, with "
-            "Bronx (SRP) available by request only.",
-            "Digital Equity classes in Long Island City run Tuesday, Wednesday, "
-            "and Thursday from 2:00 PM to 3:30 PM. Bronx (SRP) sessions are by "
-            "request only.",
+            "Digital Equity classes run from 2:00 PM to 3:30 PM.",
+            "Classes are scheduled from 2:00 PM to 3:30 PM.",
         )
         for answer in answers:
             with self.subTest(answer=answer):
@@ -2535,7 +2534,7 @@ class ResponseContractTests(unittest.TestCase):
                 history = safe_history + [{"role": "user", "content": value}]
                 self.assertEqual(server.sanitize_history(history), safe_history)
 
-    def test_history_keeps_the_latest_eight_complete_exchanges(self):
+    def test_history_keeps_the_latest_five_complete_exchanges(self):
         history = []
         for number in range(1, 10):
             history.extend([
@@ -2543,8 +2542,8 @@ class ResponseContractTests(unittest.TestCase):
                 {"role": "assistant", "content": f"Answer {number}"},
             ])
         sanitized = server.sanitize_history(history)
-        self.assertEqual(len(sanitized), 16)
-        self.assertEqual(sanitized[0]["content"], "Question 2")
+        self.assertEqual(len(sanitized), 10)
+        self.assertEqual(sanitized[0]["content"], "Question 5")
         self.assertEqual(sanitized[-1]["content"], "Answer 9")
 
 
@@ -2795,18 +2794,18 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn('search.get("tour")', app)
         self.assertIn("@media (prefers-reduced-motion: reduce)", styles)
 
-    def test_context_window_reports_the_same_eight_exchange_limit_sent_to_the_server(self):
+    def test_context_window_reports_the_same_five_exchange_limit_sent_to_the_server(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
         app = (DEMO / "app.js").read_text(encoding="utf-8")
         readme = (DEMO / "README.md").read_text(encoding="utf-8")
         self.assertIn('id="context-window"', html)
-        self.assertIn("Context · conversation · 0/8", html)
-        self.assertIn("const MAX_CONTEXT_MESSAGES = 16", app)
+        self.assertIn("Context · conversation · 0/5", html)
+        self.assertIn("const MAX_CONTEXT_MESSAGES = 10", app)
         self.assertIn("MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2", app)
         self.assertIn(".slice(-MAX_CONTEXT_MESSAGES)", app)
         self.assertIn("updateContextWindow();", app)
-        self.assertIn("eight recent exchanges (sixteen messages)", readme)
-        self.assertEqual(server.MAX_HISTORY, 16)
+        self.assertIn("five recent exchanges (ten messages)", readme)
+        self.assertEqual(server.MAX_HISTORY, 10)
 
     def test_collapsed_launcher_uses_three_staggered_fifteen_second_ray_bursts(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
@@ -2944,11 +2943,11 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
         self.assertIn("@media (max-width: 520px)", styles)
         self.assertIn(".guide-panel:not(.is-expanded) .chat-transcript:not(:empty) { min-height: 145px; }", styles)
-        self.assertIn("grid-template-columns: minmax(0, 1fr) 74px", styles)
+        self.assertIn("grid-template-columns: minmax(0, 1fr) 68px", styles)
         self.assertIn(".guide-panel.is-expanded .chat-transcript", styles)
         self.assertNotIn(".privacy-copy", styles)
         self.assertNotIn(".chat-input-row { grid-template-columns: 1fr; }", styles)
-        self.assertIn(".send { width: 74px;", wix)
+        self.assertIn(".send { min-width: 0; width: 68px;", wix)
 
     def test_pages_prepare_the_live_backend_connection_before_loading_css(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")

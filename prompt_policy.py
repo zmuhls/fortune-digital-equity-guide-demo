@@ -9,12 +9,12 @@ from __future__ import annotations
 
 
 PROMPT_RELEASE_NUMBER = 1
-PROMPT_EDIT_NUMBER = 34
+PROMPT_EDIT_NUMBER = 35
 PROMPT_DISPLAY_VERSION = f"v{PROMPT_RELEASE_NUMBER}.{PROMPT_EDIT_NUMBER}"
 # Keep the immutable policy ID for stored provenance and manifest validation.
 # The dashboard presents PROMPT_DISPLAY_VERSION so an edit is not mistaken for
 # an entirely new system-prompt release.
-PROMPT_POLICY_VERSION = "2026-09-10-v34"
+PROMPT_POLICY_VERSION = "2026-09-21-v35"
 PROMPT_BEHAVIOR_RELEASE = "digital-equity-conversation-grounding"
 
 
@@ -34,8 +34,8 @@ IMMUTABLE_PROMPT_MODULES = {
         "When human action is needed, give the source-backed next step."
     ),
     "priority": (
-        "Use recent conversation to resolve the latest message, including questions about "
-        "earlier turns. Do not turn recalled participant words into site claims. Give the "
+        "Use the latest five exchanges to resolve the latest message, including questions "
+        "about earlier turns. Do not turn recalled participant words into site claims. Give the "
         "smallest complete answer, then stop: no offer, generic question, or recap. ASK is "
         "a source-selection value, not an instruction to ask."
     ),

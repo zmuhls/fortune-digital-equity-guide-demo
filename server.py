@@ -84,7 +84,7 @@ ALLOWED_ORIGINS = {
     if origin.strip()
 }
 MAX_BODY = 64 * 1024
-MAX_HISTORY = 16
+MAX_HISTORY = 10
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
 MAX_MODEL_EXCERPT_CHARS = 1800
@@ -1755,7 +1755,8 @@ def source_excerpt(source, query, limit=1800, today=None):
     if source.get("id") == "calendar" and calendar_blocks:
         # Keep complete schedule rows in source order. Do not mix the current
         # downloadable calendar with dated rows from the old rendered snapshot.
-        return "\n".join(calendar_blocks)
+        excerpt = "\n".join(calendar_blocks)
+        return excerpt if len(excerpt) <= limit else excerpt[:limit].rsplit("\n", 1)[0]
     raw_blocks = (
         calendar_blocks
         + [source.get("description", "")]
@@ -1884,7 +1885,10 @@ def source_excerpt(source, query, limit=1800, today=None):
             break
     # Rank for inclusion, not presentation: headings, conditions and actions
     # must retain their original relationships in the page.
-    return "\n".join(fragment for _, fragment in sorted(selected))
+    excerpt = "\n".join(fragment for _, fragment in sorted(selected))
+    if len(excerpt) <= limit:
+        return excerpt
+    return excerpt[:limit].rsplit("\n", 1)[0]
 
 
 def grounded_evidence_sentences(

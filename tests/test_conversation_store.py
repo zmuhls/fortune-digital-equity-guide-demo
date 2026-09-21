@@ -225,6 +225,16 @@ class ConversationStoreTests(unittest.TestCase):
         source = (DEMO / "conversation_store.py").read_text(encoding="utf-8")
         self.assertIn("t.capture_mode, t.status, t.response_json", source)
 
+    def test_retention_preserves_conversations_referenced_by_append_only_audit(self):
+        recorder = recording_recorder("transcript")
+        recorder._ready = True
+        self.assertEqual(recorder.purge_expired(force=True), 1)
+        query, params = recorder._pool.cursor.calls[0]
+        self.assertIsNone(params)
+        self.assertIn("DELETE FROM conversations c", query)
+        self.assertIn("FROM evaluation_audit_events e", query)
+        self.assertIn("e.conversation_id = c.id", query)
+
     def test_metadata_capture_never_writes_message_content(self):
         recorder = recording_recorder("metadata")
         recorder.complete_turn(

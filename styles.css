@@ -510,6 +510,7 @@ a:hover { text-decoration-thickness: 2px; }
 .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) auto auto; }
 .chat-input-row textarea {
   width: 100%;
+  min-width: 0;
   min-height: 46px;
   max-height: 92px;
   overflow-y: hidden;
@@ -682,8 +683,11 @@ a:hover { text-decoration-thickness: 2px; }
   .site-footer { padding-inline: 18px; }
   .guide-header h2 { font-size: 19px; }
   .guide-panel:not(.is-expanded) .chat-transcript:not(:empty) { min-height: 145px; }
-  .chat-input-row { grid-template-columns: minmax(0, 1fr) 74px; }
-  .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) 70px 62px; }
+  .chat-input-row { grid-template-columns: minmax(0, 1fr) 68px; }
+  .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) 64px 58px; }
+  .chat-input-row button[type="submit"] { min-width: 0; width: 68px; padding-inline: 7px; }
+  .chat-form.is-editing .chat-input-row button[type="submit"] { width: 64px; }
+  .chat-input-row .edit-cancel { min-width: 0; width: 58px; padding-inline: 5px; }
   .chat-input-row textarea {
     min-height: 46px;
     max-height: 84px;
@@ -708,6 +712,13 @@ a:hover { text-decoration-thickness: 2px; }
 @media (max-width: 360px) {
   .guide-panel { max-height: calc(100dvh - 16px); }
   .guide-footer { align-items: center; flex-direction: row; gap: 8px; }
+  .chat-form,
+  .guide-panel.is-expanded .chat-form { padding-inline: 10px; }
+  .chat-input-row { gap: 5px; grid-template-columns: minmax(0, 1fr) 62px; }
+  .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) 58px 54px; }
+  .chat-input-row button[type="submit"] { width: 62px; }
+  .chat-form.is-editing .chat-input-row button[type="submit"] { width: 58px; }
+  .chat-input-row .edit-cancel { width: 54px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
