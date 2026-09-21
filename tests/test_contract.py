@@ -1762,6 +1762,21 @@ class ResponseContractTests(unittest.TestCase):
         self.assertIsNone(server.parse_selector_response('{"pick":"one"}', allowed))
         self.assertIsNone(server.parse_selector_response("one", allowed))
 
+    def test_single_source_accepts_plain_model_answer_without_json_wrapper(self):
+        raw = (
+            "The next event is AI Safety In 2026 on Tuesday, September 22 "
+            "at 2:00 pm, at the Main Office (LIC)."
+        )
+        self.assertEqual(
+            server.parse_selector_response(raw, {"calendar"}),
+            {"pick": "calendar", "answer": raw},
+        )
+        self.assertIsNone(server.parse_selector_response(raw, {"calendar", "contact"}))
+        self.assertIsNone(server.parse_selector_response("", {"calendar"}))
+        self.assertIsNone(
+            server.parse_selector_response('{"pick":"calendar"', {"calendar"})
+        )
+
     def test_selector_parser_preserves_complete_line_separated_schedules(self):
         schedule = "\n".join(
             f"- September {day}: supported calendar event with its time and location"

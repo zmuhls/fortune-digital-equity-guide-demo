@@ -50,12 +50,20 @@ def build_prompt(
 
 
 def parse_response(raw: str, allowed_ids):
-    """Return one allowed record and complete answer; malformed output abstains."""
+    """Return one allowed record and the model's complete answer.
+
+    A single retrieved record already resolves source selection. In that case,
+    accept a plain-language model answer instead of failing the participant's
+    turn merely because a text-only provider omitted the JSON envelope.
+    """
 
     allowed = {str(value) for value in allowed_ids}
     text = str(raw or "").strip()
     match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
     if not match:
+        answer = normalize_answer(text)
+        if len(allowed) == 1 and answer and "{" not in text and "}" not in text:
+            return {"pick": next(iter(allowed)), "answer": answer}
         return None
     try:
         parsed = json.loads(match.group(0))
