@@ -55,6 +55,15 @@
     return Core.redactSixDigitValues(value);
   }
 
+  function automationSource() {
+    const navigatorValue = window.navigator || {};
+    if (navigatorValue.webdriver) return "browser-webdriver";
+    if (/\b(?:HeadlessChrome|HeadlessFirefox|Playwright)\b/i.test(
+      String(navigatorValue.userAgent || "")
+    )) return "browser-headless";
+    return undefined;
+  }
+
   function currentPage() {
     return window.FortuneMockSite?.getCurrentPage?.() || null;
   }
@@ -443,7 +452,7 @@
         history: options.history || history,
         page_context: pageContext(),
         client_surface: "replica",
-        automation_source: window.navigator?.webdriver ? "browser-webdriver" : undefined,
+        automation_source: automationSource(),
         client_event_id: clientEventId,
         conversation_id: options.startNew ? undefined : conversationId || undefined,
         conversation_token: options.startNew ? undefined : conversationToken || undefined,

@@ -532,6 +532,14 @@ test("Pages and Wix do not expose backend capture mode in the participant UI", a
   }
 });
 
+test("Pages and Wix label masked headless browser runs as automation", () => {
+  for (const source of [appSource, wixSource]) {
+    assert.match(source, /HeadlessChrome\|HeadlessFirefox\|Playwright/);
+    assert.match(source, /browser-headless/);
+    assert.match(source, /automation_source:\s*automationSource\(\)/);
+  }
+});
+
 test("loading labels fit the narrow submit button", () => {
   assert.doesNotMatch(appSource, /Sending…/);
   assert.doesNotMatch(wixSource, /Sending…/);

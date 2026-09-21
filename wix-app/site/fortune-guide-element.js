@@ -58,6 +58,15 @@
     .replace(/(?<!\d)\d{3}[-‐‑‒–—.\s]?\d{3}(?!\d)/g, "[six-digit ID removed]")
     .replace(/(?<!\d)\d{6}(?!\d)/g, "[six-digit ID removed]");
 
+  const automationSource = () => {
+    const navigatorValue = window.navigator || {};
+    if (navigatorValue.webdriver) return "browser-webdriver";
+    if (/\b(?:HeadlessChrome|HeadlessFirefox|Playwright)\b/i.test(
+      String(navigatorValue.userAgent || "")
+    )) return "browser-headless";
+    return undefined;
+  };
+
   const asHttpUrl = (value) => {
     if (typeof value !== "string" || !value.trim()) return null;
     try {
@@ -809,7 +818,7 @@
             history: requestHistory,
             page_context: this.pageContext(),
             client_surface: "wix",
-            automation_source: window.navigator?.webdriver ? "browser-webdriver" : undefined,
+            automation_source: automationSource(),
             client_event_id: this.pendingClientEventId,
             conversation_id: editing ? undefined : this.conversationId || undefined,
             conversation_token: editing ? undefined : this.conversationToken || undefined
