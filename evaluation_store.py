@@ -23,7 +23,7 @@ from prompt_policy import (
 )
 
 
-EVALUATION_SCHEMA_VERSION = "012_shared_prompt_and_review_history"
+EVALUATION_SCHEMA_VERSION = "013_automated_review_exclusion"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -1630,6 +1630,7 @@ class EvaluationStore:
                 JOIN conversation_turns t ON t.conversation_id = c.id
                 WHERE c.capture_mode = 'transcript'
                   AND c.client_surface IN ('replica', 'wix')
+                  AND NOT c.is_automated
                   AND c.expires_at > NOW()
                   AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
                   AND {VISIBLE_HUMAN_TURN_PREDICATE}

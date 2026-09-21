@@ -73,7 +73,7 @@ class EvaluationSchemaTests(unittest.TestCase):
     def test_evaluation_schema_version_tracks_shared_prompt_and_review_history(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "012_shared_prompt_and_review_history",
+            "013_automated_review_exclusion",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 
@@ -118,6 +118,7 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertNotIn("synthetic", source)
         self.assertIn("c.is_automated", eligible_source)
         self.assertIn("c.automation_source", eligible_source)
+        self.assertIn("AND NOT c.is_automated", eligible_source)
 
     def test_automated_review_surface_conversations_are_visibly_labeled(self):
         javascript = (DEMO / "evaluation.js").read_text(encoding="utf-8")

@@ -71,8 +71,12 @@ class _RecordingPool:
         return _Context(self.connection_value)
 
 
-def persisted_reservation(mode="none", surface="unknown"):
-    value = conversation_store.new_reservation(mode=mode, client_surface=surface)
+def persisted_reservation(mode="none", surface="unknown", automation_source=None):
+    value = conversation_store.new_reservation(
+        mode=mode,
+        client_surface=surface,
+        automation_source=automation_source,
+    )
     return conversation_store.TurnReservation(**{
         **value.__dict__,
         "persisted": True,
@@ -352,18 +356,24 @@ class ConversationStoreTests(unittest.TestCase):
 
     def test_only_clear_human_transcript_turns_are_review_ready(self):
         cases = (
-            ("transcript", "replica", "clear", "ready"),
-            ("transcript", "wix", "clear", "ready"),
-            ("transcript", "benchmark", "clear", "pending"),
-            ("transcript", "synthetic", "clear", "pending"),
-            ("metadata", "replica", "clear", "pending"),
-            ("transcript", "replica", "blocked", "excluded"),
+            ("transcript", "replica", None, "clear", "ready"),
+            ("transcript", "wix", None, "clear", "ready"),
+            ("transcript", "replica", "browser-webdriver", "clear", "pending"),
+            ("transcript", "benchmark", None, "clear", "pending"),
+            ("transcript", "synthetic", None, "clear", "pending"),
+            ("metadata", "replica", None, "clear", "pending"),
+            ("transcript", "replica", None, "blocked", "excluded"),
         )
-        for mode, surface, privacy_state, expected_review_state in cases:
-            with self.subTest(mode=mode, surface=surface, privacy_state=privacy_state):
+        for mode, surface, automation_source, privacy_state, expected_review_state in cases:
+            with self.subTest(
+                mode=mode,
+                surface=surface,
+                automation_source=automation_source,
+                privacy_state=privacy_state,
+            ):
                 recorder = recording_recorder(mode)
                 recorder.complete_turn(
-                    persisted_reservation(mode, surface),
+                    persisted_reservation(mode, surface, automation_source),
                     question="Synthetic question",
                     response={
                         "kind": "answer",
@@ -442,7 +452,7 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertNotIn("conversation_messages", automation_boundary)
         self.assertEqual(
             conversation_store.SCHEMA_VERSION,
-            "012_shared_prompt_and_review_history",
+            "013_automated_review_exclusion",
         )
 
 

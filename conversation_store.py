@@ -25,7 +25,7 @@ from prompt_policy import PROMPT_POLICY_VERSION
 
 CAPTURE_MODES = {"none", "metadata", "transcript"}
 HUMAN_REVIEW_SURFACES = frozenset({"replica", "wix"})
-SCHEMA_VERSION = "012_shared_prompt_and_review_history"
+SCHEMA_VERSION = "013_automated_review_exclusion"
 
 
 class CaptureUnavailable(RuntimeError):
@@ -744,6 +744,7 @@ class ConversationRecorder:
             if reservation.capture_mode == "transcript"
             and privacy_state == "clear"
             and reservation.client_surface in HUMAN_REVIEW_SURFACES
+            and not reservation.is_automated
             else "pending" if privacy_state == "clear" else "excluded"
         )
         source_ids = [
