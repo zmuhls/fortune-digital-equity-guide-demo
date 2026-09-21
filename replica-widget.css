@@ -9,6 +9,16 @@
   pointer-events: none;
 }
 
+html[data-replica-viewport-fit="true"],
+body[data-replica-viewport-fit="true"] {
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+body[data-replica-viewport-fit="true"] #site-root {
+  min-width: 0 !important;
+}
+
 #fortune-sidecar-host[data-expanded="true"] {
   width: min(480px, 100vw);
   height: min(700px, 100dvh);

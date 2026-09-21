@@ -13,7 +13,9 @@ const BASE = (process.argv[2] || "https://guide-api-production-a1a1.up.railway.a
 const OUTPUT = path.resolve(process.argv[3] || path.join(ROOT, "output/playwright/replica-route-audit.json"));
 const PROFILES = [
   { name: "desktop", viewport: { width: 1440, height: 1200 } },
-  { name: "mobile", viewport: { width: 390, height: 844 } },
+  { name: "small-laptop", viewport: { width: 1024, height: 768 } },
+  { name: "tablet", viewport: { width: 768, height: 1024 } },
+  { name: "mobile", viewport: { width: 375, height: 812 } },
 ];
 
 
@@ -115,6 +117,7 @@ async function auditProfile(browser, pages, profile) {
     if (metrics.missingFragmentTargets?.length) failures.push(`${metrics.missingFragmentTargets.length} missing fragment targets`);
     if (metrics.brokenImages?.length) failures.push(`${metrics.brokenImages.length} broken visible images`);
     if (metrics.deadControls?.length) failures.push(`${metrics.deadControls.length} inert source controls`);
+    if (metrics.horizontalOverflow > 1) failures.push(`${metrics.horizontalOverflow}px horizontal overflow`);
     results.push({ route, status, ...metrics, consoleErrors, failures });
     process.stdout.write(`[${profile.name} ${index + 1}/${pages.length}] ${route} ${failures.length ? "FAIL" : "ok"}\n`);
   }

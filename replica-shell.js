@@ -19,6 +19,36 @@
   const liveOnlyPaths = new Set(["/file-share", "/groups", "/members", "/pdf2-upload"]);
   let knownRoutes = null;
 
+  function fitVisualMirrorToViewport() {
+    const canvas = document.querySelector("#SITE_CONTAINER");
+    if (!canvas || document.documentElement.dataset.fortuneVisualMirror !== "true") return;
+
+    const configuredWidth = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--site-width")
+    );
+    const designWidth = Number.isFinite(configuredWidth) && configuredWidth > 0
+      ? configuredWidth
+      : 980;
+    const scale = Math.min(1, window.innerWidth / designWidth);
+    const fitted = scale < 0.999;
+
+    document.documentElement.dataset.replicaViewportFit = fitted ? "true" : "false";
+    document.body.dataset.replicaViewportFit = fitted ? "true" : "false";
+    canvas.style.zoom = fitted ? String(scale) : "";
+  }
+
+  let pendingViewportFit = 0;
+  function scheduleViewportFit() {
+    window.cancelAnimationFrame(pendingViewportFit);
+    pendingViewportFit = window.requestAnimationFrame(fitVisualMirrorToViewport);
+  }
+
+  fitVisualMirrorToViewport();
+  window.addEventListener("resize", scheduleViewportFit, { passive: true });
+  window.addEventListener("orientationchange", scheduleViewportFit, { passive: true });
+  window.addEventListener("load", scheduleViewportFit, { once: true });
+  document.fonts?.ready?.then(scheduleViewportFit).catch(() => {});
+
   function canonicalUrl(value) {
     try {
       const url = new URL(value, sourceUrl || "https://www.fortunedigitalequity.org/");

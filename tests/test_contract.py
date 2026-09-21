@@ -2873,6 +2873,19 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn("window.localStorage", wix)
         self.assertIn("tab-scoped session storage", readme)
 
+    def test_visual_mirror_fits_narrow_viewports_without_scaling_the_guide(self):
+        replica_shell = (DEMO / "replica-shell.js").read_text(encoding="utf-8")
+        replica_widget = (DEMO / "replica-widget.css").read_text(encoding="utf-8")
+
+        self.assertIn('document.querySelector("#SITE_CONTAINER")', replica_shell)
+        self.assertIn('window.innerWidth / designWidth', replica_shell)
+        self.assertIn('canvas.style.zoom = fitted ? String(scale) : ""', replica_shell)
+        self.assertIn('window.addEventListener("resize", scheduleViewportFit', replica_shell)
+        self.assertIn('window.addEventListener("orientationchange", scheduleViewportFit', replica_shell)
+        self.assertIn('html[data-replica-viewport-fit="true"]', replica_widget)
+        self.assertIn('overflow-x: hidden !important', replica_widget)
+        self.assertNotIn('#fortune-sidecar-host {\n  zoom:', replica_widget)
+
     def test_start_over_clears_only_the_local_conversation_state(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
         app = (DEMO / "app.js").read_text(encoding="utf-8")
