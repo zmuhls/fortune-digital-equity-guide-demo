@@ -532,6 +532,13 @@ test("Pages and Wix do not expose backend capture mode in the participant UI", a
   }
 });
 
+test("loading labels fit the narrow submit button", () => {
+  assert.doesNotMatch(appSource, /Sending…/);
+  assert.doesNotMatch(wixSource, /Sending…/);
+  assert.match(appSource, /value \? "Sending"/);
+  assert.match(wixSource, /value \? "Sending"/);
+});
+
 test("canonical URLs stay on the approved public host", () => {
   assert.equal(Core.canonicalUrl("https://fortunedigitalequity.org/devices/?x=1#top"), "https://www.fortunedigitalequity.org/devices");
   assert.equal(Core.canonicalUrl("/about/"), "https://www.fortunedigitalequity.org/about");
@@ -551,14 +558,14 @@ test("all 150 routes receive one of the reviewed page families", () => {
   }
   assert.deepEqual(counts, {
     program: 3,
-    excluded: 18,
+    excluded: 30,
     action: 3,
     directory: 6,
     support: 2,
-    event: 5,
+    event: 4,
     archive: 21,
     news: 9,
-    service: 83,
+    service: 72,
   });
   assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 150);
 });

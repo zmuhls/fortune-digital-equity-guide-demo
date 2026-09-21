@@ -45,6 +45,31 @@
     return canonical ? new URL(canonical) : null;
   }
 
+  function normalizeAnchorLabel(value) {
+    return String(value || "")
+      .replace(/\(coming soon\)/gi, "")
+      .replace(/[^a-z0-9]+/gi, " ")
+      .trim()
+      .toLowerCase();
+  }
+
+  function restoreSamePageAnchors() {
+    const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")];
+    document.querySelectorAll("a[data-anchor]").forEach(link => {
+      const label = normalizeAnchorLabel(link.getAttribute("aria-label") || link.textContent);
+      if (!label) return;
+      const heading = headings.find(candidate => {
+        const headingLabel = normalizeAnchorLabel(candidate.textContent);
+        return headingLabel === label || headingLabel.startsWith(`${label} `);
+      });
+      const target = heading?.closest("section[id]");
+      if (!target?.id) return;
+      link.href = `#${target.id}`;
+    });
+  }
+
+  restoreSamePageAnchors();
+
   fetch(new URL("site-index.json", assetRoot), { cache: "no-store" })
     .then(response => {
       if (!response.ok) throw new Error(`route index returned ${response.status}`);

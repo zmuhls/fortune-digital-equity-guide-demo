@@ -2606,7 +2606,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         now[0] += 59
         self.assertFalse(warmer.ensure(lambda: calls.append("load")))
 
-    def test_model_completion_does_not_retry_provider_errors(self):
+    def test_model_completion_falls_back_once_to_another_live_model(self):
         original_key = server.KEY
         original_openrouter_key = server.OPENROUTER_KEY
         original_ollama = server.ollama_completion
@@ -2623,14 +2623,14 @@ class FrontendAndDeploymentTests(unittest.TestCase):
             "content": '{"pick":"ASK","answer":"Hello"}',
         }
         try:
-            with self.assertRaises(RuntimeError):
-                server.model_completion([{"role": "user", "content": "Hello"}])
+            result = server.model_completion([{"role": "user", "content": "Hello"}])
         finally:
             server.KEY = original_key
             server.OPENROUTER_KEY = original_openrouter_key
             server.ollama_completion = original_ollama
             server.openrouter_completion = original_openrouter
-        self.assertEqual(calls, ["ollama"])
+        self.assertEqual(calls, ["ollama", "openrouter"])
+        self.assertEqual(result["attempted_providers"], ["ollama", "openrouter"])
 
     def test_legacy_retry_flag_cannot_change_the_selected_provider(self):
         original_key = server.KEY
@@ -2834,6 +2834,8 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
         self.assertIn('frameUrl.searchParams.set("v", "20260831-v33-1")', replica_shell)
+        self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
+        self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)
         self.assertIn("restoreConversation();", app)
         self.assertIn("clearPersistedConversation();", app)
@@ -2948,6 +2950,8 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn(".privacy-copy", styles)
         self.assertNotIn(".chat-input-row { grid-template-columns: 1fr; }", styles)
         self.assertIn(".send { min-width: 0; width: 68px;", wix)
+        self.assertIn('.panel[aria-busy="true"] .send { font-size: 12px;', wix)
+        self.assertIn('.guide-panel[aria-busy="true"] .chat-input-row button[type="submit"] { font-size: 12px;', styles)
 
     def test_pages_prepare_the_live_backend_connection_before_loading_css(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")

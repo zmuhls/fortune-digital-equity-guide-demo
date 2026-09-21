@@ -410,6 +410,7 @@
             .row { grid-template-columns: minmax(0, 1fr) 68px; }
             form.is-editing .row { grid-template-columns: minmax(0, 1fr) 64px 58px; }
             .send { min-width: 0; width: 68px; padding-inline: 7px; }
+            .panel[aria-busy="true"] .send { font-size: 12px; padding-inline: 3px; }
             form.is-editing .send { width: 64px; }
             .cancel-edit { min-width: 0; width: 58px; padding-inline: 5px; }
             .footer { padding: 0 14px; }
@@ -419,6 +420,7 @@
             .row { gap: 5px; grid-template-columns: minmax(0, 1fr) 62px; }
             form.is-editing .row { grid-template-columns: minmax(0, 1fr) 58px 54px; }
             .send { width: 62px; }
+            .panel[aria-busy="true"] .send { font-size: 11px; }
             form.is-editing .send { width: 58px; }
             .cancel-edit { width: 54px; }
           }
@@ -751,7 +753,7 @@
       this.suggestions.querySelectorAll("button").forEach((button) => { button.disabled = value; });
       this.transcript.querySelectorAll("button").forEach((button) => { button.disabled = value; });
       this.transcript.querySelectorAll("select").forEach((select) => { select.disabled = value; });
-      this.sendButton.textContent = value ? "Sending…" : this.editingQuestion ? "Update" : "Send";
+      this.sendButton.textContent = value ? "Sending" : this.editingQuestion ? "Update" : "Send";
     }
 
     privacyHold(editing) {

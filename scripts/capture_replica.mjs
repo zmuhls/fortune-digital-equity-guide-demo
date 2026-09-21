@@ -1079,7 +1079,6 @@ export function replaceWixNavigationMenusWithNativeDisclosures() {
     summary.textContent = label;
     summary.setAttribute("data-replica-static-menu-summary", "true");
     summary.style.setProperty("cursor", "pointer", "important");
-    summary.style.setProperty("font", "inherit", "important");
 
     // Preserve the public links, not Wix's generated hidden-menu state. A
     // cloned, plain list can be opened natively without inheriting a

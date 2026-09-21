@@ -420,21 +420,15 @@ def openrouter_completion(messages):
 
 
 def cail_completion(messages):
-    """One gateway generation, with the actual candidate IDs in the schema."""
+    """One gateway generation using the model's supported text interface."""
     prompt = messages[0]["content"]
     records = json.loads(prompt.rsplit("\nCANDIDATE RECORDS:\n", 1)[1])
-    schema = {**MODEL_OUTPUT_SCHEMA, "properties": {
-        **MODEL_OUTPUT_SCHEMA["properties"],
-        "pick": {"type": "string", "enum": [SELECTOR_ASK, *[r["id"] for r in records]]},
-    }}
+    candidate_ids = [SELECTOR_ASK, *[r["id"] for r in records]]
     payload = {
         "model": CAIL_MODEL, "messages": messages, "stream": False,
         "temperature": 0, "max_tokens": max(4096, MODEL_NUM_PREDICT),
         "reasoning": {"effort": "low", "exclude": True},
         "provider": {"allow_fallbacks": False, "sort": "throughput"},
-        "response_format": {"type": "json_schema", "json_schema": {
-            "name": "website_guide", "strict": True, "schema": schema,
-        }},
     }
     request = urllib.request.Request(
         CAIL_API_BASE + "/chat/completions", data=json.dumps(payload).encode(),
@@ -453,6 +447,12 @@ def cail_completion(messages):
     content = (choice.get("message") or {}).get("content") or ""
     if not str(content).strip():
         raise RuntimeError("CAIL gateway returned no content")
+    # GLM-5.3-Flash supports text generation and reasoning through CAIL, but
+    # does not advertise structured-output capability. The prompt still asks
+    # for JSON and the normal response parser validates the selected ID.
+    # Keeping the allowed IDs here makes that transport boundary explicit.
+    if not candidate_ids:
+        raise RuntimeError("CAIL gateway received no candidate IDs")
     usage = data.get("usage") or {}
     return {
         "provider": "cail", "model": str(data.get("model") or CAIL_MODEL)[:120],
@@ -464,8 +464,10 @@ def cail_completion(messages):
 
 
 def model_completion(messages, *, prefer_fallback=False):
-    # Choose once. Neither provider errors nor output validation starts another
-    # generation. Legacy credentials are inactive whenever CAIL is configured.
+    # Every path is a live language-model generation. Try the configured
+    # primary once, then make at most one bounded OpenRouter call if that
+    # provider is unavailable. Never substitute a canned response.
+    attempted = []
     if CAIL_KEY:
         provider, completion = "cail", cail_completion
     elif KEY:
@@ -474,8 +476,15 @@ def model_completion(messages, *, prefer_fallback=False):
         provider, completion = "openrouter", openrouter_completion
     else:
         raise RuntimeError("No model provider is configured")
-    result = completion(messages)
-    result["attempted_providers"] = [provider]
+    attempted.append(provider)
+    try:
+        result = completion(messages)
+    except Exception:
+        if provider == "openrouter" or not OPENROUTER_KEY:
+            raise
+        attempted.append("openrouter")
+        result = openrouter_completion(messages)
+    result["attempted_providers"] = attempted
     return result
 
 
@@ -3311,7 +3320,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         "provider": "openrouter",
                         "model": FALLBACK_MODEL,
                         "configured": bool(OPENROUTER_KEY),
-                        "enabled": False,
+                        "enabled": bool(OPENROUTER_KEY and (CAIL_KEY or KEY)),
                     },
                 },
                 "index_loaded": SITE_INDEX_PATH.exists(),

@@ -43,7 +43,7 @@ SHARED_ASSETS = (
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
-REPLICA_SHELL_JS_VERSION = "20260921-wix-visual-1"
+REPLICA_SHELL_JS_VERSION = "20260921-wix-actions-2"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
@@ -1862,6 +1862,25 @@ def render_visual_snapshot_page(
         r'''(href\s*=\s*["'])(https://(?:www\.)?fortunedigitalequity\.org[^"']*)(["'])''',
         rewrite_internal_href,
         snapshot_html,
+        flags=re.IGNORECASE,
+    )
+
+    # Older captures placed an inline !important font shorthand on the native
+    # menu summary. That reset its size to the 10px Wix root and made the two
+    # restored menu labels look crushed together. Keep the captured content,
+    # but let the replica menu stylesheet supply the reviewed nav typography.
+    def restore_menu_typography(match: re.Match[str]) -> str:
+        return re.sub(
+            r"\s*font:\s*inherit\s*!important;?",
+            "",
+            match.group(0),
+            flags=re.IGNORECASE,
+        )
+
+    rendered = re.sub(
+        r"<summary\b(?=[^>]*data-replica-static-menu-summary)[^>]*>",
+        restore_menu_typography,
+        rendered,
         flags=re.IGNORECASE,
     )
 

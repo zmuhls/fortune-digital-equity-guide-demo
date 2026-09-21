@@ -387,7 +387,7 @@
     transcript.querySelectorAll(".chat-edit-button").forEach(button => { button.disabled = value; });
     transcript.querySelectorAll(".answer-choice-select").forEach(select => { select.disabled = value; });
     panel.setAttribute("aria-busy", String(value));
-    submitButton.textContent = value ? "Sending…" : editTarget ? "Update" : "Send";
+    submitButton.textContent = value ? "Sending" : editTarget ? "Update" : "Send";
   }
 
   function endEditing(options = {}) {
