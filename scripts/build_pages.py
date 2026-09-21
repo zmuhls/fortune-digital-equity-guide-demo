@@ -43,6 +43,7 @@ SHARED_ASSETS = (
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
+REPLICA_WIDGET_CSS_VERSION = "20260921-static-slides-6"
 REPLICA_SHELL_JS_VERSION = "20260921-wix-actions-2"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
@@ -1908,7 +1909,7 @@ def render_visual_snapshot_page(
     )
     head_addition = (
         f'\n<meta name="fortune-replica-source" content="{html.escape(source_url, quote=True)}">'
-        f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-widget.css", quote=True)}">'
+        f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-widget.css?v=" + REPLICA_WIDGET_CSS_VERSION, quote=True)}">'
     )
     rendered = re.sub(
         r"</head>",

@@ -220,6 +220,25 @@ test("static disclosure and navigation gates reject hidden Wix-only content", ()
     }),
     /static navigation menus; expected 2/,
   );
+
+  const slideshow = `
+    <div data-replica-static-slideshow="true">
+      <figure id="slide-1" data-replica-static-slide="true"><img src="data:image/png;base64,iVBORw0KGgo="></figure>
+      <figure id="slide-2" data-replica-static-slide="true"><img src="data:image/png;base64,iVBORw0KGgo="></figure>
+    </div>
+  `;
+  assert.doesNotThrow(() => assertStaticContentMaterialized(slideshow, { slides: 2 }));
+  assert.throws(
+    () => assertStaticContentMaterialized(slideshow, { slides: 3 }),
+    /static slides; expected 3/,
+  );
+  assert.throws(
+    () => assertStaticContentMaterialized(
+      `${slideshow}<div class="wixui-slideshow"></div>`,
+      { slides: 2 },
+    ),
+    /dynamic Wix slideshow remains/,
+  );
 });
 
 

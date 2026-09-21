@@ -46,6 +46,7 @@ export const WIX_ACCORDION_HEADER_SELECTOR =
 export const MAX_PROGRESSIVE_COLLECTION_EXPANSIONS = 24;
 export const CALENDAR_STATIC_HORIZON_EXPANSIONS = 9;
 export const CALENDAR_POPUP_DISMISSAL_TIMEOUT_MS = 5_000;
+export const WIX_SLIDESHOW_SETTLE_TIMEOUT_MS = 12_000;
 
 // This exists only while Firefox is collecting hidden panel content. It is
 // removed when the native static disclosure is written into the document.
@@ -395,11 +396,15 @@ function hasMarker(tag, name) {
 export function assertStaticContentMaterialized(html, expected = {}) {
   const expectedDisclosures = Number(expected.disclosures || 0);
   const expectedMenus = Number(expected.navigationMenus || 0);
+  const expectedSlides = Number(expected.slides || 0);
   if (!Number.isSafeInteger(expectedDisclosures) || expectedDisclosures < 0) {
     throw new CaptureError("static disclosure expectation must be a non-negative integer");
   }
   if (!Number.isSafeInteger(expectedMenus) || expectedMenus < 0) {
     throw new CaptureError("static navigation-menu expectation must be a non-negative integer");
+  }
+  if (!Number.isSafeInteger(expectedSlides) || expectedSlides < 0) {
+    throw new CaptureError("static slideshow expectation must be a non-negative integer");
   }
 
   const staticDisclosureTags = openingTags(html, "details")
@@ -434,6 +439,17 @@ export function assertStaticContentMaterialized(html, expected = {}) {
     if (/\baria-hidden=(?:"true"|'true')/i.test(tag) || /display\s*:\s*none/i.test(tag)) {
       throw new CaptureError("static navigation menu remains hidden");
     }
+  }
+
+  const staticSlideTags = openingTags(html, "figure")
+    .filter((tag) => hasMarker(tag, "data-replica-static-slide"));
+  if (staticSlideTags.length !== expectedSlides) {
+    throw new CaptureError(
+      `snapshot contains ${staticSlideTags.length} static slides; expected ${expectedSlides}`,
+    );
+  }
+  if (expectedSlides > 0 && /class=["'][^"']*\bwixui-slideshow\b/i.test(html)) {
+    throw new CaptureError("dynamic Wix slideshow remains instead of static captured slides");
   }
 }
 
@@ -1502,6 +1518,137 @@ async function hydratePage(page) {
 }
 
 
+/**
+ * Wix mounts only the current slideshow panel, so serializing the initial DOM
+ * can leave an empty frame with dead navigation dots. Visit every published
+ * slide, capture its rendered visual state, and replace the executable widget
+ * with a small native anchor-driven gallery before sanitization.
+ */
+async function materializeWixSlideshows(page) {
+  const slideshowCount = await page.locator(".wixui-slideshow").count();
+  let slideCount = 0;
+
+  for (let slideshowIndex = 0; slideshowIndex < slideshowCount; slideshowIndex += 1) {
+    const slideshow = page.locator(".wixui-slideshow").nth(slideshowIndex);
+    const targets = await slideshow.locator('nav[aria-label="Slides"] a[href*="#"]').evaluateAll(
+      (anchors) => anchors.map((anchor) => {
+        const href = anchor.getAttribute("href") || "";
+        const hash = href.includes("#") ? href.slice(href.indexOf("#") + 1) : "";
+        return {
+          id: decodeURIComponent(hash),
+          label: anchor.getAttribute("aria-label") || `Slide ${anchors.indexOf(anchor) + 1}`,
+        };
+      }).filter((record) => record.id),
+    );
+    if (targets.length === 0) continue;
+
+    const records = [];
+    for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
+      const target = targets[targetIndex];
+      const navigation = slideshow.locator('nav[aria-label="Slides"] a[href*="#"]').nth(targetIndex);
+      await navigation.click({ force: true });
+      await page.waitForFunction(
+        (id) => {
+          const slide = document.getElementById(id);
+          if (!slide || slide.getClientRects().length === 0) return false;
+          const frame = slide.querySelector("iframe");
+          const image = slide.querySelector("img");
+          return Boolean(frame?.getAttribute("src") || image?.currentSrc || slide.textContent?.trim());
+        },
+        target.id,
+        { timeout: WIX_SLIDESHOW_SETTLE_TIMEOUT_MS },
+      );
+      await page.waitForTimeout(700);
+      const slide = page.locator(`#${target.id}`).first();
+      const primaryVisual = slide.locator("iframe, img").first();
+      const png = await (await primaryVisual.count() ? primaryVisual : slide).screenshot({
+        animations: "disabled",
+        caret: "hide",
+        timeout: 20_000,
+      });
+      const metadata = await slide.evaluate((element) => {
+        const frame = element.querySelector("iframe[src]");
+        const linked = element.querySelector("a[href]");
+        return {
+          title:
+            frame?.getAttribute("title") ||
+            element.getAttribute("aria-label") ||
+            element.textContent?.replace(/\s+/g, " ").trim() ||
+            "Slideshow item",
+          href: frame?.getAttribute("src") || linked?.getAttribute("href") || window.location.href,
+        };
+      });
+      records.push({
+        ...target,
+        ...metadata,
+        preview: `data:image/png;base64,${png.toString("base64")}`,
+      });
+    }
+
+    await slideshow.evaluate((element, slides) => {
+      const gallery = document.createElement("div");
+      const dimensions = element.getBoundingClientRect();
+      gallery.id = element.id;
+      gallery.className = [...element.classList]
+        .filter((className) => className !== "wixui-slideshow")
+        .join(" ");
+      gallery.style.cssText = element.getAttribute("style") || "";
+      gallery.style.height = `${dimensions.height}px`;
+      gallery.setAttribute("data-replica-static-slideshow", "true");
+      gallery.setAttribute("role", "region");
+      gallery.setAttribute("aria-label", element.getAttribute("aria-label") || "Slideshow");
+
+      slides.forEach((slide, index) => {
+        const figure = document.createElement("figure");
+        figure.id = slide.id;
+        figure.setAttribute("data-replica-static-slide", "true");
+        if (index === 0) figure.setAttribute("data-replica-static-slide-default", "true");
+        const link = document.createElement("a");
+        link.href = slide.href;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute("aria-label", `Open ${slide.title}`);
+        const image = document.createElement("img");
+        image.src = slide.preview;
+        image.alt = `${slide.title} (static preview)`;
+        image.setAttribute("data-replica-slideshow-preview", "true");
+        link.append(image);
+        figure.append(link);
+        const previous = document.createElement("a");
+        previous.href = `#${slides[(index + slides.length - 1) % slides.length].id}`;
+        previous.setAttribute("data-replica-static-slide-previous", "true");
+        previous.setAttribute("aria-label", "Previous slide");
+        previous.textContent = "Previous";
+        const next = document.createElement("a");
+        next.href = `#${slides[(index + 1) % slides.length].id}`;
+        next.setAttribute("data-replica-static-slide-next", "true");
+        next.setAttribute("aria-label", "Next slide");
+        next.textContent = "Next";
+        figure.append(previous, next);
+        gallery.append(figure);
+      });
+
+      const navigation = document.createElement("nav");
+      navigation.setAttribute("data-replica-static-slide-navigation", "true");
+      navigation.setAttribute("aria-label", "Slides");
+      slides.forEach((slide, index) => {
+        const link = document.createElement("a");
+        link.href = `#${slide.id}`;
+        link.setAttribute("aria-label", slide.label || `Slide ${index + 1}`);
+        link.textContent = String(index + 1);
+        navigation.append(link);
+      });
+      gallery.append(navigation);
+      element.replaceWith(gallery);
+    }, records);
+    slideCount += records.length;
+  }
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  return { slideshows: slideshowCount, slides: slideCount };
+}
+
+
 async function captureIframePreviews(page) {
   const frames = page.locator("iframe");
   const count = await frames.count();
@@ -1618,6 +1765,7 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     const staticNavigationMenus = await page.evaluate(
       replaceWixNavigationMenusWithNativeDisclosures,
     );
+    const staticSlideshows = await materializeWixSlideshows(page);
     const embedPreviews = await captureIframePreviews(page);
     const capturedCookies = await context.cookies();
     if (capturedCookies.length > 0) {
@@ -1647,6 +1795,7 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     assertStaticContentMaterialized(html, {
       disclosures: staticContent.disclosures,
       navigationMenus: staticNavigationMenus,
+      slides: staticSlideshows.slides,
     });
     const source = Buffer.from(html, "utf8");
     const snapshot = await deterministicGzip(source);
@@ -1668,6 +1817,8 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
       static_content: {
         wix_accordions: staticContent.disclosures,
         navigation_menus: staticNavigationMenus,
+        wix_slideshows: staticSlideshows.slideshows,
+        slideshow_items: staticSlideshows.slides,
         progressive_collections: progressiveCollections,
       },
       source_bytes: source.byteLength,

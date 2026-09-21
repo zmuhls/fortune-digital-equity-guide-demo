@@ -182,7 +182,10 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn('https://static.wixstatic.com/hero.jpg', rendered)
         self.assertIn('href="about/"', rendered)
         self.assertNotRegex(rendered, r'<details[^>]*\sopen(?:=|\s|>)')
-        self.assertIn('href="replica-widget.css"', rendered)
+        self.assertIn(
+            f'href="replica-widget.css?v={build_pages.REPLICA_WIDGET_CSS_VERSION}"',
+            rendered,
+        )
         self.assertEqual(rendered.lower().count("<script"), 1)
         self.assertIn("replica-shell.js", rendered)
 

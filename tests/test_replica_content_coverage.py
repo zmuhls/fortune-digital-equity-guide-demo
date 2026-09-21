@@ -89,7 +89,15 @@ class ReplicaContentCoverageTests(unittest.TestCase):
         html = self.html_for("/calendar")
         progressive = self.static_content_for("/calendar")["progressive_collections"]
         self.assertEqual(progressive["load_more_clicks"], 9)
-        self.assertIsNone(progressive["calendar_horizon"])
+        self.assertEqual(
+            progressive["calendar_horizon"],
+            {
+                "clicks": 9,
+                "limit": 9,
+                "continuation_removed": True,
+                "policy": "volatile live agenda; continue on the live Digital Equity calendar",
+            },
+        )
         self.assertGreater(progressive["after"]["visible_text_characters"], progressive["before"]["visible_text_characters"])
         self.assertIn("September 21", self.visible_text_for("/calendar"))
         self.assertIn("October 26", self.visible_text_for("/calendar"))
@@ -105,6 +113,18 @@ class ReplicaContentCoverageTests(unittest.TestCase):
                     progressive["after"]["images"] > progressive["before"]["images"]
                     or progressive["controls_retired_without_growth"] >= 1,
                 )
+
+    def test_tech_fair_highlight_videos_have_static_previews_and_working_navigation(self):
+        html = self.html_for("/techfair")
+        static_content = self.static_content_for("/techfair")
+        self.assertEqual(static_content.get("wix_slideshows"), 1)
+        self.assertEqual(static_content.get("slideshow_items"), 3)
+        self.assertEqual(html.count('data-replica-static-slide="true"'), 3)
+        self.assertEqual(html.count('data-replica-slideshow-preview="true"'), 3)
+        self.assertNotIn("wixui-slideshow", html)
+        for target in ("comp-m5lhvqii", "comp-m5lhvqio2", "comp-m5lhvqiz2"):
+            self.assertIn(f'id="{target}"', html)
+            self.assertIn(f'href="#{target}"', html)
 
     def test_capture_has_no_submission_or_error_state_noise(self):
         phrases = (

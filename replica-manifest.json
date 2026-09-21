@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-09-21T18:53:24.207Z",
+  "captured_at": "2026-09-21T20:47:21.464Z",
   "source_origin": "https://www.fortunedigitalequity.org",
   "route_count": 150,
   "capture": {
@@ -27,6 +27,8 @@
       "static_content": {
         "wix_accordions": 8,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -47,10 +49,10 @@
           }
         }
       },
-      "source_bytes": 904342,
-      "snapshot_bytes": 242291,
-      "source_sha256": "173c27ef566f4145efc55f2431e873e312f211aa45b094697c172acc66da7e85",
-      "snapshot_sha256": "251924a95640cfc1c89097f2730edbfc26897b5f1307a2dc414d1da9c4a192bc"
+      "source_bytes": 904290,
+      "snapshot_bytes": 242279,
+      "source_sha256": "657ec50dbc15bdfe0c8e04daac626ef1d38e247af1f848b8aae53ca519f18def",
+      "snapshot_sha256": "bfa4326a71d7604498dedc723671223ce4a6684ec782b97549e5850d629b154d"
     },
     {
       "id": "page-about-59ff9683",
@@ -66,6 +68,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -86,10 +90,10 @@
           }
         }
       },
-      "source_bytes": 285441,
-      "snapshot_bytes": 45264,
-      "source_sha256": "b5c168c9a57ba11927771e7fc3905dee97f547e2e85a1198c23a1b9832ae883c",
-      "snapshot_sha256": "f88791471f0603b87271cda2f8681bcd4a1b0d893ea190da797eb37a8a4d87b7"
+      "source_bytes": 285389,
+      "snapshot_bytes": 45255,
+      "source_sha256": "495cbadd7bd8805d075cb321b2babacac3f192b163f3b1dfed7670256557a35b",
+      "snapshot_sha256": "f7331c23cca92f846fec33b24aa1e3806b20c5bccf8eddaedfeb435fa45fe4b8"
     },
     {
       "id": "page-about-impact-4bd24a44",
@@ -105,6 +109,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -125,10 +131,10 @@
           }
         }
       },
-      "source_bytes": 605019,
-      "snapshot_bytes": 305194,
-      "source_sha256": "29de360a06c1075fc362c3021d49c0dd2c07889fc58f805eaf4547232d9a2c99",
-      "snapshot_sha256": "70b91155647cae3216d44fc8e46870bbb2defb8e03484882ee03cb051a625d3c"
+      "source_bytes": 604967,
+      "snapshot_bytes": 305180,
+      "source_sha256": "3b462b950b67ede035d2cc1b350f215673cd317bf7a425ad938e4ff9cb446708",
+      "snapshot_sha256": "307d472a6e7a2fa12811593a602a36c31404c058e9e640c29ecef080ae7cf9f8"
     },
     {
       "id": "page-calendar-86824f99",
@@ -144,11 +150,18 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 9,
-          "controls_retired_without_growth": 1,
+          "controls_retired_without_growth": 0,
           "exhausted_controls_removed": 0,
-          "calendar_horizon": null,
+          "calendar_horizon": {
+            "clicks": 9,
+            "limit": 9,
+            "continuation_removed": true,
+            "policy": "volatile live agenda; continue on the live Digital Equity calendar"
+          },
           "calendar_popup_dismissals": 0,
           "before": {
             "visible_text_characters": 1324,
@@ -157,17 +170,17 @@
             "images": 10
           },
           "after": {
-            "visible_text_characters": 5921,
-            "links": 4,
+            "visible_text_characters": 6602,
+            "links": 5,
             "service_page_links": 0,
-            "images": 89
+            "images": 99
           }
         }
       },
-      "source_bytes": 724162,
-      "snapshot_bytes": 81213,
-      "source_sha256": "7c55533a8215076bc1aac5eb1f5a273f9afed861fa8ee7295c3aa4cd381a36c4",
-      "snapshot_sha256": "f86a1365799692ac570133d5253c5100051707c77c3ec8f4ba0f9d856b2a1c96"
+      "source_bytes": 724604,
+      "snapshot_bytes": 81310,
+      "source_sha256": "f135432118ce84349c8d1d03a2746a6acf300f0431c62c2776bb229f42a33ccb",
+      "snapshot_sha256": "795f2ebf8003495cbee64face4955f0575d082a4af1d1d54916a18053a7d862d"
     },
     {
       "id": "page-catalog-4360792f",
@@ -183,6 +196,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 5,
           "controls_retired_without_growth": 0,
@@ -203,10 +218,10 @@
           }
         }
       },
-      "source_bytes": 624576,
-      "snapshot_bytes": 71138,
-      "source_sha256": "209d99928ac25923629603fab5a6ee7ff75b8ba77017a1a53533006713682e30",
-      "snapshot_sha256": "167cd15f21ba071fdd040dfb7f841c757c5f6a15986eedf93a50365a3225b48a"
+      "source_bytes": 624424,
+      "snapshot_bytes": 71140,
+      "source_sha256": "792bfe2979499c95216772f2f1211384b4e22dde48c6fa0b1e618d7a76e36162",
+      "snapshot_sha256": "203be15bec67bb262450b98c2bc968e58c3280f0f42b3f4265654c793cc6f5b6"
     },
     {
       "id": "page-certifications-df2337b0",
@@ -222,6 +237,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -242,10 +259,10 @@
           }
         }
       },
-      "source_bytes": 239666,
-      "snapshot_bytes": 37836,
-      "source_sha256": "ba45ab45c73f1519a66725863b0e10b0a8270b3fe1b5233cdda910a1b1f55289",
-      "snapshot_sha256": "b1d9e3df25b85762c132445d22eece103c786f4be7dc269abe3660c04efa528c"
+      "source_bytes": 239614,
+      "snapshot_bytes": 37825,
+      "source_sha256": "edc34b2bd2081d28f8f7639c0de5b8590097e5def0d97530504cf77072f9f73f",
+      "snapshot_sha256": "e3b37007a23b298c667672523d04ae20b3233e143e45ad9f0db3b2714cecc15b"
     },
     {
       "id": "page-contact-7c8ae02b",
@@ -261,6 +278,8 @@
       "static_content": {
         "wix_accordions": 4,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -281,10 +300,10 @@
           }
         }
       },
-      "source_bytes": 685777,
-      "snapshot_bytes": 103744,
-      "source_sha256": "e8d85dbf6982057d44774bdcff6b12558758db0888e028083512978877047d98",
-      "snapshot_sha256": "d995fcf0d5702159b0786026d7e943b5f04631d03860d414a3b5f63361581c7d"
+      "source_bytes": 685725,
+      "snapshot_bytes": 103743,
+      "source_sha256": "d177037527ba87614e11eff8ce9574897ff34677c6a5a1f4d8726ece01676aed",
+      "snapshot_sha256": "6a3766792dce023b410011456ce82a89b45a2676206fd3cf6d85e886941efe43"
     },
     {
       "id": "page-deiqa-dbf22eb5",
@@ -300,6 +319,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -320,10 +341,10 @@
           }
         }
       },
-      "source_bytes": 220927,
-      "snapshot_bytes": 36979,
-      "source_sha256": "e638c5a72c8c3585f49f1c6f6175ef38c5bfb75f09302b80fe307718ed05f734",
-      "snapshot_sha256": "84a592b5f795568c6c4f221a6f8a416f3853c8d42c7a29d5d50ceaddd50c5729"
+      "source_bytes": 220875,
+      "snapshot_bytes": 36972,
+      "source_sha256": "0301cbf3f827be11826a26583c1b91c57793d36a9f7e08f39a5d637a4d2c341a",
+      "snapshot_sha256": "9983831fefaa2ea82c66ccf9b7ff91d4081eac72846d1a50dcf156625735ba3a"
     },
     {
       "id": "page-devices-4f203f1b",
@@ -334,11 +355,13 @@
       "status": 200,
       "title": "Devices | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"dc662e5266c16587e17fb9f60474fa36\"",
+      "etag": "W/\"5fe5f27085c3f18b1afcca156bb98cff\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -359,10 +382,10 @@
           }
         }
       },
-      "source_bytes": 218902,
-      "snapshot_bytes": 36621,
-      "source_sha256": "c80d7dbf2d0f5e7320594d5dcf6753260b82e8d130b96aa769d94dc81a946245",
-      "snapshot_sha256": "ff405dcaf6d10d710d653a8d0d985a33b0ddce7de5ae970218d187f4abf2f29d"
+      "source_bytes": 218850,
+      "snapshot_bytes": 36615,
+      "source_sha256": "319c9b32065fd9eaeb94030d25fa3547947d0d214feacb45a1053a59b5838ebb",
+      "snapshot_sha256": "ed776dde55ff93fbea2430dd289f4f4f48d321d46a94a8664d01aa5d15a867f7"
     },
     {
       "id": "page-events-7b460f87",
@@ -378,6 +401,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -398,10 +423,10 @@
           }
         }
       },
-      "source_bytes": 268183,
-      "snapshot_bytes": 48046,
-      "source_sha256": "af5c4b07a327b7749fcfccf7573bf929235626376e91814ed0aefb5c6aa4c8fa",
-      "snapshot_sha256": "44f0548484b559c6fa7d95329d313d48dd712598657fb6210efcf1498c6622c0"
+      "source_bytes": 268131,
+      "snapshot_bytes": 48038,
+      "source_sha256": "e41d77d83501b6443ae5737badee99f8a16727060a3835e48112bd402c34ce30",
+      "snapshot_sha256": "c8a44ed22d7c813a9c564e6053482eca2aeadb9758e96cf4a70714e33a53f8fa"
     },
     {
       "id": "page-events-ai-qa-d8e77da8",
@@ -417,6 +442,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -437,10 +464,10 @@
           }
         }
       },
-      "source_bytes": 221074,
-      "snapshot_bytes": 36975,
-      "source_sha256": "35a7851a583bc1a589fc27d430e5f78c60fadc89026946fe062a308d84f7c3f5",
-      "snapshot_sha256": "7ee27725f1a0d1c0ec4f520a9d64574e88f3e02395ed40ab72142ec0847da295"
+      "source_bytes": 221022,
+      "snapshot_bytes": 36968,
+      "source_sha256": "93c2781011ccfcf11f34c9254a1a476c635c1f503f8db29396545c89cdab63f7",
+      "snapshot_sha256": "55b2315360f7b4fb60973df15ddfccb17787ff9b66220424b2f80c80f5e79c33"
     },
     {
       "id": "page-mediakit-c07624f0",
@@ -456,6 +483,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -476,10 +505,10 @@
           }
         }
       },
-      "source_bytes": 220429,
-      "snapshot_bytes": 35817,
-      "source_sha256": "5ff6078d7028fc804050d66ea748dc819fd892ed06dd70b014f58ffb22056256",
-      "snapshot_sha256": "12809ad865ba8e35704e5d2840fb644fc82f59cf1b25b54252514211ee308a7b"
+      "source_bytes": 220377,
+      "snapshot_bytes": 35809,
+      "source_sha256": "70d8404167eb396254c40f271be0c166d9b7f0cc520aac6c22a718aae5dbc96b",
+      "snapshot_sha256": "86d607c55e65ebfce2e4c90ffc204ef7789930176d084969ca3ea9c6ce835cc2"
     },
     {
       "id": "page-members-4d8b4853",
@@ -495,6 +524,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -515,10 +546,10 @@
           }
         }
       },
-      "source_bytes": 215122,
-      "snapshot_bytes": 51324,
-      "source_sha256": "5ebc12e761cccdaed24e8bfab93c363aeb7a8d0a07420e4f6d9b83a1e99c674f",
-      "snapshot_sha256": "e1888357e9002fdeed22d222770bc730786bcee4017023f6feab28671e534ccd"
+      "source_bytes": 215070,
+      "snapshot_bytes": 51315,
+      "source_sha256": "68c153150e639b7b111e5f2f71e6d32d2f061d203a57c5a94be5c2c91a379034",
+      "snapshot_sha256": "78d06bf8178353381867b7bd7ab82b15f41e958e8f929dd868150772f384b56e"
     },
     {
       "id": "page-news-f22886e6",
@@ -534,6 +565,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -541,23 +574,23 @@
           "calendar_horizon": null,
           "calendar_popup_dismissals": 0,
           "before": {
-            "visible_text_characters": 4130,
-            "links": 48,
+            "visible_text_characters": 3722,
+            "links": 44,
             "service_page_links": 0,
-            "images": 20
+            "images": 18
           },
           "after": {
-            "visible_text_characters": 4130,
-            "links": 48,
+            "visible_text_characters": 3722,
+            "links": 44,
             "service_page_links": 0,
-            "images": 20
+            "images": 18
           }
         }
       },
-      "source_bytes": 576854,
-      "snapshot_bytes": 78107,
-      "source_sha256": "a8a2d058c9b9b54e19ad1f8bdc9e0b1ed6cb06d6adf13be03507f332fba26fce",
-      "snapshot_sha256": "5e1b1e35f5af1148d324304f129ac157714ca3954633f930b08ade12d0ce0e1c"
+      "source_bytes": 565865,
+      "snapshot_bytes": 77416,
+      "source_sha256": "c53d462ffbd99142cc7f0cf0c24dae1df9779039ce35f77af528744d4f053cb2",
+      "snapshot_sha256": "7bdf7d3aa94a113a4afa2dfe0cd3ea8110340031a3864e39c6f2289093266b74"
     },
     {
       "id": "category-news-categories-classes-2f5877df",
@@ -573,6 +606,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -593,10 +628,10 @@
           }
         }
       },
-      "source_bytes": 488278,
-      "snapshot_bytes": 71488,
-      "source_sha256": "3e54974acd3c28e843f389b82b00b64069979e932a2a62d97b1280ccec42e01e",
-      "snapshot_sha256": "f1f109872700a2360edf211744418d9fbc3987a24d2dceb6d7906d034b3fa07d"
+      "source_bytes": 488226,
+      "snapshot_bytes": 71481,
+      "source_sha256": "aa816181ee315344c5aface40ae1be9ebe042b73fa59d00f3599f260e275e5fc",
+      "snapshot_sha256": "522fe0f7de5d103955f4c5af638a9affce389bdc3af01a7a2160ee60fa645285"
     },
     {
       "id": "category-news-categories-events-74c0d014",
@@ -612,6 +647,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -632,10 +669,10 @@
           }
         }
       },
-      "source_bytes": 494055,
-      "snapshot_bytes": 72207,
-      "source_sha256": "f0f919154c0caf21806246c2462adc9b70186d161fd19a36c339f2c5098211e1",
-      "snapshot_sha256": "e6ab6a87d3793dbd902b0460708c041f454fe66e0fd2e06fabb78256c1b0adb9"
+      "source_bytes": 494003,
+      "snapshot_bytes": 72201,
+      "source_sha256": "6cc5f8743ff5ac923e5f5eba4bddab02aa38fb19130540484e1d73e3940dc33e",
+      "snapshot_sha256": "56ba0cc8c54462541774a78fdac3f360c6bf1420acc522698e9287cfcae68fd2"
     },
     {
       "id": "category-news-categories-fortune-bloggers-b05e092d",
@@ -651,6 +688,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -671,10 +710,10 @@
           }
         }
       },
-      "source_bytes": 482913,
-      "snapshot_bytes": 71043,
-      "source_sha256": "13dd640e777957d98dd6682f9a675a4319f259c73e3d9f24acaf8a5a2c005807",
-      "snapshot_sha256": "8fa77f584301478e94a536a0092da2a4dc2696c48ca4bb753c8136c18835f903"
+      "source_bytes": 482861,
+      "snapshot_bytes": 71034,
+      "source_sha256": "4eccceb22f46683466e3c46b55c5b6cd7fafc305efd64216569785e235b34bca",
+      "snapshot_sha256": "08b1050aafdd1fa6e9d0308414ad9bb92fbc906d0fac256ad34c3723ba18f036"
     },
     {
       "id": "category-news-categories-general-eecc9054",
@@ -690,6 +729,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -710,10 +751,10 @@
           }
         }
       },
-      "source_bytes": 477995,
-      "snapshot_bytes": 70717,
-      "source_sha256": "1e64b96a9b25a8d6427762aee3021543fcbe330423874fb0c0a1185152470c5c",
-      "snapshot_sha256": "861c7729650108bc26593a9e2fccba4ea0d897d631739d7280e96bf395c23bad"
+      "source_bytes": 477943,
+      "snapshot_bytes": 70710,
+      "source_sha256": "ef3966dfe00e6e455cba8abd4ae949994683adce2e899edfade5f0877b803385",
+      "snapshot_sha256": "5e9e8cbbd542886fbc7692a8e7f16246666201a69fa5911dcad1fa2056d013d9"
     },
     {
       "id": "category-news-categories-press-d19e6630",
@@ -729,6 +770,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -749,10 +792,10 @@
           }
         }
       },
-      "source_bytes": 489626,
-      "snapshot_bytes": 71948,
-      "source_sha256": "4585baac761374f1b2a25510a5da9092ee042f693424d7eec52c61fc46ce76f6",
-      "snapshot_sha256": "19c3c2d3eeaebc1d44acf744fa705e6528bae3181dd3117609cc15472cc5401e"
+      "source_bytes": 489574,
+      "snapshot_bytes": 71942,
+      "source_sha256": "88f00c5e0b0407f6b4dc855951266d208d06378d76d15811a5ea4a716744353f",
+      "snapshot_sha256": "73526216d608cb920d7fab16cf5f08af49cfe6349a2caa482f88732495eb253c"
     },
     {
       "id": "category-news-categories-student-8c206e2c",
@@ -768,6 +811,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -788,10 +833,10 @@
           }
         }
       },
-      "source_bytes": 482868,
-      "snapshot_bytes": 71033,
-      "source_sha256": "c15f36ff736e3c3a8ed7e40ff0e5c960d69f9cd929b40a3198755f5742ae38ef",
-      "snapshot_sha256": "4f4845a552935b09b6cab4926c1fcde11cd6982170fff6e3bb49df994361ae82"
+      "source_bytes": 482816,
+      "snapshot_bytes": 71025,
+      "source_sha256": "6bac2645f55ba117f6087bd6b41eaeabc317157869ad217f2ff1a1df147f699f",
+      "snapshot_sha256": "9b020459ea955a2ce432efa734f26568717e1092a250ed9fa7449c88c9f2b00a"
     },
     {
       "id": "category-news-categories-updates-9ee8373f",
@@ -802,11 +847,13 @@
       "status": 200,
       "title": "Updates",
       "site_revision": 2090,
-      "etag": "W/\"e6e3afe33624e67601e1760f2eab5677\"",
+      "etag": "W/\"f75abea134d813a349fbfa3ce2310ae1\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -827,10 +874,10 @@
           }
         }
       },
-      "source_bytes": 504889,
-      "snapshot_bytes": 72736,
-      "source_sha256": "048cb646ceeb1f06d407a81a77c1b646c1f78506335f6d49d0209bb079bb0b17",
-      "snapshot_sha256": "495a807915d6e1711cc8bb7af975916f40f046de1c66ce562aa95f3f0672d9b8"
+      "source_bytes": 504837,
+      "snapshot_bytes": 72728,
+      "source_sha256": "a45ffdec7bcafa6950fc77b18775c9474e48cb2ed83352012c4648718b23c50d",
+      "snapshot_sha256": "24f7d1253a1f6d89dd07eb7cf43f5febda4c5dcc18f5372cd1a9d2d0bc01bac9"
     },
     {
       "id": "category-news-page-2-32287912",
@@ -846,6 +893,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -866,10 +915,10 @@
           }
         }
       },
-      "source_bytes": 528196,
-      "snapshot_bytes": 74909,
-      "source_sha256": "7dd533078d76145466f85fef058f5d6ce91d85119e1ae7f3706ebe04c6ff619a",
-      "snapshot_sha256": "35ed82e3d146ec2dfede787b82c924dbe307c7973cefe020150b5cc0eeea03a0"
+      "source_bytes": 528147,
+      "snapshot_bytes": 74905,
+      "source_sha256": "fb995d30a9a31995c2291a6f6f392226c8736d94059c462b2c1b6d1da24eca93",
+      "snapshot_sha256": "8a77e28447f6b586d747de6e907f48db44a0921ec75fe6bd22e254579db59366"
     },
     {
       "id": "category-news-page-3-1cd3d02b",
@@ -885,6 +934,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -905,10 +956,10 @@
           }
         }
       },
-      "source_bytes": 478581,
-      "snapshot_bytes": 70822,
-      "source_sha256": "1350100536abd3533c860d6fcca3058a1a77a9da6b96f23f43d3f3ea3491966b",
-      "snapshot_sha256": "267ce09b9d22f8b2cf1280f76289eeeb1120e5e05307c47ad6ef1a7828e0ae1d"
+      "source_bytes": 478529,
+      "snapshot_bytes": 70816,
+      "source_sha256": "2c1851c472959d5a9c2dfc92eeae4ad437288057f2c6dd7ada35b21bd2a2d42a",
+      "snapshot_sha256": "620d8687ef12f2d546add24d97f1102de1fe8d2882cc240dba3de959f87279a0"
     },
     {
       "id": "page-opportunities-34b5847f",
@@ -924,6 +975,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -944,10 +997,10 @@
           }
         }
       },
-      "source_bytes": 233016,
-      "snapshot_bytes": 37877,
-      "source_sha256": "29f92c00d4837b84eedae9567a98fa9d87b6a83008fdfd65ebb379e931db1e28",
-      "snapshot_sha256": "d465c642af7c1b73b452eed9d81ddd689aadb5bf43a94420fda9f1a32b5d5199"
+      "source_bytes": 232964,
+      "snapshot_bytes": 37871,
+      "source_sha256": "28a1795d34bc1c6531c8facae4ded0fd45da3dde1edeb827ffbeccb84599bdf0",
+      "snapshot_sha256": "500dc3149132d717dd5cd43c550880303734abbbee5ca7a605eba99edb5809dd"
     },
     {
       "id": "page-other-8ecc2214",
@@ -963,6 +1016,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -983,10 +1038,10 @@
           }
         }
       },
-      "source_bytes": 251913,
-      "snapshot_bytes": 39790,
-      "source_sha256": "219eb40333d38d1828e156cacf68b765dab491670313f51c173f554c97baf7c9",
-      "snapshot_sha256": "dfca17fa75262423c7eedd80e5e2dde944b24175aeed26e5c1e0d06dd1d9bc3f"
+      "source_bytes": 251861,
+      "snapshot_bytes": 39780,
+      "source_sha256": "d70ffbbe512e5f2398be69c6b6ddd1caed7fa96e7ea3e1c3ad9dbe5493fba671",
+      "snapshot_sha256": "841cc73fc9f1f565ef44c333915032cd4725b361ad3b1fbbacc8a571b6527469"
     },
     {
       "id": "page-pdf-a771070b",
@@ -1002,6 +1057,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1022,10 +1079,10 @@
           }
         }
       },
-      "source_bytes": 238155,
-      "snapshot_bytes": 37995,
-      "source_sha256": "b2eedec25d6f3aa0ce34a66d0ed7689f8d03754278b1d90e7645bb5ea33fb25a",
-      "snapshot_sha256": "b3eaacafaf0e823a25e5bd9eb900861993cb546ef6fc311b43350797d0c67aab"
+      "source_bytes": 238103,
+      "snapshot_bytes": 37987,
+      "source_sha256": "425e9fd30b3dcc90de8cdca7a8ad9e01c7187f10200f6326c6deea80b2144f47",
+      "snapshot_sha256": "d0224c36e5ab78429a1f6edc3db63a75a25b91ee782375007db92fa2094d4a7d"
     },
     {
       "id": "page-pdf-upload-practice-90540d2e",
@@ -1041,6 +1098,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1061,10 +1120,10 @@
           }
         }
       },
-      "source_bytes": 255535,
-      "snapshot_bytes": 42652,
-      "source_sha256": "615f6a36deac71a7f0bde9a9ab12145417eea239d99ee516cf20f718cef3e257",
-      "snapshot_sha256": "2558edefec9d7aa66a634c9457721a951193dc99cc2e148221aaeb16a8820e7d"
+      "source_bytes": 255483,
+      "snapshot_bytes": 42645,
+      "source_sha256": "e8863b917084a86c64e3c7500a58fa942d44ae739737cad48e8833d079f26eaa",
+      "snapshot_sha256": "a85906d8d817aef7e2911f2834d01bca7aa98a292fec20c8f89a65884d547e7c"
     },
     {
       "id": "post-post-2023-technology-fair-e4fd3211",
@@ -1075,11 +1134,13 @@
       "status": 200,
       "title": "2023 Technology Fair",
       "site_revision": 2090,
-      "etag": "W/\"7ae77e29df3282d6fcb2ac71e6069bd6\"",
+      "etag": "W/\"61c3ed7d78f17a90d8dbb6269a15f004\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1100,10 +1161,10 @@
           }
         }
       },
-      "source_bytes": 613744,
-      "snapshot_bytes": 100967,
-      "source_sha256": "d94974178ad13a587c38bf13b163a731c539d9eed9d6f1f9b784bff0a2570eb2",
-      "snapshot_sha256": "5a314b25b1b2c7ecfcb3bc7c8f3fc306e255b70e8c461500149485c7b403a419"
+      "source_bytes": 613692,
+      "snapshot_bytes": 100961,
+      "source_sha256": "c4ac0d4a6cd4022283cfef39b4949c8725cddd66ded5613d3a09b882949c6f5a",
+      "snapshot_sha256": "e783da79707e739d83d03ee100ce643529cb597f4f8e943bf2c2e19e1dae7f77"
     },
     {
       "id": "post-post-2024-tech-fair-registration-open-23c2a426",
@@ -1119,6 +1180,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1139,10 +1202,10 @@
           }
         }
       },
-      "source_bytes": 619210,
-      "snapshot_bytes": 100930,
-      "source_sha256": "c0349f46ea9abfc12ec6151e1bdf11ea706e3b86ca282e15e342db38fd9f339f",
-      "snapshot_sha256": "861a3fbc1fabcc35b463c77a35654ad82de23a4258c5ce8d06e6fa39fa8d8a40"
+      "source_bytes": 619158,
+      "snapshot_bytes": 100923,
+      "source_sha256": "ba7de90994f37ef5f0e5b809d7dab02e5fded9885b9abefd7b9c0c8848306bc4",
+      "snapshot_sha256": "2cc2cf69c3e0b0375e38ca79e6d5162945827d032cbb5ef2d144e01551e6ed77"
     },
     {
       "id": "post-post-brand-new-workshop-called-microsoft-word-styles-02c19704",
@@ -1158,6 +1221,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1178,10 +1243,10 @@
           }
         }
       },
-      "source_bytes": 618960,
-      "snapshot_bytes": 101169,
-      "source_sha256": "5e97049c437b99e1732e47809891d6353e9bf811a1dd8796f4f60422339cc48f",
-      "snapshot_sha256": "c5df73902b24f7091c4a70e79b3b97886fae6bef596d745b43cc5457cdff9f80"
+      "source_bytes": 618908,
+      "snapshot_bytes": 101165,
+      "source_sha256": "3f2df35404eee695ce21b2b4c7dfc27825d2a6a77cd9bf2f6089767d30e1a236",
+      "snapshot_sha256": "fcae0c666dfbfaebaf2d53e073b0f2e2c83683a475cea1b9179ef536dca07cac"
     },
     {
       "id": "post-post-bridging-the-digital-divide-behind-the-bars-beyond-release-a9ef32c8",
@@ -1197,6 +1262,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1217,10 +1284,10 @@
           }
         }
       },
-      "source_bytes": 626231,
-      "snapshot_bytes": 102980,
-      "source_sha256": "d72eed72899ef83564ed5d97d95df5a44ac44e6be5b860630fc992972ad5fc82",
-      "snapshot_sha256": "088a6b0fabf5b64dcc512b8a92d190d722f18068088540e1490cb5ea4d3eeb20"
+      "source_bytes": 626179,
+      "snapshot_bytes": 102974,
+      "source_sha256": "2162942b31fd6ecf66164082f29122f6d9f664c54f8114604f9fa1c97839e5a5",
+      "snapshot_sha256": "7941b55eed5c2b81dc05a954546d33781907b1d9d51e8760792ccdf182aa11fe"
     },
     {
       "id": "post-post-certification-for-success-870f90cb",
@@ -1236,6 +1303,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1256,10 +1325,10 @@
           }
         }
       },
-      "source_bytes": 625719,
-      "snapshot_bytes": 102602,
-      "source_sha256": "261bf9b892464c2860a6897a26c6b480540160d269eba0f86e22d457a423abe6",
-      "snapshot_sha256": "d7c3af9d6129c922a5a30d98c8db6b74b65b9df72286edf393202f6840de7874"
+      "source_bytes": 625667,
+      "snapshot_bytes": 102595,
+      "source_sha256": "8a552114ef4e2f81b53b8feca710b5218770fa269a2f76e4977e28744aede840",
+      "snapshot_sha256": "86a10c832238798598c0a439b3329ac67fe62c4af20526b2c79b46fc83d322cb"
     },
     {
       "id": "post-post-check-out-our-digital-resources-ba1f0e5b",
@@ -1275,6 +1344,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1295,10 +1366,10 @@
           }
         }
       },
-      "source_bytes": 626827,
-      "snapshot_bytes": 101299,
-      "source_sha256": "9e596b5490e52c465382b3b9afa4addf974c6fd4dcd8314a81592cfe0518396a",
-      "snapshot_sha256": "1a337ec0d597fcc44a6d8f1771aac18a1f2d8367221e0c077d0ebe0702575f4e"
+      "source_bytes": 626775,
+      "snapshot_bytes": 101293,
+      "source_sha256": "2e377e3f49bf34b6bc1f9f2316cd5509a07bd7acb5828da04ad8048216f1d032",
+      "snapshot_sha256": "4e21edd1c7bccf0d58abd899222a20cb12102332023f57b3d20f3d202f883689"
     },
     {
       "id": "post-post-closing-the-digital-skill-divide-dcfad8d3",
@@ -1314,6 +1385,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1334,10 +1407,10 @@
           }
         }
       },
-      "source_bytes": 622761,
-      "snapshot_bytes": 101275,
-      "source_sha256": "2e01932fa5694ec716faca7cf4ba8f479ba50ebc4459475de5697a3ca53fd02a",
-      "snapshot_sha256": "476b955ff11548aea3fa9c5bb66350ab414cd811e97de8c44d82ae7497c82a85"
+      "source_bytes": 622709,
+      "snapshot_bytes": 101269,
+      "source_sha256": "ee42d491889ed0941fb9085c0fb26faa84e267ef42d17329e1fd7c1a96819129",
+      "snapshot_sha256": "2f32f4946fe4764ba15a32dc966bcee13cb11822a5c0ca7cc233321faa49c09e"
     },
     {
       "id": "post-post-digital-divide-new-initiative-allows-formerly-incarcerated-who-miss-0c64b099",
@@ -1353,6 +1426,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1373,10 +1448,10 @@
           }
         }
       },
-      "source_bytes": 624664,
-      "snapshot_bytes": 102330,
-      "source_sha256": "9d0a6f09e3301c3fe5030796a2c433749e72ae7a9a94e21980c8623aa09f15c7",
-      "snapshot_sha256": "5880a6dad98ff9f82b30982ffe33a2255ba6459b6f2dea917060076227d36740"
+      "source_bytes": 624612,
+      "snapshot_bytes": 102324,
+      "source_sha256": "d1c8b501ce446f9cd4bad24ac193d93ccd57ae1d90cd76d538627c28de9def27",
+      "snapshot_sha256": "c01be850f639b87035a471cccbab27b8a9363fca4bc93f77074ad71fa8283353"
     },
     {
       "id": "post-post-digital-equity-coming-to-the-bronx-efebc290",
@@ -1392,6 +1467,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1412,10 +1489,10 @@
           }
         }
       },
-      "source_bytes": 623832,
-      "snapshot_bytes": 100910,
-      "source_sha256": "a3334b3a2e1e1655ac3e6b119c64db7bfec6d62aec5be8c0ac71073d2a548475",
-      "snapshot_sha256": "05eea11e28b92b5b5fdc6771e2c308e4a27bbbd05a0d728349e1408c2cad3f9e"
+      "source_bytes": 623780,
+      "snapshot_bytes": 100905,
+      "source_sha256": "024c5dba78c5654c2f692159400bf5aeed6507d402125c6e43974a1e2ef2297a",
+      "snapshot_sha256": "b52d92186a21f0b32e95e370212b68de1afe40b96bcd2bc9075bf058fffaa752"
     },
     {
       "id": "post-post-digital-equity-training-program-at-the-fortune-society-1efa78e1",
@@ -1426,11 +1503,13 @@
       "status": 200,
       "title": "Digital Empowerment",
       "site_revision": 2090,
-      "etag": "W/\"9afc22c3ea4220d414a2f2f7c324afbf\"",
+      "etag": "W/\"3218de08438ea581b678a35841330ad9\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1451,10 +1530,10 @@
           }
         }
       },
-      "source_bytes": 618564,
-      "snapshot_bytes": 101155,
-      "source_sha256": "9b6ae3f4b6be811aaaa8714c609f48d340fa68a5f63df7585fb6803a538f3837",
-      "snapshot_sha256": "e73e17a30d2602bf1c854bb2883cdd69fda6e73906c6a52843f0826fe1c327c8"
+      "source_bytes": 618512,
+      "snapshot_bytes": 101139,
+      "source_sha256": "411f86399d687785a926f8101cfabe5ac180ddb805a6a18ee5f68b423dbd9458",
+      "snapshot_sha256": "1c7e173cd5d1192efb3027e956b32c05fe2a15203745421b99f3982f4a9b0496"
     },
     {
       "id": "post-post-fcc-taskforce-to-prevent-digital-discrimination-e5e0d2a5",
@@ -1470,6 +1549,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1490,10 +1571,10 @@
           }
         }
       },
-      "source_bytes": 609770,
-      "snapshot_bytes": 100217,
-      "source_sha256": "420e335be86a2607c0f641ac0bc3a5de9db89f05a2809e75eea37cb05e6c3c44",
-      "snapshot_sha256": "2195987677e7b8afa611d693944d44f6ace47bd33287583113c66ca0e072a0a2"
+      "source_bytes": 609718,
+      "snapshot_bytes": 100211,
+      "source_sha256": "2889411915155371989cb93c43af8762c5a9f81faa9f3939a4060fde3f8817a5",
+      "snapshot_sha256": "3530002abbaf8aa9321e2727f2618a0d43852074ec5a6625929ecca7c1325fa2"
     },
     {
       "id": "post-post-fortune-society-offers-lessons-in-technology-for-new-yorkers-who-we-aef9e2d5",
@@ -1509,6 +1590,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1529,10 +1612,10 @@
           }
         }
       },
-      "source_bytes": 625254,
-      "snapshot_bytes": 102216,
-      "source_sha256": "5f9862b3d748fef4652b3adbb0133777d7eaebede801b5117a08e5871a9b34b3",
-      "snapshot_sha256": "4fe51ebe5e3bea163a66dc11d931702afb5736407f5767dc86b49873eb6caefe"
+      "source_bytes": 625202,
+      "snapshot_bytes": 102207,
+      "source_sha256": "93baa1ea95dec30eae61c1cac50d23318992d9f24b92fff239a63fb4947224d8",
+      "snapshot_sha256": "9fec731f290747add3152586b56cc6cd03a660660cace2262452f0129dbbbed5"
     },
     {
       "id": "post-post-intro-to-robotics-7607367b",
@@ -1548,6 +1631,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1568,10 +1653,10 @@
           }
         }
       },
-      "source_bytes": 629137,
-      "snapshot_bytes": 103318,
-      "source_sha256": "57d10ef78ac338d6181e685fd61a611cd95df9b48fe2a61338ff3a04738db566",
-      "snapshot_sha256": "3007f26342f3743a62aa1e8710b91d91fa0f4f7d37a19de6787bed5d2937c9f5"
+      "source_bytes": 629085,
+      "snapshot_bytes": 103309,
+      "source_sha256": "9aae379f235de56f36a200a387cde6a5ad9b5ca29229474a964697ebcfd382e0",
+      "snapshot_sha256": "d8bad667d5695045cb53fb1054eadaa2c4a134fed09b4f03f26a9cce8f7f4503"
     },
     {
       "id": "post-post-lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice--3152da88",
@@ -1587,6 +1672,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1607,10 +1694,10 @@
           }
         }
       },
-      "source_bytes": 629061,
-      "snapshot_bytes": 102690,
-      "source_sha256": "ac6b64dda118d0bc123d8c97777d062179066a137015db9af501557132a8f07d",
-      "snapshot_sha256": "0c06273436a1e4bd272b8e3cab2276899218ef01326b9b92a3e88362938df546"
+      "source_bytes": 629009,
+      "snapshot_bytes": 102685,
+      "source_sha256": "8a7bfabfa7e59caa1ffc9d117f1e2dc740543b229247f4afb30ca537786ee2d7",
+      "snapshot_sha256": "3c36ca3506f062ef74d25ef9840afa97704a360a7c55d48975f21fbbf1626cee"
     },
     {
       "id": "post-post-my-experience-with-the-digital-equity-program-5c57ae3d",
@@ -1626,6 +1713,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1646,10 +1735,10 @@
           }
         }
       },
-      "source_bytes": 621795,
-      "snapshot_bytes": 101952,
-      "source_sha256": "44d00cbb6ddde97821b22af1fb3f0434f57d26189d21b117e8cd16fbd0c2aca8",
-      "snapshot_sha256": "0bf0f15288f9fdb827a5fce76aa2e9644990c493a38f72c913cf1a1e4f8a3e42"
+      "source_bytes": 621743,
+      "snapshot_bytes": 101943,
+      "source_sha256": "e5e941d2284d166f204aec94c2eb2a9d81e8de3432e5416b9525cb924771cfcb",
+      "snapshot_sha256": "e6b5d9141926e80c6a3614919689bc9b08ac80fad24d09faaa2cd33b99c1ec1c"
     },
     {
       "id": "post-post-new-workshops-intro-to-keyboarding-mousing-browsing-and-more-a8d001bd",
@@ -1665,6 +1754,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1685,10 +1776,10 @@
           }
         }
       },
-      "source_bytes": 625741,
-      "snapshot_bytes": 101299,
-      "source_sha256": "758ccedab102f9f04f4851c00d73bc65d68c5ae52ab032a77f9881794b1b4146",
-      "snapshot_sha256": "8566697730b3111cf33630154f118b30b812c347f732621705b969b9a9509b0c"
+      "source_bytes": 625689,
+      "snapshot_bytes": 101281,
+      "source_sha256": "7102439269fe9c46432ee5c559b249e5b06dd39bd0880529810ebd95b24ef367",
+      "snapshot_sha256": "40bd55337d50aa526aa5ad5215d29703a0edcee064ed74ca2151a399952a0d5b"
     },
     {
       "id": "post-post-nonprofit-helps-bridge-prison-digital-divide-eaac1716",
@@ -1699,11 +1790,13 @@
       "status": 200,
       "title": "Nonprofit Helps Bridge Prison Digital Divide",
       "site_revision": 2090,
-      "etag": "W/\"03760ca81bb9d016cec3c4022d334d08\"",
+      "etag": "W/\"0a96e73c74c339d4c91deec04a23cbec\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1724,10 +1817,10 @@
           }
         }
       },
-      "source_bytes": 617774,
-      "snapshot_bytes": 101535,
-      "source_sha256": "4a6c614efd99bc8a998c62445c6242ee6ddb83bbf2716d773e271a480ef07b46",
-      "snapshot_sha256": "219bbd3fe80826d8370638bb5f15d3c7432e7d87187e7fac16cddfdd2dc11418"
+      "source_bytes": 617722,
+      "snapshot_bytes": 101519,
+      "source_sha256": "f5a0837526ee052eaeb28015adfbea1cac44eccc79f54bc7e7e915ffc8832a61",
+      "snapshot_sha256": "934658d1494cbddf1dbc397669d2cc9cccc86fb85b58c72437fa201376fb6ad1"
     },
     {
       "id": "post-post-reintroducting-the-fortune-society-lobby-reel-48a4e7d6",
@@ -1743,6 +1836,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1763,10 +1858,10 @@
           }
         }
       },
-      "source_bytes": 617672,
-      "snapshot_bytes": 100797,
-      "source_sha256": "a632743e29076c9824fce95b7edda5bb477311e1ce97ad8f8310bdc3b28bce0b",
-      "snapshot_sha256": "5d63f7d7272d0243ff846ef2d5a8a1824054460f96640bd1b366f81d8b36c9ca"
+      "source_bytes": 617620,
+      "snapshot_bytes": 100788,
+      "source_sha256": "5c30818163e21a782aa8bb0ea299906b123f197a3839c91e355068f86f572b88",
+      "snapshot_sha256": "5785dbc48503f401713eba777cb0536e454f99f185fcfb2932b0b9580705d98b"
     },
     {
       "id": "post-post-the-digital-equity-initiative-at-fortune-and-its-impact-38bbf223",
@@ -1782,6 +1877,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1802,10 +1899,10 @@
           }
         }
       },
-      "source_bytes": 638567,
-      "snapshot_bytes": 105797,
-      "source_sha256": "e37382438617224d57631ca6a113c86af8b8a3f69877fde08fb1dd9ec4922156",
-      "snapshot_sha256": "298efc83f2f8f907d9a3b7e6707140e6c05708cd0554256e920255f55dd2307c"
+      "source_bytes": 638515,
+      "snapshot_bytes": 105790,
+      "source_sha256": "32c7abfa65e13241494bae42bc922f9ed4eaeff793cb50abe892c40022ff5428",
+      "snapshot_sha256": "85a88868a5c42748e5e9daf44b77eb7e8dc78bd47376dbc357d3c1e2ed60003e"
     },
     {
       "id": "post-post-the-fortune-society-s-technology-fair-787f7e5a",
@@ -1821,6 +1918,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1841,10 +1940,10 @@
           }
         }
       },
-      "source_bytes": 613313,
-      "snapshot_bytes": 100683,
-      "source_sha256": "0704d6fdcf76a6fd523ba22803d5027f57a6bf40c98c1d888c91af2e3735f067",
-      "snapshot_sha256": "b000f4880f292ebdccbfda1e4b3f1b0216cf9b6fd5ad26f498c008d6b28b39cc"
+      "source_bytes": 613261,
+      "snapshot_bytes": 100677,
+      "source_sha256": "64404e3b9287e1a5e3c36d69d55a4133d6714ac6e3db61744490c94e0e2133b3",
+      "snapshot_sha256": "86a1ccd71889dfafbccef0859ce63b565e645c55a215225940cff1cd8c75cc95"
     },
     {
       "id": "page-practice-e0d2da64",
@@ -1855,11 +1954,13 @@
       "status": 200,
       "title": "Practice Your Skills | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"05a43d14996b14dfae8453ad27da7d7d\"",
+      "etag": "W/\"3fe0169ae262a7a3c13b32bb54ede821\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1880,10 +1981,10 @@
           }
         }
       },
-      "source_bytes": 247965,
-      "snapshot_bytes": 38271,
-      "source_sha256": "526bf61095f08d9964f2c17b0cd1fc7471ad160fafce6755eb3a56e4363281b3",
-      "snapshot_sha256": "8d6b584875e186f7f7157ab55b7b55d12479b21131a107fb7e9ffa60c4b34359"
+      "source_bytes": 247913,
+      "snapshot_bytes": 38262,
+      "source_sha256": "3b1679ae118c3ace1919adb0bfaaf1cbbb045f0dc51e4d3e349af3709c76fc12",
+      "snapshot_sha256": "d49bc0bb1746cc9de27b304282f478864eb374bff1300d0c0520ce58c698c4b9"
     },
     {
       "id": "page-projects-324ebb4f",
@@ -1899,6 +2000,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1919,10 +2022,10 @@
           }
         }
       },
-      "source_bytes": 209804,
-      "snapshot_bytes": 35175,
-      "source_sha256": "5ca7d45d6252d5feb87e2e6bb0044981eb0a42ab9aaa689f5059c920be8617e5",
-      "snapshot_sha256": "8b8a1887a211fb60b49320c8fb6906d4db9f495aec9487352db9d86e8aad9c82"
+      "source_bytes": 209752,
+      "snapshot_bytes": 35170,
+      "source_sha256": "8a0ecca092daddc2eafbd9584e323b6760e55446f457d44017009c497ddc818d",
+      "snapshot_sha256": "b91744f1ebe230c99a2ee3249c1d1e0329b0c901c1da9f166b3c3dc272378a7d"
     },
     {
       "id": "service-service-page-ai-awareness-month-kickoff-1daf8ba4",
@@ -1938,6 +2041,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1958,10 +2063,10 @@
           }
         }
       },
-      "source_bytes": 541776,
-      "snapshot_bytes": 69723,
-      "source_sha256": "56e0bd2c489ddb74d476193b69467d9452df9535375ca74c1c005cb7708d560b",
-      "snapshot_sha256": "353cc2a6f0a872986d6f7033a82faabaaab27f63623bb0a425f5819ce4ae6db6"
+      "source_bytes": 541724,
+      "snapshot_bytes": 69718,
+      "source_sha256": "9ed712ff9e48dd30c1ed2dd762c31fe093c75d1203ff5931ce7a76e71078e3e5",
+      "snapshot_sha256": "f19677d7b5917feb5d019fd7c50fdbde1c90bcfce560b68e91ae1c07b8f84efe"
     },
     {
       "id": "service-service-page-ai-effects-tradeoffs-21a8a5ab",
@@ -1977,6 +2082,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -1997,10 +2104,10 @@
           }
         }
       },
-      "source_bytes": 538347,
-      "snapshot_bytes": 68682,
-      "source_sha256": "ca12cd4de256a9aee3df8a3e91435e08c9831bde7a19df38fe237ec85682e84e",
-      "snapshot_sha256": "8ab8f1d499c36379321f74780720c9ef1c2b0089a77b5c72b90b4259d1e12e14"
+      "source_bytes": 538295,
+      "snapshot_bytes": 68676,
+      "source_sha256": "7982928317d1c9e73ed7cd6222bf48f3116014980f09091ad6403be467a4ace7",
+      "snapshot_sha256": "085e3da3fffedb0786b28e13fb1db9b737ef3fe3d2fa9f45c24004b24ab4fd01"
     },
     {
       "id": "service-service-page-ai-in-everyday-systems-d73a6cf4",
@@ -2016,6 +2123,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2036,10 +2145,10 @@
           }
         }
       },
-      "source_bytes": 537856,
-      "snapshot_bytes": 68507,
-      "source_sha256": "4a5b17dfcd7baf87f1dba3acb63fc2982a26bdedd291d9e3dc81f29ab2884853",
-      "snapshot_sha256": "5a12f5dc7b837ad933ffbdd312ab3a2b178cf5ce41cfbe0de79b9d812ca96da1"
+      "source_bytes": 537804,
+      "snapshot_bytes": 68502,
+      "source_sha256": "f8f52f5e949c08b1f782d821f8bb9ba964cbc88f26980af7a1dc6980fbd7fbdc",
+      "snapshot_sha256": "f6d96127f99a7848c72a81a0e5c300c25262a0295a9ae606a755f0fb5f17d4e5"
     },
     {
       "id": "service-service-page-ai-safety-in-2026-94d528fe",
@@ -2055,6 +2164,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2075,10 +2186,10 @@
           }
         }
       },
-      "source_bytes": 539947,
-      "snapshot_bytes": 69054,
-      "source_sha256": "9cc415eb84ee8317c0feb34cebe83d88b7ecab7edb7834d52396cb0cdf4c31bd",
-      "snapshot_sha256": "c11b13684bc5907188e2d8ad744675a560f2883cf26957c066ad1dd95a5a780d"
+      "source_bytes": 539895,
+      "snapshot_bytes": 69046,
+      "source_sha256": "93c083dbdaab85a94b60f15e46f235c0a03c907f5977e7169bddfedfa6b103bb",
+      "snapshot_sha256": "f04a872864af8a34772bc51df4df357071ab0a89152a82c188afa2a2ddb335f6"
     },
     {
       "id": "service-service-page-alfabetizaci-n-digital-b-sica-en-espa-ol-c9f72881",
@@ -2094,6 +2205,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2114,10 +2227,10 @@
           }
         }
       },
-      "source_bytes": 418750,
-      "snapshot_bytes": 59024,
-      "source_sha256": "c475a6ed4fa4c163e9261809341979fa01d8c393480fd744dd829ac4c12c6132",
-      "snapshot_sha256": "17683af69b5f50b857c3f894aa8e9eae3f32753ccf0544e6d4e82b7970114362"
+      "source_bytes": 418698,
+      "snapshot_bytes": 59019,
+      "source_sha256": "c183324bcc7ad8314a648d637670eee2095b0d85fe5eccfa6643fc4823cda79a",
+      "snapshot_sha256": "5e216d2f13af142336a79a8284529c10bdd6be2d0350209b425a8141018048ac"
     },
     {
       "id": "service-service-page-alternative-open-local-ai-tools-144f774e",
@@ -2133,6 +2246,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2153,10 +2268,10 @@
           }
         }
       },
-      "source_bytes": 537958,
-      "snapshot_bytes": 68567,
-      "source_sha256": "af35bf59ee93b181559db1c2d0f2e7a164679c786c5757498ae319ebc0c381a0",
-      "snapshot_sha256": "6a3f9afece5844cc9c1822e0b6e53bf4346fe1d1ceb86da4f03b247ae1b38921"
+      "source_bytes": 537906,
+      "snapshot_bytes": 68562,
+      "source_sha256": "21bdb78d577844e2aad61597899da11b7c1fb2a773f5442cd9107cbd1b7f7f9d",
+      "snapshot_sha256": "6410c6364cf1c1f5a1f7cdfeb51e410605f7d2f905dbb345a43981b00b8520bc"
     },
     {
       "id": "service-service-page-app-essentials-contacts-communication-203c4751",
@@ -2172,6 +2287,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2192,10 +2309,10 @@
           }
         }
       },
-      "source_bytes": 536603,
-      "snapshot_bytes": 68061,
-      "source_sha256": "6bc0ecd1b820d0554b63ddf990887af625704d09c47b5163d1321a537c596bb2",
-      "snapshot_sha256": "31402acaeb967c1e70aac761c604872b24390158f2ea862c82f5d043ef760bc8"
+      "source_bytes": 536551,
+      "snapshot_bytes": 68057,
+      "source_sha256": "f40b83be9eee9b6ac46af6521ff348be3c03496d57148626e64c53edb5f65f48",
+      "snapshot_sha256": "00f3d4dc05395f4dfc014c75e7a299472a4615be472a4e6a2d7375a16ca8bf84"
     },
     {
       "id": "service-service-page-app-essentials-managing-your-time-c244b76f",
@@ -2211,6 +2328,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2231,10 +2350,10 @@
           }
         }
       },
-      "source_bytes": 536491,
-      "snapshot_bytes": 68041,
-      "source_sha256": "ba9b03d069c5156d42ce6aa6eb18ff203ee2d6f2d6970bc9b765a8abef561842",
-      "snapshot_sha256": "65218fe9766b42680c6fceb402397304f1b3f62d6c3dd5fa3a8abd23dd7d0b18"
+      "source_bytes": 536439,
+      "snapshot_bytes": 68035,
+      "source_sha256": "b9a3d377d915ddfb8f4d611f86bec5607b5c48e91a70bebd6f249bf773c10c34",
+      "snapshot_sha256": "57fc9cb839ca1d9ecb38540b6342c33a664debf2a8f6dcb52cf60fd938256811"
     },
     {
       "id": "service-service-page-app-essentials-navigating-safely-7c4d5662",
@@ -2250,6 +2369,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2270,10 +2391,10 @@
           }
         }
       },
-      "source_bytes": 536527,
-      "snapshot_bytes": 68054,
-      "source_sha256": "4ebcd3ba3495a43ca616d1e07bcdd12bc132eaf7f459529167d6f76ceed4db44",
-      "snapshot_sha256": "d558485fa263e610d61d49f6926fcd0f653ddbac63199ae1d38b8aab444e1923"
+      "source_bytes": 536475,
+      "snapshot_bytes": 68052,
+      "source_sha256": "3c8867815e2c1539ddd24e281b2719c548eb8e90b568da41e15851022cc2999f",
+      "snapshot_sha256": "81f2d835a9bb39ea85c6a8b7015b206a4782814f77f11f577c0834670b8daf50"
     },
     {
       "id": "service-service-page-app-essentials-smart-features-8b1cc263",
@@ -2289,6 +2410,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2309,10 +2432,10 @@
           }
         }
       },
-      "source_bytes": 536501,
-      "snapshot_bytes": 68057,
-      "source_sha256": "ac6e373255b53a4121079929d456a5cc4f1e2f5ef2ebcc22810e9e952bf994e2",
-      "snapshot_sha256": "a5fb3e8e5099fa11941d62f140a358b2889f0005397c6387a961d2b33394ab23"
+      "source_bytes": 536449,
+      "snapshot_bytes": 68051,
+      "source_sha256": "1b6c5de75c6e890b38619675a514f0c045b4ad171a45d1afe83945de103c0dee",
+      "snapshot_sha256": "850adeb4f9f684a42cb76ed7fc033a5d6ae71e64964b09a87e50a944f40861d0"
     },
     {
       "id": "service-service-page-app-essentials-transactions-access-01e4e077",
@@ -2323,11 +2446,13 @@
       "status": 200,
       "title": "App Essentials: Transactions & Access | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"765c6e730af441f07c91ce0cc05f6c73\"",
+      "etag": "W/\"96efba338b330cb23ad1e3440ce145a7\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2348,10 +2473,10 @@
           }
         }
       },
-      "source_bytes": 536579,
-      "snapshot_bytes": 68071,
-      "source_sha256": "e3e65e9d07d3e73cadbd4806b0f00c9dd91eb860ed95eaa6831254ae3c9b24ac",
-      "snapshot_sha256": "fbaeaf025637d3362a50ee4f9a34237ac75568ceba23846bea4b29e3fcae4fdb"
+      "source_bytes": 536527,
+      "snapshot_bytes": 68065,
+      "source_sha256": "42af42185c9f84ea6e939aa68dee39a11342be06e5d8f108d46c71adcfa86486",
+      "snapshot_sha256": "a1bac3bdc20913b8014ac46c03f5bc4529871ab6c7a45263620004f68deeaa88"
     },
     {
       "id": "service-service-page-canva-content-workflows-850ddc38",
@@ -2367,6 +2492,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2387,10 +2514,10 @@
           }
         }
       },
-      "source_bytes": 538496,
-      "snapshot_bytes": 68711,
-      "source_sha256": "382474883c8761f425cc6622dc475011320e8c731c5a0ad5d38dd6eefcdff65c",
-      "snapshot_sha256": "e4eaa6ddc5f9fc541d50fce24345c86039c401bce534400912696c08cfe29eea"
+      "source_bytes": 538444,
+      "snapshot_bytes": 68705,
+      "source_sha256": "18088ace05315bb17e788fc09677c6a97138903490c5a92ecda680651143c076",
+      "snapshot_sha256": "5d7b391ded501107f361c575e2a4ed0ab0587f598e88930aa1535e62d4abed16"
     },
     {
       "id": "service-service-page-canva-design-tools-61911b2b",
@@ -2406,6 +2533,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2426,10 +2555,10 @@
           }
         }
       },
-      "source_bytes": 538402,
-      "snapshot_bytes": 68675,
-      "source_sha256": "d0301543adece4669e116ad66b292275ea52f4ceae531cd6b5c167672aaac549",
-      "snapshot_sha256": "1ffbd34dfb966c9dd800f5223177e9b60107da3f6edb708f0e1bd1d7ee3f1664"
+      "source_bytes": 538350,
+      "snapshot_bytes": 68670,
+      "source_sha256": "3e09b68ce73e720a65c60cd2ca1def3d55eca31c23ca8e149dc8f6f10fe5bafb",
+      "snapshot_sha256": "04688cfc79a3fa13106472db8d88868add851a7ce33a468fed72a26573a94fe6"
     },
     {
       "id": "service-service-page-capstone-activity-using-ai-5e98eaca",
@@ -2445,6 +2574,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2465,10 +2596,10 @@
           }
         }
       },
-      "source_bytes": 539705,
-      "snapshot_bytes": 68996,
-      "source_sha256": "ca08655260de51cc2f309f780beb89809d9b10006b0ed70f1e19f0d2bf05a858",
-      "snapshot_sha256": "882a4534fb10238e879750fe7d70a98ea9209ac96a7a757e2e7b6063288bfcb0"
+      "source_bytes": 539653,
+      "snapshot_bytes": 68990,
+      "source_sha256": "eae3341425441f56364ab7b48137ac77ba0b987ea464186e561c5e88cfa79e9a",
+      "snapshot_sha256": "481c3e6a8fefd36322250de4c60646881ec385b9157405f1a96683764cb57e32"
     },
     {
       "id": "service-service-page-capstone-activity-using-no-ai-d58e5bbf",
@@ -2484,6 +2615,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2504,10 +2637,10 @@
           }
         }
       },
-      "source_bytes": 539734,
-      "snapshot_bytes": 68946,
-      "source_sha256": "74131b09fd284910d4a441ee775ce4a998ef8667e0caf7bbf44c889bed090c75",
-      "snapshot_sha256": "e999d57a9d528f568a0eecfc26734b19d44f0b1c540ddabc12246d272e4bf0d3"
+      "source_bytes": 539682,
+      "snapshot_bytes": 68939,
+      "source_sha256": "b83fa9b1e1f62e4b685f3470207f3fda8e7952ea022e754d3e4ec7f8a584ad08",
+      "snapshot_sha256": "2a9ebd8c38754c56edaa29c75eb2800dbf8b28706a6b3edf72f4fdca6b62a8ac"
     },
     {
       "id": "service-service-page-choosing-the-right-ai-tool-for-the-job-c3fe323e",
@@ -2523,6 +2656,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2543,10 +2678,10 @@
           }
         }
       },
-      "source_bytes": 537931,
-      "snapshot_bytes": 68512,
-      "source_sha256": "d111646b4c432c48e92160ef1daa169c5ca1b45c99e2cbe98119f152730e5064",
-      "snapshot_sha256": "116ae3c24449ea91b0010183fea44e30bcb731608f5ed4fb633a3dbdb1b926c2"
+      "source_bytes": 537879,
+      "snapshot_bytes": 68507,
+      "source_sha256": "97e1bc454bc3c6ea4dd0f88a0f12a60f4969b8b937729d48c72525b2f04667be",
+      "snapshot_sha256": "5e6dd960f3266122d271b250d5c2c4f837ab3fe090acab07de082ae9c213e2f4"
     },
     {
       "id": "service-service-page-communicating-with-ai-c95f3312",
@@ -2562,6 +2697,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2582,10 +2719,10 @@
           }
         }
       },
-      "source_bytes": 537900,
-      "snapshot_bytes": 68471,
-      "source_sha256": "8f4a9dfde1f3f67a255f254967e593838317ae03dd25fbfcf7e478484a3773f5",
-      "snapshot_sha256": "a01a109773d9b9584f5b0a007c8cb2fdff0110f43fe8fb72b0c54585c61339dc"
+      "source_bytes": 537848,
+      "snapshot_bytes": 68467,
+      "source_sha256": "e0e07986d32e7bfd95e049e85e9a17dc74a1ab775d22e99ff537ac2c8bf0dbc2",
+      "snapshot_sha256": "62aa659036256e86c036acd90028c9babde5f696f17d4cab8a71d20b5b063296"
     },
     {
       "id": "service-service-page-customizing-your-smartphone-dd1578ae",
@@ -2596,11 +2733,13 @@
       "status": 200,
       "title": "Customizing Your Smartphone | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"f887a87dbaa4237d69144256c027b26f\"",
+      "etag": "W/\"079a6abbc899571eea6ef7c1117de3f8\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2621,10 +2760,10 @@
           }
         }
       },
-      "source_bytes": 536459,
-      "snapshot_bytes": 68031,
-      "source_sha256": "148d0891e62288373a13d297219962fb7e17ef879c6c7b63c11c30fd5bc909ab",
-      "snapshot_sha256": "e62e09dd897f6372237a65fed17566be03b77bc5c8df602109c38aebb6a2f66f"
+      "source_bytes": 536407,
+      "snapshot_bytes": 68041,
+      "source_sha256": "20e7932570c48b9c7151dc7216987f11c2cc7a80461a7a85ae63e3e18167036e",
+      "snapshot_sha256": "0ec1d4def7337ae0c3e44b697a4e7f712e4bc5dedc45cf5eebdbf4544fcaffed"
     },
     {
       "id": "service-service-page-digital-branding-capstone-day-54957b19",
@@ -2640,6 +2779,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2660,10 +2801,10 @@
           }
         }
       },
-      "source_bytes": 536912,
-      "snapshot_bytes": 68130,
-      "source_sha256": "7da475df54f8dcbce05a8161c84d53a9dc2df68a18a4eebabbbe48afdfa29b35",
-      "snapshot_sha256": "a34b4963d06adc001360027e3f1fe90ac3a0edb226fc0624147cf536af57dc97"
+      "source_bytes": 536860,
+      "snapshot_bytes": 68124,
+      "source_sha256": "d9febd646fc77329fe8b6d2e3c038bc27d4024944d16d6f71c06730b96153ee8",
+      "snapshot_sha256": "cc18558c268a34d9eee6a7f054704a61291b1811b6b2233936ef6bd821e2769a"
     },
     {
       "id": "service-service-page-digital-color-concepts-codes-a409860d",
@@ -2679,6 +2820,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2699,10 +2842,10 @@
           }
         }
       },
-      "source_bytes": 538958,
-      "snapshot_bytes": 68837,
-      "source_sha256": "b3e00a9ab11c99f69212a142aca73c351bfff9876f27d39556cf1a2cbd4b519d",
-      "snapshot_sha256": "597b14a8c7f173cfac543c0f9a5db0958562164c507884fc69199840de4d1b43"
+      "source_bytes": 538906,
+      "snapshot_bytes": 68832,
+      "source_sha256": "4eea0a508fa8629c8a2dea16e20a40cbc6c7b2011a77a8313bfd3ea054cef2ef",
+      "snapshot_sha256": "e86ac7965d11d67aa888848d29436c2bfaf75b377860c376f03e7257d929e2ee"
     },
     {
       "id": "service-service-page-digital-discussion-group-19f94f41",
@@ -2718,6 +2861,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2738,10 +2883,10 @@
           }
         }
       },
-      "source_bytes": 537544,
-      "snapshot_bytes": 68371,
-      "source_sha256": "91a5bf5955ada55caa130c8429b41831c2c0885bf578ec8e368eedb06b05a3f6",
-      "snapshot_sha256": "834c00443d383a307f90bbed19c5b48330498288e047757624af1fddadf4ec0d"
+      "source_bytes": 537492,
+      "snapshot_bytes": 68367,
+      "source_sha256": "a272b88d7d0a0ad3b0fa4fbac21ff081307f280bdff79ea639c9822d061f9493",
+      "snapshot_sha256": "b5667b8dd95241e4767b29509c6606162319d98bcdb626f0a72bb1c44420ab96"
     },
     {
       "id": "service-service-page-digital-safety-computers-0db61063",
@@ -2757,6 +2902,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2777,10 +2924,10 @@
           }
         }
       },
-      "source_bytes": 536418,
-      "snapshot_bytes": 68021,
-      "source_sha256": "6afad23d49c6573228130fbc486a261626c71d2ff8502fd8eb566dd78ab0edbc",
-      "snapshot_sha256": "0169c60a06ea12375b89d52d8ce7cfecb887c580fa9b826ae82ea81eb9514929"
+      "source_bytes": 536366,
+      "snapshot_bytes": 68023,
+      "source_sha256": "164a6675c352aa429f0da84834bf9414f6a006f475c3ea16a552a2f2428bd46d",
+      "snapshot_sha256": "c52981100ce1a8dff470ddc2250e9e42259ea60c7e693c343c9188d6525544de"
     },
     {
       "id": "service-service-page-digital-safety-email-6939b571",
@@ -2796,6 +2943,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2816,10 +2965,10 @@
           }
         }
       },
-      "source_bytes": 536388,
-      "snapshot_bytes": 68031,
-      "source_sha256": "ee96ca40d4c8e66006f469c7984ef7c6d7d3dce64af49b8739827294f6d628aa",
-      "snapshot_sha256": "cf8402c8d3bd1f88f39fe1609ef5c8afa54d226b766cba0629265a89cbea1832"
+      "source_bytes": 536336,
+      "snapshot_bytes": 68029,
+      "source_sha256": "0da06541c0017af209e719e92de31fd133989e328d7e68e9d4d2352809d2595c",
+      "snapshot_sha256": "f898fa1648c42a467b87746be1a14e7d4bb48fca548f1804052e3e20910940ae"
     },
     {
       "id": "service-service-page-digital-safety-mobile-devices-38f003a7",
@@ -2835,6 +2984,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2855,10 +3006,10 @@
           }
         }
       },
-      "source_bytes": 536460,
-      "snapshot_bytes": 68039,
-      "source_sha256": "3eedc83250deaef1cc59788cd4e23545a1e11c71f55b75f5c5677d28a7270951",
-      "snapshot_sha256": "c03f32bc4f50c667ace3c345ca6e02d97e313d16eba14bef0dbd1dca2319a749"
+      "source_bytes": 536408,
+      "snapshot_bytes": 68034,
+      "source_sha256": "215e24339fb1ea47cb2b35169135550c46103215eb6a8113e8eb0da87aca64dd",
+      "snapshot_sha256": "1de231c6d41eb42ac1b8e818dd9a9ba0613bdfd54e61702c3039bb0bc189063a"
     },
     {
       "id": "service-service-page-digital-safety-online-7eff2f59",
@@ -2874,6 +3025,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2894,10 +3047,10 @@
           }
         }
       },
-      "source_bytes": 536396,
-      "snapshot_bytes": 68025,
-      "source_sha256": "a178b7a1a8da7453648f89048f3eded8e2a7d3827c2dc06df5d4d97f39c1be75",
-      "snapshot_sha256": "5e31d1bdb723c8995dc2f3f400d0509a325bab417e51ac7ec21ac623474669c0"
+      "source_bytes": 536344,
+      "snapshot_bytes": 68022,
+      "source_sha256": "a53655a150fb7f8e8807d94cbf2e58e230cfa903a921f9ab07000acca45d6b12",
+      "snapshot_sha256": "65af5d36d83a7c14ffe954d8027d7302efa53ed3b846d7fe1d83d987d4139689"
     },
     {
       "id": "service-service-page-excel-capstone-day-9acf929e",
@@ -2913,6 +3066,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2933,10 +3088,10 @@
           }
         }
       },
-      "source_bytes": 536476,
-      "snapshot_bytes": 68033,
-      "source_sha256": "b4eb24d563431662fa3b0cdaebe7a8b2fe01df31999f4b8a35eb734ecded4cbc",
-      "snapshot_sha256": "38273e9a5be3c29d15f3226941a9e256aa0549924089ddb0f1780ea8fd4cfdf4"
+      "source_bytes": 536424,
+      "snapshot_bytes": 68029,
+      "source_sha256": "8f7b9c97b56a0b232c8c85f7402d08f4b29563a9ede31ac124952366e8e3cc30",
+      "snapshot_sha256": "add5b689d12bc9f9bd70eea946fe909a43fad2c3e2c7308b4114022afe6a1d0e"
     },
     {
       "id": "service-service-page-excel-formatting-data-6b619834",
@@ -2952,6 +3107,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -2972,10 +3129,10 @@
           }
         }
       },
-      "source_bytes": 538940,
-      "snapshot_bytes": 68839,
-      "source_sha256": "4678d3c8f9d6d2b07961dc934462e75528b3235906b5b6fc5d40226d1b18662e",
-      "snapshot_sha256": "a6ff08a19d5b2983a0de4e7b6f03700888f6fed4ed471b7562e91e00a7aefb6f"
+      "source_bytes": 538888,
+      "snapshot_bytes": 68834,
+      "source_sha256": "eb784356e15e48eeac25134af3ebef3a96616b0bc628203331179b4f260a246e",
+      "snapshot_sha256": "2d4c3629450bb05fd4b463f7cfa6e7ed01936ce5589640c7b856e00bcd866e0f"
     },
     {
       "id": "service-service-page-excel-formulas-functions-ef3359ca",
@@ -2991,6 +3148,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3011,10 +3170,10 @@
           }
         }
       },
-      "source_bytes": 539092,
-      "snapshot_bytes": 68874,
-      "source_sha256": "51b50daf1897ded392616c76e26ccaa32fbc3404a194d40212841fb0bc7e7f31",
-      "snapshot_sha256": "3ef295ea9178bb37ff193f7ff63691dd87f802c92a1b4c043531c114487c925d"
+      "source_bytes": 539040,
+      "snapshot_bytes": 68869,
+      "source_sha256": "9981ef993ac71e909d25af9331c3b8ef98adf9672d718d3dc95d29e960813780",
+      "snapshot_sha256": "857ca0c3ccfaf86bbc959a981d7f2a52a360007a6032681af839cb2b0747a7d7"
     },
     {
       "id": "service-service-page-excel-organizing-data-29daccf5",
@@ -3025,11 +3184,13 @@
       "status": 200,
       "title": "Excel - Organizing Data | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"9695e5dc1dec8b86747f2dc46202d980\"",
+      "etag": "W/\"83df645d14ce18468a6fda7cd38a9518\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3050,10 +3211,10 @@
           }
         }
       },
-      "source_bytes": 538876,
-      "snapshot_bytes": 68811,
-      "source_sha256": "42ec7a73fe0f5a14eac20c5095ee8aa23a91f1641b812b94b42b4935f5d3d695",
-      "snapshot_sha256": "e8e40012f08db7e3d9bbbb9c0b18a2eb96775565db8174064cecf12dca7310ad"
+      "source_bytes": 538822,
+      "snapshot_bytes": 68797,
+      "source_sha256": "e29878af0dd97e7072075420e8211ffe24a6ec17149e88f382a73aae16166d4c",
+      "snapshot_sha256": "14949859be8a8441d787332e9c04c30e37db44c3eaa0f1c1b9a26b1920baeab8"
     },
     {
       "id": "service-service-page-excel-presenting-data-7159ecaf",
@@ -3064,11 +3225,13 @@
       "status": 200,
       "title": "Excel - Presenting Data | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"380e007e79370f871dfb49ffa4ff4f4a\"",
+      "etag": "W/\"05e25266edc51f8df3a151dc4e5a2090\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3089,10 +3252,10 @@
           }
         }
       },
-      "source_bytes": 538992,
-      "snapshot_bytes": 68854,
-      "source_sha256": "72e66ff602a47c96444d1f6359b4a342cd949d08d37c1e816ca160ad4de0d9e3",
-      "snapshot_sha256": "9d8f7abb33a1b159d7da7dc6ce70055d63759938cf7305986233867fe1e5366c"
+      "source_bytes": 538938,
+      "snapshot_bytes": 68844,
+      "source_sha256": "75ff1c0b0f08c98997b1edf227eae25e57a1784859c4d69f0910e191fe30f108",
+      "snapshot_sha256": "15c05600aa3e532087648168ed69312e38f924a63ac5e933c9387f9a0d69e62c"
     },
     {
       "id": "service-service-page-exploring-events-in-sched-7cb159c9",
@@ -3108,6 +3271,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3128,10 +3293,10 @@
           }
         }
       },
-      "source_bytes": 538354,
-      "snapshot_bytes": 68590,
-      "source_sha256": "608dbe2924c32fa22425d834b33d947c555613fa40c64eae07463d65d88274d7",
-      "snapshot_sha256": "cc1d14f6048a8ec5d04ba654ac826d2b52dfb0228285415c0f2a0cc414170263"
+      "source_bytes": 538302,
+      "snapshot_bytes": 68585,
+      "source_sha256": "f462e753a64c19481ad4c20019b2bd2c5dbad825d9eb12016522fe0973aaba51",
+      "snapshot_sha256": "95f7f9f30c24efe12e1874c20bb6de0e48e6cb4908d25f3f315ffb2788e7da82"
     },
     {
       "id": "service-service-page-google-docs-collaborating-d535386e",
@@ -3147,6 +3312,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3167,10 +3334,10 @@
           }
         }
       },
-      "source_bytes": 536420,
-      "snapshot_bytes": 68032,
-      "source_sha256": "3cceabf5f6dbb16ca3f450a67bdf9ca48b4eb6b430a9b2cff4c7b38a3f721420",
-      "snapshot_sha256": "74fc0215fbd3f1ef3a4a414a907d383e62fd430a3c3c13c85df76ccc2b85153a"
+      "source_bytes": 536368,
+      "snapshot_bytes": 68027,
+      "source_sha256": "1e89969e89f17ffcab1b8d8b82a655e6edd55f26954e6dbe3fbf3cdf21155d88",
+      "snapshot_sha256": "9724c65e98061da850198aa0b32c9989e6eb492b7594f6d78ff40f005752d131"
     },
     {
       "id": "service-service-page-google-sheets-collaborating-56ac1209",
@@ -3186,6 +3353,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3206,10 +3375,10 @@
           }
         }
       },
-      "source_bytes": 536435,
-      "snapshot_bytes": 68037,
-      "source_sha256": "ea4e4a05a2f2ba076ea6169b3075efb7f8ab595310fd7c3055efd3df2079ea8d",
-      "snapshot_sha256": "891fb8067fa53ba144c347f487d57dc21ae65b2a4deedbd7238fa36249180e67"
+      "source_bytes": 536383,
+      "snapshot_bytes": 68033,
+      "source_sha256": "967a20f08bb18cebb5ab011780e67ad9d9c9cd0f0e02fb8a69590534353a55ff",
+      "snapshot_sha256": "ce891da87bed56e3a05588974824bc83e4e47bb1cbb3ae1291cc7a5bccf8ffd7"
     },
     {
       "id": "service-service-page-how-does-ai-think-f591e3b1",
@@ -3225,6 +3394,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3245,10 +3416,10 @@
           }
         }
       },
-      "source_bytes": 537836,
-      "snapshot_bytes": 68500,
-      "source_sha256": "f28521a2d4a09fc1e0dcb8bea3dddbb81c52535abeb0cb1560bb22a86d212ad3",
-      "snapshot_sha256": "ef8a966e333b93d44cf6d96ea8760c9367c5b89faf3fe1f0d442ec8502292b37"
+      "source_bytes": 537784,
+      "snapshot_bytes": 68494,
+      "source_sha256": "52f1887a197470ca9625a76a3490e1e920d9b74e8c6e8988ca640e452f1990a4",
+      "snapshot_sha256": "6c3a5a103d21d67e8cfe2ab4407c8c5c995975c9f1151436b88620164c4fce4c"
     },
     {
       "id": "service-service-page-intro-to-ai-art-605fc624",
@@ -3264,6 +3435,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3284,10 +3457,10 @@
           }
         }
       },
-      "source_bytes": 536286,
-      "snapshot_bytes": 68009,
-      "source_sha256": "3af92fa75166b00110c99ac8b117076b6beccf14dc9f2e234b5a61c5b09505b6",
-      "snapshot_sha256": "5331a9f6b74c7cd5ca5367049bee0c2e95c7a2c82d0a4e11b4701e99566f38c7"
+      "source_bytes": 536234,
+      "snapshot_bytes": 68004,
+      "source_sha256": "9da5cdb34dd3d26dfee9961911ebd8dce354713025849c311f55b360a3ca5275",
+      "snapshot_sha256": "d0559e55f42545ee30ce193459c4191e0b609c4e3a934d0c3753b0f81c1dbc71"
     },
     {
       "id": "service-service-page-intro-to-ai-art-pt-2-5b540085",
@@ -3303,6 +3476,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3323,10 +3498,10 @@
           }
         }
       },
-      "source_bytes": 536332,
-      "snapshot_bytes": 68029,
-      "source_sha256": "3e567e6a97e2adcf1fa5120e8be88c23debad0977a434f8eb7ec108a86201a42",
-      "snapshot_sha256": "ff11cc5db60b917aa38f8c43d30b74b0dbdf5c83be64a6a658000945982e8267"
+      "source_bytes": 536280,
+      "snapshot_bytes": 68024,
+      "source_sha256": "ae598c369c2cc9098d927bd974c9a2e16dcfae905da4ab9c41ca4a3c9086a44e",
+      "snapshot_sha256": "f25d3e52f09b448656af748e17223e37045718cdb8bf612f64649c8e8f2fe263"
     },
     {
       "id": "service-service-page-intro-to-ai-pt-1-0358341b",
@@ -3342,6 +3517,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3362,10 +3539,10 @@
           }
         }
       },
-      "source_bytes": 536300,
-      "snapshot_bytes": 68017,
-      "source_sha256": "ec109f1613053482546bda8546711ab71a08a5237a192fecaaa7219430deecd8",
-      "snapshot_sha256": "f4050c70bde502f20c8721c775f5c69975587d6b70992055cf3153747daf08c7"
+      "source_bytes": 536248,
+      "snapshot_bytes": 68013,
+      "source_sha256": "f4dd4a2a7883dc94a5b7e3e12f958d404db69abb5398308c0be7055a995715e9",
+      "snapshot_sha256": "59005df20fe7398db38cf8a1927b7af0fe5964004f64571cf609f0d0420ef3ef"
     },
     {
       "id": "service-service-page-intro-to-ai-pt-2-3b086c13",
@@ -3381,6 +3558,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3401,10 +3580,10 @@
           }
         }
       },
-      "source_bytes": 536302,
-      "snapshot_bytes": 68017,
-      "source_sha256": "c130be5fdded18fc48c457126555611a2f362a2c60faf781827cc4cf179f036c",
-      "snapshot_sha256": "b2249df864cc48cf715a70614054c4314a7bb3defd5eaaa4198a894dede194ca"
+      "source_bytes": 536250,
+      "snapshot_bytes": 68012,
+      "source_sha256": "aaa797c791b6e366cebe4f3b37b20a8ed51ec8cb75d6fee1d22e51f3680f2947",
+      "snapshot_sha256": "03ae088ae0e60b6e53b0c2736a6dc47bf38339b1345684910377bafb1243f29a"
     },
     {
       "id": "service-service-page-intro-to-coursera-0499eeaf",
@@ -3420,6 +3599,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3440,10 +3621,10 @@
           }
         }
       },
-      "source_bytes": 537612,
-      "snapshot_bytes": 68390,
-      "source_sha256": "ffe7c7231d3845450bce52dea70c112269eb459a2b07c39c52e3a193afd5c778",
-      "snapshot_sha256": "b19cf507fe9b0ab12950750ce4f64054d5d696d091834716c296a29a4a8b3325"
+      "source_bytes": 537560,
+      "snapshot_bytes": 68385,
+      "source_sha256": "9ae66b77845a8665989561e4498da911fd1e7edd4df32915fef403f23bfb3f9f",
+      "snapshot_sha256": "8df4575d0ed014d57c1548542cb2169ae9a5bde2a749ed9d145e61734bdd8b93"
     },
     {
       "id": "service-service-page-intro-to-drones-987bdf4d",
@@ -3459,6 +3640,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3479,10 +3662,10 @@
           }
         }
       },
-      "source_bytes": 418212,
-      "snapshot_bytes": 58909,
-      "source_sha256": "1082c03013f5a0292e5bfa1739001d9a302e8c343af9311480023f9bb1da31f2",
-      "snapshot_sha256": "345d292232bd8a298868a4611b2dec31459f6b56271848fdb5f8a306efa6ea25"
+      "source_bytes": 418160,
+      "snapshot_bytes": 58904,
+      "source_sha256": "97d2d74b58a3af0f52cedbea5e9390daa6c0d67e134f3fe781daa1ee329a7221",
+      "snapshot_sha256": "068a18e8a52df6dbf01f6afc4332ad9abbdda85cab8246cfa1b49864c76692ae"
     },
     {
       "id": "service-service-page-intro-to-email-19718065",
@@ -3493,11 +3676,13 @@
       "status": 200,
       "title": "Intro to Email | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"fdd923e51067389b130e164d5bf30b5a\"",
+      "etag": "W/\"471040099df07688f386c367a91b0856\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3518,10 +3703,10 @@
           }
         }
       },
-      "source_bytes": 538914,
-      "snapshot_bytes": 68803,
-      "source_sha256": "60bb1904afcfd126f49f69d260ac4896cc8435b47662b9e69f7166de8ca7c782",
-      "snapshot_sha256": "66e3d84d53746b4d43c50a34d70797dc5a6bd86cc39c10935607ae5c46b1041e"
+      "source_bytes": 538860,
+      "snapshot_bytes": 68794,
+      "source_sha256": "cc46f368897ccbc5993662c65ee6faf8570d331c54516c5618dcb4d61c3c786c",
+      "snapshot_sha256": "fa03cd2ee7f9fd6e710e046efe8f5d07fe105f7a411634f4e8e8d5272176c5dd"
     },
     {
       "id": "service-service-page-intro-to-fortune-digital-equity-081752a0",
@@ -3537,6 +3722,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3557,10 +3744,10 @@
           }
         }
       },
-      "source_bytes": 539022,
-      "snapshot_bytes": 68758,
-      "source_sha256": "5ac3f5a4fa5f3bbd9ffd342faf041b327f91fd798969d39ed9882b9133e73024",
-      "snapshot_sha256": "d3621ab7600bc5a0c81c35fb6f644c491fbc6638fe8477a489e8949dd520f96d"
+      "source_bytes": 538970,
+      "snapshot_bytes": 68752,
+      "source_sha256": "a9636546c8b609afcc162639eddab12652530443207510c091a6730d60a99509",
+      "snapshot_sha256": "3cba88f544a88026fe7d84fa8e9494ce55ad48e1950224f721e3fe84aad913ef"
     },
     {
       "id": "service-service-page-intro-to-google-meet-ms-teams-fd4f6295",
@@ -3576,6 +3763,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3596,10 +3785,10 @@
           }
         }
       },
-      "source_bytes": 537394,
-      "snapshot_bytes": 68331,
-      "source_sha256": "e7482706d69548c63d60f1101c0f6af5f81b0aeeebdcfa40812396a0f1599b14",
-      "snapshot_sha256": "fc77678eb7b492c04009a269c956d57e42989d216e76721996a9949f032e28a5"
+      "source_bytes": 537342,
+      "snapshot_bytes": 68327,
+      "source_sha256": "6a98f9ab65feaf92a3d24b386a55675f500a86325d3ff2f5c179f0cc5e37f9e6",
+      "snapshot_sha256": "d97a08ebce8525446190e5a59e8f88642830d068ae7b9f903564d3ae6b21d9e8"
     },
     {
       "id": "service-service-page-intro-to-google-sites-c5ebf222",
@@ -3615,6 +3804,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3635,10 +3826,10 @@
           }
         }
       },
-      "source_bytes": 538000,
-      "snapshot_bytes": 68549,
-      "source_sha256": "01fe5211550846193fda4bb061737d7aac04eed8672c270c801eb2d4a43f8dfa",
-      "snapshot_sha256": "e07b858fe14ea37937371da0c8402165ec4516ed70701f1e233cd9c15da69bf9"
+      "source_bytes": 537948,
+      "snapshot_bytes": 68544,
+      "source_sha256": "23177a1926c2d422a59fa150ddfe1d7fe84b9c126f7cdbfff1f33ce8d43f5aa1",
+      "snapshot_sha256": "2635e4d0df9688e5e15c3fb1426888a59603724463e5267e46e8fe62eccd9386"
     },
     {
       "id": "service-service-page-intro-to-microsoft-excel-6c582b12",
@@ -3654,6 +3845,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3674,10 +3867,10 @@
           }
         }
       },
-      "source_bytes": 538666,
-      "snapshot_bytes": 68728,
-      "source_sha256": "44a051c8e66b78cbe6372fe6ac4c40887e0a217d9f3d15c2ddc1975ffdfc85aa",
-      "snapshot_sha256": "ff0963249a944017b992033f7fac48763f750f806b94d422417e23c50440d1a5"
+      "source_bytes": 538614,
+      "snapshot_bytes": 68722,
+      "source_sha256": "adc8c6cab8198910c243aa4714074fffe5561cd8d131492c6083dca34e203605",
+      "snapshot_sha256": "004d3a72d6141f55eb0fbe21930455eb1f0bde33f17f430d6787880f1eb8d1e2"
     },
     {
       "id": "service-service-page-intro-to-microsoft-powerpoint-1-791b5354",
@@ -3693,6 +3886,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3713,10 +3908,10 @@
           }
         }
       },
-      "source_bytes": 538712,
-      "snapshot_bytes": 68722,
-      "source_sha256": "60883ac2a64518bf82edd5d060162a03c9185f29c25a2e4d7cdc58fcda7a6d16",
-      "snapshot_sha256": "67130919e3b1089f5e9af06950ca6ac16b80bd00b167db11c893798d73185f13"
+      "source_bytes": 538660,
+      "snapshot_bytes": 68716,
+      "source_sha256": "dab4942b3562697d8743332643398fb5c57f0978f9f52d49209e575bc1f99cae",
+      "snapshot_sha256": "1a4351fdc6ba656af5ce4de9225eaa057fd9031d9e821ed74210f11674bda952"
     },
     {
       "id": "service-service-page-intro-to-microsoft-word-ec40b478",
@@ -3732,6 +3927,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3752,10 +3949,10 @@
           }
         }
       },
-      "source_bytes": 538832,
-      "snapshot_bytes": 68816,
-      "source_sha256": "322b4f36ad3afd99af0a975f1f3f392588f71ea122c5be49cb70839107ce285d",
-      "snapshot_sha256": "bb1a639c18fc237894065a72498323ef9b8f9ecdc67698cf1a0605759be410f8"
+      "source_bytes": 538780,
+      "snapshot_bytes": 68811,
+      "source_sha256": "a62841f9b5638f0d6c57cab61f6758d6de576ba9adfa932bbbc639248facde66",
+      "snapshot_sha256": "966ea656ef0037338eaabad9c720cfe6f537928aee47a9c43786040937cb8d38"
     },
     {
       "id": "service-service-page-intro-to-robotics-2-1083ec07",
@@ -3771,6 +3968,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3791,10 +3990,10 @@
           }
         }
       },
-      "source_bytes": 418930,
-      "snapshot_bytes": 59119,
-      "source_sha256": "b7cb8cd3f9e5de56949a970ddb7eb6dcbb2f4f58abf86087705097988f60646a",
-      "snapshot_sha256": "2ca13c34c49d45ac6b2afb81a33fddf391c0aadb69e35fb16029c3cbb7ad3d29"
+      "source_bytes": 418878,
+      "snapshot_bytes": 59115,
+      "source_sha256": "726dc97bf034a075b5d1888b3b40a9a951bd84ac7df83cf110b8c1da365496e0",
+      "snapshot_sha256": "6059ec3659d260200d033a4ff61ba55f30456d195641ec0dff9e65c330c689cb"
     },
     {
       "id": "service-service-page-intro-to-the-google-suite-e264ad87",
@@ -3810,6 +4009,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3830,10 +4031,10 @@
           }
         }
       },
-      "source_bytes": 537550,
-      "snapshot_bytes": 68362,
-      "source_sha256": "4f441a9307312158b4c672285018565bc1279a109eaf281b104742c9929f641e",
-      "snapshot_sha256": "87e2aac8c6ae2a895cfead5807cacb08c274db1180a76ba69cc9498cbaabb9e7"
+      "source_bytes": 537498,
+      "snapshot_bytes": 68356,
+      "source_sha256": "90da4abffe0f80a7bcba598c7ed2be27310b06200da108c25952095c3f48d3be",
+      "snapshot_sha256": "106713be773fc1fdcef555a18df850969e9d01129a6f70cad941fe3b18e1c6da"
     },
     {
       "id": "service-service-page-intro-to-zoom-google-meet-fafeab1d",
@@ -3849,6 +4050,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3869,10 +4072,10 @@
           }
         }
       },
-      "source_bytes": 537100,
-      "snapshot_bytes": 68232,
-      "source_sha256": "bf4d1d84dc7de953c1b11eea2c2cbcbc3187e7cec967cdbfc312f7910379cd5b",
-      "snapshot_sha256": "09b09ffc01d91580563fb6b9c3266f46364614eeb7535c3f4173e5504cdf0a52"
+      "source_bytes": 537048,
+      "snapshot_bytes": 68224,
+      "source_sha256": "fd990259d1d480c68c7886f5ee7a49aabf021d5205bc171ef2f07a4d104a66bd",
+      "snapshot_sha256": "8035cb915698f2781324f560fa450f7116ae0f311aa098b79635f70fbb5ed51b"
     },
     {
       "id": "service-service-page-job-searching-online-d936362e",
@@ -3888,6 +4091,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3908,10 +4113,10 @@
           }
         }
       },
-      "source_bytes": 536328,
-      "snapshot_bytes": 68000,
-      "source_sha256": "e6034d71e60649f8a929254bbaa206d7b5280acf85d11209d229167930eabc85",
-      "snapshot_sha256": "83af187df3394c472b082f6f707e4212d2b2e352527a8a03a89c48ec37789520"
+      "source_bytes": 536276,
+      "snapshot_bytes": 67995,
+      "source_sha256": "932ffe036a895f39e2fd54f88bf04605c5644b10ca7b962feca8766c15b94c9c",
+      "snapshot_sha256": "da27786fad83dad8acf87e3e1675d96cb245c317ef1fb11b35961eab9c241954"
     },
     {
       "id": "service-service-page-linkedin-networking-strategies-ad6f1852",
@@ -3927,6 +4132,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3947,10 +4154,10 @@
           }
         }
       },
-      "source_bytes": 539228,
-      "snapshot_bytes": 68859,
-      "source_sha256": "6b2a5a668934f8ce48319269e35eea620d82f99d0e6ab25aca30cc8b2a78d7b2",
-      "snapshot_sha256": "99c283e93dc33af4b146256c24973998642dc85109c318205c60dc39fa0d547b"
+      "source_bytes": 539176,
+      "snapshot_bytes": 68855,
+      "source_sha256": "4cde8ed345e5e95e943704d70d0f85c1c055b24987582403ccadbcfc5c48fda5",
+      "snapshot_sha256": "57fdecacbf42a1fcea7b2aa0b821b761619e5e1df9f112a47b9f9151cd7c50fa"
     },
     {
       "id": "service-service-page-linkedin-profile-foundations-8915a802",
@@ -3966,6 +4173,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -3986,10 +4195,10 @@
           }
         }
       },
-      "source_bytes": 539050,
-      "snapshot_bytes": 68854,
-      "source_sha256": "b5d741a21a72024ad1122a1ff36a2bc69ccba3e6d24d48ecd32c0851592c289d",
-      "snapshot_sha256": "e0b073d70756388486ec1017048cc9d48fe58663017c5171437542362bc842b6"
+      "source_bytes": 538998,
+      "snapshot_bytes": 68849,
+      "source_sha256": "38a0e77dceb84fc5b195f80f116de8760b7cf6b3f5fa060dd59ec13b1f6e8637",
+      "snapshot_sha256": "4c13d2053ac01353ec552ccd7c022bb1009c980a557685fc3316eef24121dbd3"
     },
     {
       "id": "service-service-page-managing-your-smartphone-43d49ac5",
@@ -4005,6 +4214,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4025,10 +4236,10 @@
           }
         }
       },
-      "source_bytes": 536433,
-      "snapshot_bytes": 68044,
-      "source_sha256": "2b5c2ab976e6f609bf909b72527dd7afbb3ea83f80bee1e5b4d3a3e19b725e9c",
-      "snapshot_sha256": "75b4a436f9f9fb2492fc9561f6993b2ff6bb6dc82c4c93873b1c359ab3626bb1"
+      "source_bytes": 536381,
+      "snapshot_bytes": 68039,
+      "source_sha256": "85c8536d8c1f467acacdd8be2b6bffa373204b647e201b173758ec40a8b1dd72",
+      "snapshot_sha256": "69c187161c17de75048b14417b3682578b7e97b0ffb64e87b366460aa2355f06"
     },
     {
       "id": "service-service-page-mobile-computing-capstone-day-f75461b0",
@@ -4044,6 +4255,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4064,10 +4277,10 @@
           }
         }
       },
-      "source_bytes": 536609,
-      "snapshot_bytes": 68028,
-      "source_sha256": "211934421973afcaa26e1e7388a98a7e3e7923816187916226735db67da9051c",
-      "snapshot_sha256": "f18f8af294bbbd11b3f92521762b2ac46d66365b2e2fecdf50b4a96795bccb66"
+      "source_bytes": 536557,
+      "snapshot_bytes": 68022,
+      "source_sha256": "0bfa33832fc89d2e638ff41d9d0f1660727693a392a981f78a78f81ab71f932d",
+      "snapshot_sha256": "fbe709b96dd406b8d3401868c332b34ce8baa73d3ce5c11e816b8d827987f303"
     },
     {
       "id": "service-service-page-navigating-internet-browsers-85520cbc",
@@ -4083,6 +4296,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4103,10 +4318,10 @@
           }
         }
       },
-      "source_bytes": 538686,
-      "snapshot_bytes": 68741,
-      "source_sha256": "edef017b8b8a6ba78839a1e6ebe91b48fadb2b8d0030a44419e943c485f66c37",
-      "snapshot_sha256": "da83fdf104faffdc7b3c035e8c136b27aadbb79b74317c75a2649ea9e4a03efc"
+      "source_bytes": 538634,
+      "snapshot_bytes": 68736,
+      "source_sha256": "496c0b9f7884ece1eea52117ca0bf321e7fccacfb1e93f1b406f5a031246437c",
+      "snapshot_sha256": "fc19b87ab7221eb9516db30f4c25337ef5f32cee859c14e717c6c0b1b5195aea"
     },
     {
       "id": "service-service-page-navigating-the-cloud-74013a7e",
@@ -4117,11 +4332,13 @@
       "status": 200,
       "title": "Navigating the Cloud | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"4a4daeb51c80c69c4e913318bb5d63bc\"",
+      "etag": "W/\"46afd0d8a66847ef3206c0f5e20f3722\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4142,10 +4359,10 @@
           }
         }
       },
-      "source_bytes": 538862,
-      "snapshot_bytes": 68786,
-      "source_sha256": "6cf501ca99226a49b35b9b6a8262bb8138f103f44c02c758b15f0b6739d78386",
-      "snapshot_sha256": "03343ab7bdc9c64015f1d9bcd31b2d1c191eda8957cb906a7cdb37656635f453"
+      "source_bytes": 538808,
+      "snapshot_bytes": 68784,
+      "source_sha256": "734fee6f17f13e82d06993c9657483b79f7abe23f4ad4626c0e789926ed829dc",
+      "snapshot_sha256": "11e1873b0d3573b197ae8bae544ea58cc2f54b539514b7f02ca842add93afb8e"
     },
     {
       "id": "service-service-page-navigating-windows-desktop-215bb947",
@@ -4161,6 +4378,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4181,10 +4400,10 @@
           }
         }
       },
-      "source_bytes": 538658,
-      "snapshot_bytes": 68732,
-      "source_sha256": "634662034e148ddf017d2b1b007c44254f2e5a5ac3c5a94ac8f4719c43805e7f",
-      "snapshot_sha256": "d90b3ad3634b58352af729cffb22aa9dbe12da762c4701419243ecee1591499e"
+      "source_bytes": 538606,
+      "snapshot_bytes": 68726,
+      "source_sha256": "72def763452585fb74a6b5ce6fda171e93411f23ac16b46f6abcf277acca1e98",
+      "snapshot_sha256": "aeb46fac479bec9859ee535e331801d5a0bcc29949be62e8b6333d31f311f57b"
     },
     {
       "id": "service-service-page-navigating-your-smartphone-5b27947f",
@@ -4200,6 +4419,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4220,10 +4441,10 @@
           }
         }
       },
-      "source_bytes": 536449,
-      "snapshot_bytes": 68036,
-      "source_sha256": "b0eea6d393db71b3b86507f9725c4d841815c759470454f1005a346e23e14f22",
-      "snapshot_sha256": "f660966d437383eddb460815d4d8227ee9c5b8f3c292d711682bea8f560009f7"
+      "source_bytes": 536397,
+      "snapshot_bytes": 68031,
+      "source_sha256": "6e2a74b8dd268eb1fc6da2b8542518bfb89cd05245981caed83f97d8415dc50c",
+      "snapshot_sha256": "01c1303480d11ded429e59b3da52a3067082147c2ce5c114d4361f1f298edf9e"
     },
     {
       "id": "service-service-page-open-computer-lab-session-198811fd",
@@ -4239,6 +4460,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4259,10 +4482,10 @@
           }
         }
       },
-      "source_bytes": 592532,
-      "snapshot_bytes": 70273,
-      "source_sha256": "d5167154a0afed4b2de3943a3e4ab4d317c082e110d2316f3089168fff81e01f",
-      "snapshot_sha256": "71e1d0b5325fc2fabaaa3d71d8bdef49f3f2006123314d85ace4e084834a0ddc"
+      "source_bytes": 592480,
+      "snapshot_bytes": 70270,
+      "source_sha256": "71b94244f496660f5805b37b823569b44bd7ce7e07d5296c1b2fa05028a332cd",
+      "snapshot_sha256": "02d723144244b80355a813cd5cf5a6c5d59eb6379f9c500a1b30af66a953c4eb"
     },
     {
       "id": "service-service-page-personalizing-events-in-sched-a707b9f9",
@@ -4278,6 +4501,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4298,10 +4523,10 @@
           }
         }
       },
-      "source_bytes": 538606,
-      "snapshot_bytes": 68721,
-      "source_sha256": "a4bc24699fe381d4d0565e0c6e061f211b0e824dca6bd2cf18ea611957fa3bca",
-      "snapshot_sha256": "12ed2d5285aa20fd43ca17be2964ab0e08832427eb7baa2bdc557cd1bd5f6c9a"
+      "source_bytes": 538554,
+      "snapshot_bytes": 68716,
+      "source_sha256": "1ed7c21de8388b5a2c05f34decc47010d3463acd20443858dc8c69023f6ea706",
+      "snapshot_sha256": "5f9104c70702751f6327a2d13c76a92a998564e197314c433702f9bf2180131d"
     },
     {
       "id": "service-service-page-powerpoint-capstone-day-3523a791",
@@ -4317,6 +4542,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4337,10 +4564,10 @@
           }
         }
       },
-      "source_bytes": 536520,
-      "snapshot_bytes": 68041,
-      "source_sha256": "0b2d42153c01c2e1edce9cb99feb9d95c24774815af867eb6672c254bce1bbb8",
-      "snapshot_sha256": "0d87d7735c8e700e3228d24b9ac995db61169ddb8184dba5baae6b0a10f17bcf"
+      "source_bytes": 536468,
+      "snapshot_bytes": 68034,
+      "source_sha256": "fb952ad6b4d6245c7b299f987abfa21b94d45150be98363e57b2d877261b63e6",
+      "snapshot_sha256": "fa2fa636a289c2f4e483d3656b4994dade6e457f24c184e175e76d41723b89ba"
     },
     {
       "id": "service-service-page-powerpoint-laying-out-themes-35a9f059",
@@ -4356,6 +4583,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4376,10 +4605,10 @@
           }
         }
       },
-      "source_bytes": 538904,
-      "snapshot_bytes": 68829,
-      "source_sha256": "6eb8e9dcd6221e4eb8ac4924449982a2e11d3dc147297d3ce9134c8bf208e7f4",
-      "snapshot_sha256": "a64f457593df4aaf358d0ddf6ae588257ad18bfdfad7bed2770d2b2af1bc379c"
+      "source_bytes": 538852,
+      "snapshot_bytes": 68823,
+      "source_sha256": "a255af2de7e04a2e6ce7de9fb92e9a8d706cd35a8207c6a01729cb0f7cb0720b",
+      "snapshot_sha256": "0684538440e74e9657a93f6eb0ff09f4453cfa2aee914469f03d76cdae0c68a3"
     },
     {
       "id": "service-service-page-powerpoint-objects-images-e51753d6",
@@ -4395,6 +4624,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4415,10 +4646,10 @@
           }
         }
       },
-      "source_bytes": 539046,
-      "snapshot_bytes": 68877,
-      "source_sha256": "389128fc72231ca7c7dc965b8df241184be560829d509c2beb58b0eba0262b64",
-      "snapshot_sha256": "9555e218d9c9e3eae130c5c882798baf6caa05b82fb8b443cf496bd90e68fccf"
+      "source_bytes": 538994,
+      "snapshot_bytes": 68870,
+      "source_sha256": "61947cbf929d6ffe76dcbccef354cc8dec57cef66686562388b3d8e858008fd5",
+      "snapshot_sha256": "08100270c27c8f65bb0a4dbf91ba51b5b22f4bb920a053f685158234d9e19792"
     },
     {
       "id": "service-service-page-powerpoint-transitions-animations-c885afc0",
@@ -4434,6 +4665,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4454,10 +4687,10 @@
           }
         }
       },
-      "source_bytes": 539062,
-      "snapshot_bytes": 68781,
-      "source_sha256": "00c7c15625b706f25ae2f78bd811cc8cca7b6bc012c7de09bc5e5890746ef2a2",
-      "snapshot_sha256": "0278b7eb758cb9edb44659ce140180184f951e2b5b0c1e83af2521de6d74e04d"
+      "source_bytes": 539010,
+      "snapshot_bytes": 68776,
+      "source_sha256": "6676badfa801d3177df7a87e2990729707bc4d5d19c341c5893c688f2d469959",
+      "snapshot_sha256": "1c88bc86edd8779ee7e986da8f97870ce76c178dd7b636a898d153baa24eaeff"
     },
     {
       "id": "service-service-page-powerpoint-working-with-words-58fa288a",
@@ -4468,11 +4701,13 @@
       "status": 200,
       "title": "PowerPoint - Working With Words | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"bfee6eb4e274cc2496534a3800504a79\"",
+      "etag": "W/\"a480930126de36b95624a205c75885dc\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4493,10 +4728,10 @@
           }
         }
       },
-      "source_bytes": 538668,
-      "snapshot_bytes": 68760,
-      "source_sha256": "b8344912531f97cfcbfad35d7946ca71e730ee6979ddb89f363ad92832591c2f",
-      "snapshot_sha256": "76cd19f29a4825ca520eaba0bec4d52a28946786e796cea589a7fb2594d9c286"
+      "source_bytes": 538614,
+      "snapshot_bytes": 68755,
+      "source_sha256": "c09232cb7a859ea64dbaf931a2dbb6b517ddb162a4da03807186c7bb1b0ba1e6",
+      "snapshot_sha256": "82e548249db32a654b0529d805ec584b714b8bfc024c9369caf1ed513b694950"
     },
     {
       "id": "service-service-page-robot-coders-101-221c33e0",
@@ -4512,6 +4747,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4532,10 +4769,10 @@
           }
         }
       },
-      "source_bytes": 418339,
-      "snapshot_bytes": 58953,
-      "source_sha256": "4ba9f6bdf62350dc8a1828b2e2b878d370e9487330d1159f83e92bf0c0a92cf8",
-      "snapshot_sha256": "d6cd3e4fb556948ab9c65a677ec87de8456777877e4aed621f7856f65455775c"
+      "source_bytes": 418287,
+      "snapshot_bytes": 58948,
+      "source_sha256": "f2ebf98f92c4ccc425e7f63873c3796e79d0c3582ce474ed38fcb7ed5dba8899",
+      "snapshot_sha256": "53f320be55608484cdcd578ab8cfbe96ac30351bea6d8fa12c7e71bc3ba29f1b"
     },
     {
       "id": "service-service-page-smartphone-photography-essentials-0d2fab89",
@@ -4551,6 +4788,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4571,10 +4810,10 @@
           }
         }
       },
-      "source_bytes": 540405,
-      "snapshot_bytes": 69127,
-      "source_sha256": "3e9f3250df6cd9f2aeeb043baf369568fa940a8f8fb2c3c8ee53e0339b34375d",
-      "snapshot_sha256": "0abc4ffca54a1a56da49be7430af1480b291eb80fc3c6cf3cc8987592665aa94"
+      "source_bytes": 540353,
+      "snapshot_bytes": 69120,
+      "source_sha256": "0b3c0bbc6b018fa662f7ddc5febc05949b90d57469ed70be507a4b6b3162a99c",
+      "snapshot_sha256": "747a4871191a3daeb694ed4f3a08092c20f436143837788df7c5cd9aa089ceab"
     },
     {
       "id": "service-service-page-smartphone-photography-techniques-aeb83ab9",
@@ -4590,6 +4829,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4610,10 +4851,10 @@
           }
         }
       },
-      "source_bytes": 540407,
-      "snapshot_bytes": 69126,
-      "source_sha256": "f3e46c4e57ed1f9695924ae4de8ff4a61a7453ea2fb4cb02b1cfc65f3c4d088c",
-      "snapshot_sha256": "4b538fc3ccb46aa5d1c6b3332d60cad2225ca3aa6c0d8ffde3718473e3f9775a"
+      "source_bytes": 540355,
+      "snapshot_bytes": 69120,
+      "source_sha256": "e3ec3bb257426c294317a4cee700a1a5fbd3879333647a7756f26792c3e57c4a",
+      "snapshot_sha256": "5ab8bb14d04500a582199317914521ee8499edaccbcd8b4545867a172dc520ef"
     },
     {
       "id": "service-service-page-smartphone-professionalism-4365e1e9",
@@ -4629,6 +4870,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4649,10 +4892,10 @@
           }
         }
       },
-      "source_bytes": 538795,
-      "snapshot_bytes": 68785,
-      "source_sha256": "e4b9f0d823aff931e45e72a5272dd43f30e4e226c937dcea957ed13469ac4fbe",
-      "snapshot_sha256": "b1e2305a10621fa5c0e25ff558e5b97b51b95512fa611b26037b6327aefe540b"
+      "source_bytes": 538743,
+      "snapshot_bytes": 68779,
+      "source_sha256": "850b3681d1ae00dbf39c9e256f8e100e08076218a0c637a24ff2093de068d97a",
+      "snapshot_sha256": "3acdf7d15b54637fe5c2e97de8cc74b9822eb3abd61f878b01c21af13f2d1b3e"
     },
     {
       "id": "service-service-page-tech-fair-capstone-day-9265c0c8",
@@ -4668,6 +4911,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4688,10 +4933,10 @@
           }
         }
       },
-      "source_bytes": 536665,
-      "snapshot_bytes": 68070,
-      "source_sha256": "9244f963c1d33cc529ca3c93751a4f00f5b53d025d51056e60fbf152704c8b24",
-      "snapshot_sha256": "3a69ec5a316067b207b416c667e08abdaddc205bf9551dba96b27c17e0230b2c"
+      "source_bytes": 536613,
+      "snapshot_bytes": 68065,
+      "source_sha256": "d39c766e98d4889062fa044419663bdf365e586f6948ea5c940131acc4633d4e",
+      "snapshot_sha256": "9e14617a1fb157705eb957bc1eac856a3f3d286552ba29d0839fc2f1d22643e6"
     },
     {
       "id": "service-service-page-tech-time-focused-d3213819",
@@ -4707,6 +4952,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4727,10 +4974,10 @@
           }
         }
       },
-      "source_bytes": 418577,
-      "snapshot_bytes": 59023,
-      "source_sha256": "9ee055486f04444344e734a474acbff938e5a6254cbfd3b6415e473319778503",
-      "snapshot_sha256": "4e486b283f3af2d52faf502732fa12f4d291ccb66388094ce5383dd9c91ac0c9"
+      "source_bytes": 418525,
+      "snapshot_bytes": 59018,
+      "source_sha256": "b964076a66e2abd0b9bd97949d8d3f59ed2fcd092dec726d6c547b89da3d438c",
+      "snapshot_sha256": "9af39a8d33cb9a91f7381822b7d84acf438282f4fcc99bafb2baa788afbdc8f9"
     },
     {
       "id": "service-service-page-tech-time-foundations-1-1e1b8286",
@@ -4746,6 +4993,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4766,10 +5015,10 @@
           }
         }
       },
-      "source_bytes": 591971,
-      "snapshot_bytes": 70188,
-      "source_sha256": "e98489d8d6f2b5449e7a1792c5e98eb2b42b13dc15668b0ed2b9d1a4dea890b5",
-      "snapshot_sha256": "bcba7ef9fb747123cc50b6d6f5bab960f9f4c20cea8c94b1656c821a0dc65010"
+      "source_bytes": 591919,
+      "snapshot_bytes": 70183,
+      "source_sha256": "953aebb90e0a1c614eebd9ad9ebb79fb9ecde5465b47b407f7b4984a4222f353",
+      "snapshot_sha256": "4f5fd28757fde28be5e9d092c482f1f5ef130631147f438fc2c7956241844917"
     },
     {
       "id": "service-service-page-the-canva-presentations-alternative-1b8b4a52",
@@ -4785,6 +5034,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4805,10 +5056,10 @@
           }
         }
       },
-      "source_bytes": 536460,
-      "snapshot_bytes": 68028,
-      "source_sha256": "454899be803d4a1cccb5d9f8a2d94a29baf5de0a094b5f28f34e44ebc5dfda52",
-      "snapshot_sha256": "fe8e2c4402c3924b21aabb05dfb34054fdec1ae53a15efedf59558bbd5a5d0cd"
+      "source_bytes": 536408,
+      "snapshot_bytes": 68024,
+      "source_sha256": "78c31c447e174f8cec4d3bf37b2087f933509c8d433630d455c03752422f62ba",
+      "snapshot_sha256": "f465d744ed92f8fb24c26ff1b7ffc2afffc2896f17df25d774294afdc4562981"
     },
     {
       "id": "service-service-page-the-digital-handshake-a4ca3b01",
@@ -4824,6 +5075,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4844,10 +5097,10 @@
           }
         }
       },
-      "source_bytes": 538839,
-      "snapshot_bytes": 68793,
-      "source_sha256": "f7e6d3879d50db8a444fc26978d0cf23b5dca80de1d36b2f631ff59175e4a10a",
-      "snapshot_sha256": "6a85252afd10d76bcebcc17b5fb3669e06851c9f813733123ba33af8c25cd47a"
+      "source_bytes": 538787,
+      "snapshot_bytes": 68788,
+      "source_sha256": "c26107a4894f3219a71eace1fe563167d51eb708e0e570562cf44b58250d5360",
+      "snapshot_sha256": "7099a8d5486ff61d5253487281bf5878572057dbfd625c91e21afe210e1435ec"
     },
     {
       "id": "service-service-page-the-google-docs-alternative-0fdc7b41",
@@ -4863,6 +5116,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4883,10 +5138,10 @@
           }
         }
       },
-      "source_bytes": 539098,
-      "snapshot_bytes": 68864,
-      "source_sha256": "ae4874d2da114deaa6feb6aa67ae96dcb585d1db9288f70ecf8378f8a9e25612",
-      "snapshot_sha256": "31eb8ba80895318fd9e5b7c33e2f05369043ffb7139cf49ad898e2d84933cdaa"
+      "source_bytes": 539046,
+      "snapshot_bytes": 68859,
+      "source_sha256": "c53132cee2e7c026ec2aee55c7bb94479f366175ddfbe05a8d390c87e73b1b06",
+      "snapshot_sha256": "ec4aceae6be080bf701470663b5bcf46880b480d34958900619fc73f98b4e136"
     },
     {
       "id": "service-service-page-the-google-sheets-alternative-e84032e0",
@@ -4902,6 +5157,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4922,10 +5179,10 @@
           }
         }
       },
-      "source_bytes": 536437,
-      "snapshot_bytes": 68037,
-      "source_sha256": "0d5c274441fbfff19d4bc9f23168a670a3d670b23c4b7c89add0d5ca872cf9e6",
-      "snapshot_sha256": "ab7ee957fea3ac6ff59fbece82246db19294e5992186f0eb3f7b6af925728711"
+      "source_bytes": 536385,
+      "snapshot_bytes": 68032,
+      "source_sha256": "8772a5e4f3de4fea7039fab6fd9e0ea5f2d1336663e726126d5e005da5d3b7ca",
+      "snapshot_sha256": "7666b005096208e15d20f16db0cb8fb1a6f454a010df5f0de306694dee58610d"
     },
     {
       "id": "service-service-page-the-google-slides-alternative-f42e7e91",
@@ -4941,6 +5198,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -4961,10 +5220,10 @@
           }
         }
       },
-      "source_bytes": 539124,
-      "snapshot_bytes": 68832,
-      "source_sha256": "d32107248f89aba6c7aaaf0c00ced48b0dc1166ce6d10be843e662fe70fa5422",
-      "snapshot_sha256": "d46c05ade2e5163b9db2cef50afe71f00e1344698b20e408d4c6e74bd2c5e23c"
+      "source_bytes": 539072,
+      "snapshot_bytes": 68826,
+      "source_sha256": "dbf50a966fc28b78bd4499ccddf71b552eaee5b6ee313b290f93aeac880b38e2",
+      "snapshot_sha256": "a1a2ef99679feb6a5b236855da4e2eb6d7a6607df49da29ce470d31462af247c"
     },
     {
       "id": "service-service-page-the-tech-fair-toolkit-adbc1c12",
@@ -4980,6 +5239,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5000,10 +5261,10 @@
           }
         }
       },
-      "source_bytes": 537805,
-      "snapshot_bytes": 68463,
-      "source_sha256": "d008f4afa547dc9d841b8a94330030994a8b8a52fb9d9c26d097de584e4753a8",
-      "snapshot_sha256": "b5751cf7d9a94eb0f3e725f95b33d96ac24360cdd0eb4142578a06ebd4dd4456"
+      "source_bytes": 537753,
+      "snapshot_bytes": 68460,
+      "source_sha256": "f5b906f89afa90a6ffc89cfbcd283d10a3d6087fb7fce6c7e436fe35118bee2b",
+      "snapshot_sha256": "15b8edc5349b63842ce1fb634fdfb7902410716533d8545a9914c49b6698141d"
     },
     {
       "id": "service-service-page-understanding-computers-7e81e953",
@@ -5019,6 +5280,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5039,10 +5302,10 @@
           }
         }
       },
-      "source_bytes": 538828,
-      "snapshot_bytes": 68846,
-      "source_sha256": "595611c7881500d339432c75b2c60144b8055e86ba1e0c2138aebcefed130291",
-      "snapshot_sha256": "c60443f1bdcffe4c4cc1ba9277f44a12735aed7057463f2ba54ef9a38c1d4776"
+      "source_bytes": 538776,
+      "snapshot_bytes": 68838,
+      "source_sha256": "4780b6075b0c2ea494f07fcf08131c67cb54ec1e51d2de6a8c1affb56815b813",
+      "snapshot_sha256": "af55be62b41df736d14fc87167a0c47f6047733b93c6bbccc87319c6938747cf"
     },
     {
       "id": "service-service-page-understanding-file-management-500ea80c",
@@ -5053,11 +5316,13 @@
       "status": 200,
       "title": "Understanding File Management | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"0c59279c2c59db2644e9b817d804a133\"",
+      "etag": "W/\"15f5d240c1c7d93a7672ac42c450fa57\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5078,10 +5343,10 @@
           }
         }
       },
-      "source_bytes": 538954,
-      "snapshot_bytes": 68859,
-      "source_sha256": "a1d62e115e16fa60b0c0f5415b32544d6d1d8277877d699c952a65e5cfc530c0",
-      "snapshot_sha256": "f86339601f8683de0f975f4ddb50678546716d813ef24bbbcb0cc0c0967c957d"
+      "source_bytes": 538900,
+      "snapshot_bytes": 68839,
+      "source_sha256": "5f01c2380221ce73aae91df05179b484d3be0cb6bab3eb2ad6430b61ee938d4f",
+      "snapshot_sha256": "277a8b1e5f0298f57a0ef15c208597842ed6ac3191647a61bb88f257b653b4a2"
     },
     {
       "id": "service-service-page-understanding-keyboarding-mousing-da2371f9",
@@ -5097,6 +5362,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5117,10 +5384,10 @@
           }
         }
       },
-      "source_bytes": 538732,
-      "snapshot_bytes": 68779,
-      "source_sha256": "4585f48c5c170e3158777baeef6a84bbcd5c51c35bec79ed8c1458fb277dec15",
-      "snapshot_sha256": "b696982be5ef8ada2fee4727c5e16924215f1fd4516115ec7d0a2ad4cd9c3fb6"
+      "source_bytes": 538680,
+      "snapshot_bytes": 68777,
+      "source_sha256": "3f1efd3df62e91873c0373ae67f3a4012b9d175897f39eaf73eacfe8313948cf",
+      "snapshot_sha256": "ea58aafdac7748240611dbd7d684fad65f0da28e284355a664eb3d24f73f9dbd"
     },
     {
       "id": "service-service-page-what-is-ai-83a82854",
@@ -5136,6 +5403,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5156,10 +5425,10 @@
           }
         }
       },
-      "source_bytes": 537931,
-      "snapshot_bytes": 68545,
-      "source_sha256": "a27d66d6bf16cbd929428cd2dcf4c412aa84fa17740f44833974cb4da503ef44",
-      "snapshot_sha256": "c3af2e842dc58aa4ed45e7d2101ac406ee57f966bc71424d6bd1b0e8f9572163"
+      "source_bytes": 537879,
+      "snapshot_bytes": 68540,
+      "source_sha256": "bc9881a9e5a4dc51d863fa695eeb07c7d1ae9d931272cf0ba4adc1c9f71cb28c",
+      "snapshot_sha256": "1a371370c9e8f35c856efccf85244f060ebe6138c2e696cc4c19bb0d76de7515"
     },
     {
       "id": "service-service-page-word-capstone-day-74e48e95",
@@ -5175,6 +5444,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5195,10 +5466,10 @@
           }
         }
       },
-      "source_bytes": 536482,
-      "snapshot_bytes": 68028,
-      "source_sha256": "680b4210129717ad4f51d6f53f3609292c83de7f2586eade08517fa02f4fad5a",
-      "snapshot_sha256": "9fd87d9b2100d82be25f16b0c75eeb212616704023a36d7b5d2687bac8ccd628"
+      "source_bytes": 536430,
+      "snapshot_bytes": 68021,
+      "source_sha256": "922992828cc5da73a073766a0b40b7b7c2267d72a5bdcede651532a4a488409b",
+      "snapshot_sha256": "ca213b66df06c6ff739c4020468ace455f9f42df5b620b3824ab56623e2aa7f8"
     },
     {
       "id": "service-service-page-word-finalizing-a-draft-03747d9c",
@@ -5209,11 +5480,13 @@
       "status": 200,
       "title": "Word - Finalizing A Draft | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"1c4d833b911347163f7a3b5799f099a2\"",
+      "etag": "W/\"9086024dd3d31da98c79dd1bbba56db9\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5234,10 +5507,10 @@
           }
         }
       },
-      "source_bytes": 539304,
-      "snapshot_bytes": 68935,
-      "source_sha256": "35aec6379f95f174408368190aea5fd9baee495a34c6b2dd01a28083c4591b74",
-      "snapshot_sha256": "c010168218a1dc89c137b674bd5e2038b03214e4b84f97ca1fd9fe9142825b54"
+      "source_bytes": 539252,
+      "snapshot_bytes": 68933,
+      "source_sha256": "4851ac559acaabf9b992c3e04ce1773432fd3c9f0d0fbf2272172a6a37de4848",
+      "snapshot_sha256": "9692bf8fb725442818bbe40192a91827e3b3f5044c1f04b66c4021f3c7ab902f"
     },
     {
       "id": "service-service-page-word-objects-images-0fca8c0c",
@@ -5253,6 +5526,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5273,10 +5548,10 @@
           }
         }
       },
-      "source_bytes": 539168,
-      "snapshot_bytes": 68907,
-      "source_sha256": "40eba865ef99eb06b89d04cdb785db583e5a722c2a2c384672d3e78ea0ad20d8",
-      "snapshot_sha256": "8ea214e1487379b391ed13e21bf5a94855dd9f9de803055db19a6f4820bbd23d"
+      "source_bytes": 539116,
+      "snapshot_bytes": 68896,
+      "source_sha256": "e01d2756fbf44e71aaccf674cbde7fefcd1e8e51587e691a254d21f3f4e7a45b",
+      "snapshot_sha256": "0193399b4455d622fdb122335c6344caa86c7ed9800c4142b336d37758e5e4da"
     },
     {
       "id": "service-service-page-word-structuring-text-f0adef9e",
@@ -5292,6 +5567,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5312,10 +5589,10 @@
           }
         }
       },
-      "source_bytes": 539202,
-      "snapshot_bytes": 68892,
-      "source_sha256": "de25073f3c15651d3e69f5ce287a2bc274d17ef12235593476c4d1562b69aa28",
-      "snapshot_sha256": "9753a0b853fabf1029881efadf7dea9a1f59ef1fb7d3b0666ac812bb9db506be"
+      "source_bytes": 539150,
+      "snapshot_bytes": 68887,
+      "source_sha256": "87f8251c819cff83d6b0d36069b83330533854416ab2fac425c13b8800ede12c",
+      "snapshot_sha256": "5ea27aafd9590bb7fb5ee9d4cb15d60f8cb1a5347a6b74c256b4f67c3eac4030"
     },
     {
       "id": "service-service-page-word-working-with-text-c9d5a239",
@@ -5331,6 +5608,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5351,10 +5630,10 @@
           }
         }
       },
-      "source_bytes": 539230,
-      "snapshot_bytes": 68919,
-      "source_sha256": "941b60d23bc4942016a13445d02b81ad0bb4ca4f617fcd0a28fe86bbd9cda435",
-      "snapshot_sha256": "53ab5be7e4d789f972dc45bbd48f01ee70139e87eb42617701d5459ce341c50d"
+      "source_bytes": 539178,
+      "snapshot_bytes": 68912,
+      "source_sha256": "65006af3775b88a02aef3fddee36455a4b8642e38dad700489748acb03c95b27",
+      "snapshot_sha256": "25fe84d4aa3e056bc6f10352a5ed6812e4e5f27c8a1ddbca944f3f1c679fb287"
     },
     {
       "id": "page-support-0863dc84",
@@ -5365,11 +5644,13 @@
       "status": 200,
       "title": "Individual Support | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"d04fc02a15286d82698f343e559a295a\"",
+      "etag": "W/\"aee243fb51bda25ed15862f067d05c09\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 5,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5390,10 +5671,10 @@
           }
         }
       },
-      "source_bytes": 617336,
-      "snapshot_bytes": 94289,
-      "source_sha256": "f6366f8f34e74ee0174131a9c7821c55a17c08ef26c74248fe27328a60875adf",
-      "snapshot_sha256": "e884d304d05325fce38de8eeb770ed42f206a5d37a6480f0c74e45fcb15e279c"
+      "source_bytes": 617294,
+      "snapshot_bytes": 94286,
+      "source_sha256": "61834f5d6b77f058388eb2e9175a936b2adddbceb720319a05ee57ccd25b8ad1",
+      "snapshot_sha256": "d853a4a31f83f92385cdb99dcc937bbdf813b7628b3109be2391b4a6ddb2e556"
     },
     {
       "id": "page-techfair-54fef774",
@@ -5405,10 +5686,12 @@
       "title": "Tech Fair | FS Digital Equity",
       "site_revision": 2090,
       "etag": "W/\"703d340955d2b70abe7e3c697f29dca1\"",
-      "embed_previews": 2,
+      "embed_previews": 1,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 1,
+        "slideshow_items": 3,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5429,10 +5712,10 @@
           }
         }
       },
-      "source_bytes": 336717,
-      "snapshot_bytes": 57589,
-      "source_sha256": "7d3869197e4ac6bb596e67c16e526deac8efb6ec001e3d0c93f0568d7f7b2b8a",
-      "snapshot_sha256": "e8f95d1b0446f6ff3fd3c7282108759d8a00307d054990e059fd438279225ded"
+      "source_bytes": 1943827,
+      "snapshot_bytes": 1298830,
+      "source_sha256": "48109f4d2f259ec9b651b47b200de2e2ccee8cfb51d814856a349379dddf3950",
+      "snapshot_sha256": "7e8f32cbb451ee24024043923921495fec3670c1fb30bf55eb928d68cd6b7832"
     },
     {
       "id": "page-techfair-contest-cc4650e9",
@@ -5448,6 +5731,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5468,10 +5753,10 @@
           }
         }
       },
-      "source_bytes": 269320,
-      "snapshot_bytes": 44365,
-      "source_sha256": "d4645340ed93a7bef5f98b3e5336d2c0da7858bcc86958491f41d09ba10901a4",
-      "snapshot_sha256": "689734014176fce552bdbbd296e8cfbcecb6c6937a6a2c718668a4f0ffac6de0"
+      "source_bytes": 269268,
+      "snapshot_bytes": 44357,
+      "source_sha256": "f9021ed98782863ca4b2ee7cf678afcf57426947e7159a5a52277733702513a8",
+      "snapshot_sha256": "9971ff3e02ff0bc5039cb75b832078ff7723bc51d1a66a14e978d9882df8f1f8"
     },
     {
       "id": "page-techfair-photos-8d79fffd",
@@ -5487,6 +5772,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5507,10 +5794,10 @@
           }
         }
       },
-      "source_bytes": 238291,
-      "snapshot_bytes": 40745,
-      "source_sha256": "4c808d87d76e2c0e28c7b4227dc9823dd99feafebfba79ceb8c67d6be5897605",
-      "snapshot_sha256": "a14633c1acd28a2741253e3467c19eb5ead48a3aa1eace59b1cfdde51312a888"
+      "source_bytes": 238239,
+      "snapshot_bytes": 40739,
+      "source_sha256": "03cb1206572e66a223f3a4b3e277d01c98c3f62d45f1b1089479c75166bf717f",
+      "snapshot_sha256": "12a6ab77c239f7a62685e44b0b80ec85b7f4ddbacc6bb9d8eb8a64faed45a924"
     },
     {
       "id": "page-techfair-qa-4d40569c",
@@ -5526,6 +5813,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5546,10 +5835,10 @@
           }
         }
       },
-      "source_bytes": 283894,
-      "snapshot_bytes": 40899,
-      "source_sha256": "68302c39d3c1b216b7d229e6fce4d18796d026ff5a2c2d24807b4dfba62a8f94",
-      "snapshot_sha256": "5d808d245d455b00a87ff4968e219b192647debba9f07765a18d058b4818a170"
+      "source_bytes": 283842,
+      "snapshot_bytes": 40892,
+      "source_sha256": "6071a630ffcef22a32a5309e5018a5ebb3b8e2658041a2a66b7263374b341fd8",
+      "snapshot_sha256": "39f420bc8209e7e15b94efbd79e1ade29705e2b884e8493881fd1802bf4b5960"
     },
     {
       "id": "page-techfair-raffle-d95a56e5",
@@ -5565,6 +5854,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5585,10 +5876,10 @@
           }
         }
       },
-      "source_bytes": 240704,
-      "snapshot_bytes": 38810,
-      "source_sha256": "3269bb472d9c4792a897d5c4c31fcbd657988d5a6bb15be29489f12329710e6a",
-      "snapshot_sha256": "037c1fef8b526eb517543a937705d2fcecc3dfefe1070d2f800c17f9dd34d337"
+      "source_bytes": 240652,
+      "snapshot_bytes": 38803,
+      "source_sha256": "dc0b96625f68fb37653d560205fb94fa954d272dac35700d5b24d6e8c79ba3ff",
+      "snapshot_sha256": "b73e0c4bfff120435f0fbc0076a86115eba1e1d8587a0c5d0233d2847ca4d70b"
     },
     {
       "id": "page-techfair-techfair22-01034e95",
@@ -5604,6 +5895,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5624,10 +5917,10 @@
           }
         }
       },
-      "source_bytes": 253004,
-      "snapshot_bytes": 39771,
-      "source_sha256": "82d521e739815af6c6026cad4c9e0a33386dfcfd93b3b0e2656fdb4c1d4b929f",
-      "snapshot_sha256": "409b3f34523ee9d7e2fdcf1560a0644ffdc74f372af9df6008d91a7d48a63535"
+      "source_bytes": 252952,
+      "snapshot_bytes": 39766,
+      "source_sha256": "fe3315ce8087f370de45fca430288eff2bd4ba29c73e323a84ab4a554d31ee24",
+      "snapshot_sha256": "011577d94ed78b1abef4b792dc0659b6af31e56a0f900d6c3ddeae50cd993eee"
     },
     {
       "id": "page-techfair-techfair23-6d746157",
@@ -5643,6 +5936,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5663,10 +5958,10 @@
           }
         }
       },
-      "source_bytes": 269092,
-      "snapshot_bytes": 40995,
-      "source_sha256": "42fc202ed8a5f0fc008dcabfc1c2409eaa6861a830650750269197c7c2b43632",
-      "snapshot_sha256": "aaeb8ea935bc6b3e4c974f0de8ffc2f2b228511cca6fb5e1d01092bea43b5bb2"
+      "source_bytes": 269040,
+      "snapshot_bytes": 40989,
+      "source_sha256": "30b2b921ae918875e90e6ba1dc3d32632d1984a202720eef1ce880ae6772001d",
+      "snapshot_sha256": "e59a95e2fa7dc490db73bca778278311f8f0507df39e8b4bad08671306c05581"
     },
     {
       "id": "page-techfair-techfair24-9df03a5a",
@@ -5682,6 +5977,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5702,10 +5999,10 @@
           }
         }
       },
-      "source_bytes": 273270,
-      "snapshot_bytes": 41275,
-      "source_sha256": "9f2621f73c7659478d250d22ff8a47c8dfa3d02f402ac8c4c0322aa27c1f185e",
-      "snapshot_sha256": "08f3eb31fe042db80c90b360622affb5f5afcb7fc8f8dac30e468a0698d36ce0"
+      "source_bytes": 273218,
+      "snapshot_bytes": 41272,
+      "source_sha256": "e202d564f4b140c93a28b89f1e3748f7d551a3e3076ce96fbc0b798b34bc4403",
+      "snapshot_sha256": "0c73ec56f60f306848fbd9dc22fad9ead87991526ee18fc854f8c308497387ae"
     },
     {
       "id": "page-techfair-techfair25-e7232199",
@@ -5721,6 +6018,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 1,
           "controls_retired_without_growth": 1,
@@ -5741,10 +6040,10 @@
           }
         }
       },
-      "source_bytes": 575916,
-      "snapshot_bytes": 66424,
-      "source_sha256": "9ec8e7e0c13ec60f599ffba4469e74c71f9a22fbe517b4d6773be8e405116585",
-      "snapshot_sha256": "95359071bd1c54cd6e44f57224f07c23191c9c5643856d1ef3003afd4254e17c"
+      "source_bytes": 575864,
+      "snapshot_bytes": 66417,
+      "source_sha256": "b24d3c5a6554036361106942f228b2d8ed5b0759abaec8178f8f065b97b31664",
+      "snapshot_sha256": "7f7ebd355a2a219d1da381b8aed6551eadc4dd13f1b3ded50b63741fb40afb8f"
     },
     {
       "id": "page-techfair-techfair26-ca3aab5d",
@@ -5760,9 +6059,11 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 1,
-          "controls_retired_without_growth": 0,
+          "controls_retired_without_growth": 1,
           "exhausted_controls_removed": 0,
           "calendar_horizon": null,
           "calendar_popup_dismissals": 0,
@@ -5770,20 +6071,20 @@
             "visible_text_characters": 185,
             "links": 9,
             "service_page_links": 0,
-            "images": 9
+            "images": 80
           },
           "after": {
             "visible_text_characters": 175,
             "links": 9,
             "service_page_links": 0,
-            "images": 55
+            "images": 80
           }
         }
       },
-      "source_bytes": 665054,
-      "snapshot_bytes": 73063,
-      "source_sha256": "0d47519093e7fbda5c3f72b5a185cab91da82d3c853bffb2cf889d36c4bb7f6d",
-      "snapshot_sha256": "2e45ce2697bbd51968ff6390f5cd02a91dc0daa978cb5c7355b6dfc767e2d420"
+      "source_bytes": 665002,
+      "snapshot_bytes": 73055,
+      "source_sha256": "76819451fac8f42463971eddef9313dce4efd464d46beb0444d8d40fd54b5e89",
+      "snapshot_sha256": "c4eb68453e26cbd0e3ac8a822ffcc9e7e15fa6687be4383735f2019ded237685"
     },
     {
       "id": "page-workshops-e0a7ad05",
@@ -5799,6 +6100,8 @@
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 5,
           "controls_retired_without_growth": 0,
@@ -5819,10 +6122,10 @@
           }
         }
       },
-      "source_bytes": 607974,
-      "snapshot_bytes": 71963,
-      "source_sha256": "b783edb3acc79c5ccbfaa847ff1831cfd68e33aef2b65b4b9a4caafdcb5457be",
-      "snapshot_sha256": "776a0aba8be808e4ec980556a2285677d12f5a56b7eaa2c433773a5cea169614"
+      "source_bytes": 607772,
+      "snapshot_bytes": 71965,
+      "source_sha256": "57954fb5d699fe4268ff03f7b619122833bab2710d8e010c572efcf1bf4bdcc7",
+      "snapshot_sha256": "35968a3c087d4ca02023fa99da31f58c5bdacfab21592b87f9d7c346e6712cf8"
     },
     {
       "id": "page-workshops-staff-bbad03d7",
@@ -5833,11 +6136,13 @@
       "status": 200,
       "title": "Inactive: Staff Training | FS Digital Equity",
       "site_revision": 2090,
-      "etag": "W/\"f88a4350d56d53dc1170a76f66b1df77\"",
+      "etag": "W/\"28d37cc03edac96e42a080e875d1e067\"",
       "embed_previews": 0,
       "static_content": {
         "wix_accordions": 0,
         "navigation_menus": 2,
+        "wix_slideshows": 0,
+        "slideshow_items": 0,
         "progressive_collections": {
           "load_more_clicks": 0,
           "controls_retired_without_growth": 0,
@@ -5858,10 +6163,10 @@
           }
         }
       },
-      "source_bytes": 196936,
-      "snapshot_bytes": 33592,
-      "source_sha256": "af6eb1abf138dec9721e0f14bf5ece545b379d410637853e10bf15e3ac566793",
-      "snapshot_sha256": "d7dfe97c259610d4d2a8968f033db322e7501012caa721bea3a341f23622f65d"
+      "source_bytes": 196884,
+      "snapshot_bytes": 33589,
+      "source_sha256": "f0b4efe929133de8cc342f05f852c39afb045ea7af04ec0ae794ec94fe2b7e71",
+      "snapshot_sha256": "651815d61f6e23d255fd7ac591e37ff970befc3d8079e081434ce949c97d5296"
     }
   ]
 }
