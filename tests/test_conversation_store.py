@@ -452,7 +452,7 @@ class ConversationStoreTests(unittest.TestCase):
         self.assertNotIn("conversation_messages", automation_boundary)
         self.assertEqual(
             conversation_store.SCHEMA_VERSION,
-            "013_automated_review_exclusion",
+            "014_prompt_activation",
         )
 
 

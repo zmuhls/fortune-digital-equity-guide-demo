@@ -8,7 +8,7 @@
 (() => {
   const TAG_NAME = "fortune-digital-equity-guide";
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 10;
+  const MAX_CONTEXT_MESSAGES = 16;
   const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:wix:v20";
   const STARTERS = Object.freeze([
@@ -42,9 +42,9 @@
       /(?<!\d)\d{3}[-‐‑‒–—.\s]?\d{3}(?!\d)/,
       /\b\d{3}[-. ]?\d{2}[-. ]?\d{4}\b/,
       /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
-      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number)\s*(?:is|=|:|#)\s*(?!(?:not|needed|required|unknown|forgotten)\b)[A-Z0-9][A-Z0-9-]*/i,
+      /\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?(?:id|case number)\s*(?:is|=|:|#)\s*(?!(?:not|needed|required|unknown|forgotten|broken|expired|missing|locked|incorrect|wrong)\b)[A-Z0-9][A-Z0-9-]*/i,
       /\bmy name is\s+(?!needed\b|required\b)[^\s,.;!?]{2,}/i,
-      /\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten)\b)\S+/i,
+      /\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten|broken|expired|missing|locked|incorrect|wrong)\b)\S+/i,
       /\b(?:my\s+)?(?:date of birth|dob)\s*(?:is|=|:)\s*(?:\d{1,4}[-/.]\d{1,2}(?:[-/.]\d{1,4})?|(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:,?\s+\d{2,4})?)/i,
       /(?<!\d)(?:\+?1[\s.-]?)?(?:\(\d{3}\)|\d{3}[\s.-])\d{3}[\s.-]\d{4}(?!\d)/,
       /\b(?:call|text) me at\s+\+?[0-9][0-9().\s-]{6,}[0-9]|\bmy (?:phone )?number is\s+\+?[0-9][0-9().\s-]{6,}[0-9]/i,
@@ -152,6 +152,7 @@
           }
           .toggle-label { position: relative; z-index: 1; }
           .guide-rays { position: absolute; inset: 0; pointer-events: none; color: var(--guide-ink); }
+          .processing-status { margin: 4px 0 0; color: var(--guide-muted); font: 12px/1.4 sans-serif; }
           .guide-rays > span {
             --ray-rotation: 0deg;
             --ray-stagger: 0s;
@@ -162,7 +163,7 @@
             clip-path: polygon(0 38%, 100% 0, 94% 100%, 3% 68%);
             opacity: 0;
             transform: rotate(var(--ray-rotation)) scaleX(.05);
-            animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 3 both;
+            animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) infinite both;
           }
           .guide-rays > span:nth-child(1) { top: 18%; left: -24px; width: 16px; --ray-rotation: 8deg; --ray-stagger: 0s; }
           .guide-rays > span:nth-child(2) { top: 51%; left: -28px; width: 20px; --ray-rotation: -4deg; --ray-stagger: .16s; }
@@ -419,7 +420,7 @@
             .row { grid-template-columns: minmax(0, 1fr) 68px; }
             form.is-editing .row { grid-template-columns: minmax(0, 1fr) 64px 58px; }
             .send { min-width: 0; width: 68px; padding-inline: 7px; }
-            .panel[aria-busy="true"] .send { font-size: 12px; padding-inline: 3px; }
+            .panel[data-busy="true"] .send { font-size: 12px; padding-inline: 3px; }
             form.is-editing .send { width: 64px; }
             .cancel-edit { min-width: 0; width: 58px; padding-inline: 5px; }
             .footer { padding: 0 14px; }
@@ -429,7 +430,7 @@
             .row { gap: 5px; grid-template-columns: minmax(0, 1fr) 62px; }
             form.is-editing .row { grid-template-columns: minmax(0, 1fr) 58px 54px; }
             .send { width: 62px; }
-            .panel[aria-busy="true"] .send { font-size: 11px; }
+            .panel[data-busy="true"] .send { font-size: 11px; }
             form.is-editing .send { width: 58px; }
             .cancel-edit { width: 54px; }
           }
@@ -471,7 +472,7 @@
             <details class="meta">
               <summary>Info</summary>
               <div class="info">
-                <p class="context-count">Context · conversation · 0/5</p>
+                <p class="context-count">Context · conversation · 0/8</p>
                 <p class="model-status">Starting…</p>
               </div>
             </details>
@@ -754,7 +755,8 @@
 
     setBusy(value) {
       this.answering = value;
-      this.panel.setAttribute("aria-busy", String(value));
+      this.panel.setAttribute("data-busy", String(value));
+      this.transcript.setAttribute("aria-busy", String(value));
       this.sendButton.disabled = value;
       this.input.readOnly = value;
       this.cancelEditButton.disabled = value;
@@ -762,7 +764,16 @@
       this.suggestions.querySelectorAll("button").forEach((button) => { button.disabled = value; });
       this.transcript.querySelectorAll("button").forEach((button) => { button.disabled = value; });
       this.transcript.querySelectorAll("select").forEach((select) => { select.disabled = value; });
-      this.sendButton.textContent = value ? "Sending" : this.editingQuestion ? "Update" : "Send";
+      this.sendButton.textContent = value ? "Working…" : this.editingQuestion ? "Update" : "Send";
+      let status = this.panel.querySelector(".processing-status");
+      if (!status) {
+        status = document.createElement("p");
+        status.className = "processing-status";
+        status.setAttribute("role", "status");
+        this.form.append(status);
+      }
+      status.hidden = !value;
+      status.textContent = value ? "Reading the site and your conversation…" : "";
     }
 
     privacyHold(editing) {
@@ -802,6 +813,10 @@
       this.suggestions.replaceChildren();
       this.status.textContent = "";
 
+      const pendingArticle = document.createElement("p");
+      pendingArticle.className = "message user copy";
+      pendingArticle.textContent = safeQuestion;
+      if (!editing) this.transcript.append(pendingArticle);
       if (this.pendingQuestion !== safeQuestion || !this.pendingClientEventId) {
         this.pendingQuestion = safeQuestion;
         this.pendingClientEventId = window.crypto.randomUUID();
@@ -892,7 +907,7 @@
             : status === 429
               ? (editing ? "Guide busy. Try again shortly or cancel." : "Guide busy. Try again shortly.")
               : status === 502
-                ? (editing ? "Try rephrasing or cancel." : "Try rephrasing.")
+                ? "The guide couldn’t finish. Your message is kept—try sending again."
                 : editing && status && status !== 503
                   ? "Couldn’t update. Try again or cancel."
                   : editing
@@ -908,6 +923,7 @@
           this.status.textContent = failureMessage;
         }
       } finally {
+        pendingArticle.remove();
         this.setBusy(false);
         if (restoreComposerFocus && !this.panel.hidden) this.input.focus({ preventScroll: true });
       }

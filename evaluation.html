@@ -7,8 +7,8 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#281a39">
   <title>Review conversations · Digital Equity</title>
-  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260901-bucket-controls-1">
-  <script src="/evaluation/assets/evaluation.js?v=20260901-bucket-controls-1" defer></script>
+  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260922-ux-v36">
+  <script src="/evaluation/assets/evaluation.js?v=20260922-ux-v36" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#evaluation-main">Skip to review workspace</a>
@@ -106,37 +106,35 @@
           <button class="primary-button" id="new-bucket-button" type="button">New bucket</button>
         </div>
 
-        <p class="queue-summary" id="queue-summary"></p>
+        <div class="queue-heading">
+          <p class="queue-summary" id="queue-summary"></p>
+          <button class="secondary-button" id="review-latest" type="button">Review one by one</button>
+        </div>
         <div class="board" id="conversation-board" aria-label="Conversation evaluation buckets"></div>
         <p class="empty-state" id="empty-state" hidden>No conversations match.</p>
       </section>
 
       <section class="prompt-lab" id="prompt-lab-panel" role="tabpanel" aria-labelledby="prompt-lab-tab" hidden>
         <header class="prompt-lab-heading">
-          <div>
-            <p class="eyebrow">Shared review space</p>
-            <h2>Prompts</h2>
-            <p>Draft suggestions here. Production changes still require code review and deployment.</p>
-          </div>
-          <button class="primary-button" id="new-proposal-button" type="button">New proposal</button>
+          <p>Saved team instructions apply to the next guide message.</p>
         </header>
 
         <section class="shared-prompt-draft" aria-labelledby="shared-prompt-title">
           <div class="shared-prompt-heading">
             <div>
               <p class="eyebrow">Editable by every evaluator</p>
-              <h3 id="shared-prompt-title">Shared system prompt draft</h3>
-              <p>Saving creates a named edit for review. It does not change the live guide.</p>
+              <h3 id="shared-prompt-title">Team instructions</h3>
+              <p>Unsaved edits stay in this tab. Source and privacy boundaries remain in place.</p>
             </div>
             <p id="shared-prompt-meta"></p>
           </div>
           <form id="shared-prompt-form">
-            <label class="sr-only" for="shared-prompt-body">Shared system prompt draft</label>
-            <textarea id="shared-prompt-body" maxlength="20000" rows="18" required></textarea>
+            <label class="sr-only" for="shared-prompt-body">Team instructions</label>
+            <textarea id="shared-prompt-body" maxlength="20000" rows="10" required></textarea>
             <div class="shared-prompt-save-row">
               <label for="shared-prompt-change-note">What changed?</label>
               <input id="shared-prompt-change-note" maxlength="500" required placeholder="Describe what changed concisely">
-              <button class="primary-button" type="submit">Save edit</button>
+              <button class="primary-button" type="submit">Save &amp; apply</button>
             </div>
             <span class="save-status" id="shared-prompt-status" role="status"></span>
           </form>
@@ -146,19 +144,20 @@
           </details>
         </section>
 
-        <section class="current-policy" aria-labelledby="current-policy-title">
+        <details class="current-policy" aria-labelledby="current-policy-title">
+          <summary id="current-policy-title">Full active prompt and boundaries</summary>
           <div>
             <p class="eyebrow">Read only</p>
-            <h3 id="current-policy-title">Current compiled prompt</h3>
             <p id="deployed-prompt-version"></p>
           </div>
           <div class="current-modules" id="current-prompt-modules"></div>
           <p class="code-controlled" id="code-controlled-note"></p>
-        </section>
+        </details>
 
         <div class="proposal-heading">
           <h3>Team proposals</h3>
           <p id="proposal-count"></p>
+          <button class="secondary-button" id="new-proposal-button" type="button">New proposal</button>
         </div>
         <div class="proposal-list" id="prompt-proposal-list"></div>
         <p class="empty-state" id="prompt-proposal-empty" hidden>No prompt proposals yet.</p>
@@ -167,6 +166,11 @@
   </main>
 
   <dialog class="transcript-dialog" id="transcript-dialog" aria-labelledby="transcript-title">
+    <nav class="transcript-navigation" aria-label="Review conversations one by one">
+      <button class="secondary-button" id="transcript-previous" type="button">Previous</button>
+      <span id="transcript-position" role="status"></span>
+      <button class="secondary-button" id="transcript-next" type="button">Next conversation</button>
+    </nav>
     <div class="dialog-header">
       <div>
         <h2 id="transcript-title">Conversation</h2>

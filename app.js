@@ -20,7 +20,7 @@
   const resetButton = document.querySelector("#guide-reset");
   const API_BASE = String(window.FORTUNE_GUIDE_CONFIG?.apiBaseUrl || "").replace(/\/$/, "");
   const CONTACT_URL = "https://www.fortunedigitalequity.org/contact";
-  const MAX_CONTEXT_MESSAGES = 10;
+  const MAX_CONTEXT_MESSAGES = 16;
   const MAX_CONTEXT_EXCHANGES = MAX_CONTEXT_MESSAGES / 2;
   const CONVERSATION_STORAGE_KEY = "fortune-website-guide:replica:v20";
 
@@ -395,8 +395,14 @@
     resetButton.disabled = value;
     transcript.querySelectorAll(".chat-edit-button").forEach(button => { button.disabled = value; });
     transcript.querySelectorAll(".answer-choice-select").forEach(select => { select.disabled = value; });
-    panel.setAttribute("aria-busy", String(value));
-    submitButton.textContent = value ? "Sending" : editTarget ? "Update" : "Send";
+    panel.setAttribute("data-busy", String(value));
+    transcript.setAttribute("aria-busy", String(value));
+    submitButton.textContent = value ? "Working…" : editTarget ? "Update" : "Send";
+    const status = document.querySelector("#processing-status");
+    if (status) {
+      status.hidden = !value;
+      status.textContent = value ? "Reading the site and your conversation…" : "";
+    }
   }
 
   function endEditing(options = {}) {
@@ -533,7 +539,7 @@
       return editing ? "Guide busy. Try again shortly or cancel." : "Guide busy. Try again shortly.";
     }
     if (status === 502) {
-      return editing ? "Try rephrasing or cancel." : "Try rephrasing.";
+      return "The guide couldn’t finish. Your message is kept—try sending again.";
     }
     if (editing && status && status !== 503) return "Couldn’t update. Try again or cancel.";
     return editing ? "Guide unavailable. Try again or cancel." : "Guide unavailable. Try again.";
@@ -559,6 +565,7 @@
       pendingClientEventId = window.crypto.randomUUID();
     }
     suggestions.replaceChildren();
+    const pendingArticle = editing ? null : appendMessage("user", safeQuestion);
     setBusy(true);
     try {
       if (!apiReady) {
@@ -570,6 +577,7 @@
         startNew: Boolean(editing),
       });
       if (data.kind === "privacy") {
+        pendingArticle?.remove();
         privacyHold(Boolean(editing));
         return;
       }
@@ -582,6 +590,7 @@
         }
         endEditing();
       }
+      pendingArticle?.remove();
       const userArticle = appendMessage("user", safeQuestion, { editable: true });
       const answer = redactSixDigitValues(data.message || "");
       const assistantArticle = showAnswer(data);
@@ -600,6 +609,7 @@
       setEditStatus();
       persistConversation();
     } catch (error) {
+      pendingArticle?.remove();
       questionField.value = value;
       resizeQuestionField();
       const retryInProgress = Number(error?.status || 0) === 409

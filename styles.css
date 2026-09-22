@@ -304,7 +304,7 @@ a:hover { text-decoration-thickness: 2px; }
   clip-path: polygon(0 38%, 100% 0, 94% 100%, 3% 68%);
   opacity: 0;
   transform: rotate(var(--ray-rotation)) scaleX(.05);
-  animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 3 both;
+  animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) infinite both;
 }
 .guide-rays > span:nth-child(1) { top: 18%; left: -24px; width: 16px; --ray-rotation: 8deg; --ray-stagger: 0s; }
 .guide-rays > span:nth-child(2) { top: 51%; left: -28px; width: 20px; --ray-rotation: -4deg; --ray-stagger: .16s; }
@@ -550,6 +550,11 @@ a:hover { text-decoration-thickness: 2px; }
 }
 .chat-input-row .edit-cancel:hover { border-color: var(--guide-line); background: var(--guide-pale); }
 .chat-input-row button[disabled] { opacity: .65; cursor: wait; }
+.chat-input-row button[type="submit"] { align-self: stretch; white-space: nowrap; }
+.processing-status { margin: 2px 0 0; color: var(--guide-muted); font: 12px/1.4 var(--guide-font, sans-serif); }
+.processing-status::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border: 1px solid currentColor; border-radius: 50%; animation: guide-working 1.6s ease-in-out infinite; }
+@keyframes guide-working { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .processing-status::before { animation: none; } }
 .edit-status {
   margin: 0;
   color: var(--guide-ink);
@@ -686,7 +691,7 @@ a:hover { text-decoration-thickness: 2px; }
   .chat-input-row { grid-template-columns: minmax(0, 1fr) 68px; }
   .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) 64px 58px; }
   .chat-input-row button[type="submit"] { min-width: 0; width: 68px; padding-inline: 7px; }
-  .guide-panel[aria-busy="true"] .chat-input-row button[type="submit"] { font-size: 12px; padding-inline: 3px; }
+  .guide-panel[data-busy="true"] .chat-input-row button[type="submit"] { font-size: 12px; padding-inline: 3px; }
   .chat-form.is-editing .chat-input-row button[type="submit"] { width: 64px; }
   .chat-input-row .edit-cancel { min-width: 0; width: 58px; padding-inline: 5px; }
   .chat-input-row textarea {
@@ -718,7 +723,7 @@ a:hover { text-decoration-thickness: 2px; }
   .chat-input-row { gap: 5px; grid-template-columns: minmax(0, 1fr) 62px; }
   .chat-form.is-editing .chat-input-row { grid-template-columns: minmax(0, 1fr) 58px 54px; }
   .chat-input-row button[type="submit"] { width: 62px; }
-  .guide-panel[aria-busy="true"] .chat-input-row button[type="submit"] { font-size: 11px; }
+  .guide-panel[data-busy="true"] .chat-input-row button[type="submit"] { font-size: 11px; }
   .chat-form.is-editing .chat-input-row button[type="submit"] { width: 58px; }
   .chat-input-row .edit-cancel { width: 54px; }
 }

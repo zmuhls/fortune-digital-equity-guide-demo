@@ -80,7 +80,7 @@ class RevisionSweepTests(unittest.TestCase):
         self.assertFalse(payload["provider"]["allow_fallbacks"])
         self.assertNotIn("response_format", payload)
 
-    def test_gateway_failure_uses_one_live_model_fallback(self):
+    def test_gateway_failure_never_starts_a_second_generation(self):
         with patch.object(server, "CAIL_KEY", "synthetic-key"), \
              patch.object(server, "OPENROUTER_KEY", "fallback-key"), \
              patch.object(server, "cail_completion", side_effect=RuntimeError("offline")) as call, \
@@ -89,11 +89,11 @@ class RevisionSweepTests(unittest.TestCase):
                  "provider": "openrouter", "model": server.FALLBACK_MODEL,
                  "content": '{"pick":"ASK","answer":"What would you like help with?"}',
              }) as fallback:
-            result = server.model_completion([])
+            with self.assertRaises(RuntimeError):
+                server.model_completion([])
         self.assertEqual(call.call_count, 1)
         legacy.assert_not_called()
-        fallback.assert_called_once_with([])
-        self.assertEqual(result["attempted_providers"], ["cail", "openrouter"])
+        fallback.assert_not_called()
 
     def test_failure_diagnostics_include_known_model_call_state(self):
         import inspect

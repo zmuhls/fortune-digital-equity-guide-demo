@@ -90,7 +90,7 @@ class MultiTurnRetrievalTests(unittest.TestCase):
             {"url": server.CALENDAR_URL},
             calendar_history,
         )
-        self.assertEqual(scope, "page")
+        self.assertEqual(scope, "site")
         self.assertEqual(calendar_sources[0]["id"], "calendar")
 
     def test_explicit_catalog_and_schedule_topic_shifts_do_not_inherit_a_device_topic(self):

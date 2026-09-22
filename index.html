@@ -11,7 +11,7 @@
   <script>document.documentElement.classList.toggle("sidecar-embed", new URLSearchParams(window.location.search).get("embed") === "1");</script>
   <link rel="preconnect" href="https://guide-api-production-a1a1.up.railway.app" crossorigin>
   <link rel="dns-prefetch" href="//guide-api-production-a1a1.up.railway.app">
-  <link rel="stylesheet" href="styles.css?v=20260831-v33-1">
+  <link rel="stylesheet" href="styles.css?v=20260922-ux-v36">
 </head>
 <body>
   <a class="skip-link" href="#page-content">Skip to page information</a>
@@ -84,6 +84,7 @@
           <button type="submit">Send</button>
           <button class="edit-cancel" id="edit-cancel" type="button" hidden>Cancel</button>
         </div>
+        <p class="processing-status" id="processing-status" role="status" aria-live="polite" hidden></p>
         <p class="edit-status" id="edit-status" role="status" aria-live="polite" hidden></p>
         <span class="sr-only" id="question-key-hint">Press Enter to send. Press Shift+Enter for a new line.</span>
       </form>
@@ -92,8 +93,8 @@
         <details class="context-window" id="context-window">
           <summary>Info</summary>
           <div class="guide-info">
-            <p id="context-window-text">Context · conversation · 0/5</p>
-            <p id="context-window-copy">The latest 5 turns stay in this tab across pages.</p>
+            <p id="context-window-text">Context · conversation · 0/8</p>
+            <p id="context-window-copy">The latest 8 turns stay in this tab across pages.</p>
             <p id="model-status">Starting…</p>
           </div>
         </details>
@@ -112,9 +113,9 @@
 
   <!-- ROUTE_CONFIG -->
   <script src="config.js?v=20260813-source-free-2"></script>
-  <script src="guide-core.js?v=20260831-v33-1"></script>
+  <script src="guide-core.js?v=20260922-ux-v36"></script>
   <script src="site.js?v=20260817-route-refresh-1"></script>
-  <script src="app.js?v=20260831-v33-1"></script>
+  <script src="app.js?v=20260922-ux-v36"></script>
   <script src="embed-frame.js?v=20260803-replica-1"></script>
 </body>
 </html>

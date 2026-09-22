@@ -84,7 +84,7 @@ ALLOWED_ORIGINS = {
     if origin.strip()
 }
 MAX_BODY = 64 * 1024
-MAX_HISTORY = 10
+MAX_HISTORY = 16
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
 MAX_MODEL_EXCERPT_CHARS = 1800
@@ -106,6 +106,10 @@ MODEL_OUTPUT_SCHEMA = {
 
 class ModelResponseRejected(RuntimeError):
     """The provider replied, but no safe participant-facing answer survived validation."""
+
+
+class ModelProviderBusy(RuntimeError):
+    """The provider rejected this attempt because its rate limit was reached."""
 
 
 def model_available():
@@ -439,6 +443,8 @@ def cail_completion(messages):
             data = json.load(response)
     except urllib.error.HTTPError as error:
         print(json.dumps({"event": "model_provider_error", "provider": "cail", "http_status": error.code}), flush=True)
+        if error.code == 429:
+            raise ModelProviderBusy("CAIL gateway is busy") from error
         raise RuntimeError("CAIL gateway rejected the request") from error
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
         raise RuntimeError("CAIL gateway could not complete the request") from error
@@ -464,9 +470,8 @@ def cail_completion(messages):
 
 
 def model_completion(messages, *, prefer_fallback=False):
-    # Every path is a live language-model generation. Try the configured
-    # primary once, then make at most one bounded OpenRouter call if that
-    # provider is unavailable. Never substitute a canned response.
+    # One generation request per visitor message. A timeout does not prove
+    # that the primary failed to generate; do not silently generate twice.
     attempted = []
     if CAIL_KEY:
         provider, completion = "cail", cail_completion
@@ -477,13 +482,7 @@ def model_completion(messages, *, prefer_fallback=False):
     else:
         raise RuntimeError("No model provider is configured")
     attempted.append(provider)
-    try:
-        result = completion(messages)
-    except Exception:
-        if provider == "openrouter" or not OPENROUTER_KEY:
-            raise
-        attempted.append("openrouter")
-        result = openrouter_completion(messages)
+    result = completion(messages)
     result["attempted_providers"] = attempted
     return result
 
@@ -564,7 +563,10 @@ def build_sources():
                 page_blocks = calendar_static_blocks(page_blocks)
                 source["calendar_events"] = list(page.get("calendar_events", []))
                 source["source_captured_at"] = page.get("source_captured_at")
-            source["blocks"] = list(source["blocks"]) + page_blocks
+            # Current successful captures supersede older compact notes.
+            if page.get("status") == 200 and page_blocks:
+                source["blocks"] = page_blocks
+                source["facts"] = []
             source["internal_links"] = page.get("internal_links", [])
             source["lastmod"] = page.get("lastmod", "")
             source["site_index_id"] = page.get("id")
@@ -621,7 +623,7 @@ _VISUAL_SCAFFOLD = (
 _PERSONAL_PATTERNS = [
     re.compile(
         r"\b(?:my\s+)?(?:social security(?: number)?|ssn|password|passcode)"
-        r"\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten)\b)\S+",
+        r"\s*(?:is|=|:)\s*(?!(?:not|needed|required|unknown|forgotten|broken|expired|missing|locked|incorrect|wrong)\b)\S+",
         re.I,
     ),
     re.compile(
@@ -635,7 +637,7 @@ _PERSONAL_PATTERNS = [
     re.compile(
         r"\b(?:my|their|participant'?s?)\s+(?:fortune\s+)?"
         r"(?:id|case number)\s*(?:is|=|:|#)\s*"
-        r"(?!(?:not|needed|required|unknown|forgotten)\b)[A-Z0-9][A-Z0-9-]*",
+        r"(?!(?:not|needed|required|unknown|forgotten|broken|expired|missing|locked|incorrect|wrong)\b)[A-Z0-9][A-Z0-9-]*",
         re.I,
     ),
     re.compile(r"\bmy name is\s+(?!needed\b|required\b)[^\s,.;!?]{2,}", re.I),
@@ -1427,6 +1429,8 @@ def source_evidence_score(query, source):
         "beginner": ("basic", "intro", "introduction"),
         "coding": ("coder", "coders", "programming"),
         "correo": ("email",),
+        "faq": ("frequently", "asked", "questions"),
+        "faqs": ("frequently", "asked", "questions"),
         "robot": ("robotics", "coder", "coders"),
         "spanish": ("espanol", "alfabetizacion"),
         "wifi": ("internet", "browsing", "browser"),
@@ -1551,7 +1555,7 @@ def conversation_search_queries(question, history=None):
         key = fold_text(context)
         if not context or key in seen:
             continue
-        result.append(f"{context}. Latest request: {latest}")
+        result.append(context)
         seen.add(key)
     return result
 
@@ -1559,16 +1563,18 @@ def conversation_search_queries(question, history=None):
 def retrieve_conversation_sources(question, history=None, limit=MAX_RETRIEVED):
     """Search current and recent turns without an intent or referent classifier."""
 
+    if not history:
+        return retrieve_sources(question, limit=limit)
     ranked = {}
     for query_index, query in enumerate(conversation_search_queries(question, history)):
-        # Keep enough weight on the beginning of the bounded six-exchange
+        # Keep enough weight on the beginning of the bounded eight-exchange
         # window for a series of short follow-ups to retain its subject.
         recency_weight = 0.95 ** query_index
         for source_rank, source in enumerate(retrieve_sources(query, limit=limit)):
             # retrieve_sources has already put explicit titles, schedules, and
             # support routes ahead of broad directory matches. Preserve that
             # evidence ordering while merging recent user turns.
-            rank_weight = max(0, 50 - source_rank * 40)
+            rank_weight = max(0, 10 - source_rank)
             score = (source_evidence_score(query, source) + rank_weight) * recency_weight
             candidate = (score, -query_index, -source_rank, source)
             previous = ranked.get(source["url"])
@@ -1586,7 +1592,7 @@ def conversation_evidence_query(question, history=None):
 
     parts = []
     for item in list(history or []):
-        if item.get("role") not in {"user", "assistant"}:
+        if item.get("role") != "user":
             continue
         content = semantic_question(item.get("content"))
         if content and (not parts or fold_text(content) != fold_text(parts[-1])):
@@ -2348,7 +2354,7 @@ def _retrieval_plan(question, page_context=None, history=None):
         topic_sources = retrieve_sources(contextual_parts[0])
         if not topic_sources or topic_sources[0]["url"] == current["url"]:
             return "page", [current]
-    faq = current_faq_sources(question)
+    faq = current_faq_sources(question) if not history else []
     if faq:
         return "site", faq
     retired = retired_class_sources(question)
@@ -2360,7 +2366,7 @@ def _retrieval_plan(question, page_context=None, history=None):
     registration = registration_sources(question)
     if registration:
         site_sources = list({source["id"]: source for source in [*site_sources, *registration]}.values())
-    if current and site_sources and site_sources[0]["url"] == current["url"]:
+    if not history and current and site_sources and site_sources[0]["url"] == current["url"]:
         return "page", [current]
     if site_sources:
         return "site", site_sources
@@ -2465,6 +2471,7 @@ def retrieval_prompt(
     previous_answer="",
     current_date="",
     conversation_history=None,
+    team_prompt="",
 ):
     today = date.fromisoformat(current_date) if current_date else site_today()
     records = []
@@ -2499,6 +2506,7 @@ def retrieval_prompt(
         current_date=today.isoformat(),
         current_time="" if current_date else datetime.now(SITE_TIMEZONE).isoformat(timespec="minutes"),
         conversation_history=list(conversation_history or []),
+        team_prompt=team_prompt,
     )
 
 
@@ -2516,22 +2524,12 @@ def model_clarification_response(
     model_question,
     retrieval_scope="site",
 ):
-    """Return only a model-authored clarification; never synthesize stock copy."""
+    """Pass through model-authored prose without a second semantic validator."""
 
     raw_message = str(model_question or "").strip()
-    message_text = re.sub(r"\s+", " ", raw_message).strip()
-    message = message_text
-    folded = fold_text(message).lstrip("¿").strip()
-    if (
-        not message
-        or re.search(r"https?://|www\.", message, flags=re.I)
-        or re.search(
-            r"\b(?:system|developer|hidden).{0,32}(?:prompt|message|instruction|rules|safety)|"
-            r"\b(?:ignore|reveal|override) (?:the )?(?:prompt|instructions|rules|safety)\b",
-            folded,
-        )
-    ):
-        raise ModelResponseRejected("The model did not return a safe clarification")
+    message = normalize_answer(raw_message)
+    if not message:
+        raise ModelResponseRejected("The model returned an empty response")
     response = response_contract(
         kind="clarify",
         message=message,
@@ -2565,6 +2563,8 @@ def unsourced_model_text(raw, conversation_history=None):
             value = json.loads(match.group(0))
         except json.JSONDecodeError:
             value = None
+        if isinstance(value, dict) and value.get("pick") not in (None, SELECTOR_ASK) and not conversation_history:
+            raise ModelResponseRejected("The model selected a source that was not supplied")
         answer = normalize_answer(value.get("answer")) if isinstance(value, dict) else ""
     if "{" in text or "}" in text:
         if not answer:
@@ -2573,18 +2573,6 @@ def unsourced_model_text(raw, conversation_history=None):
         answer = normalize_answer(text)
     if not answer:
         raise ModelResponseRejected("The model did not return a conversational answer")
-    history_text = " ".join(
-        str(item.get("content") or "")
-        for item in list(conversation_history or [])
-        if isinstance(item, dict)
-    )
-    answer_terms = set(tokens(answer)).difference({
-        "asked", "earlier", "said", "start", "subject", "topic", "wanted",
-    })
-    history_terms = set(tokens(history_text))
-    overlap = answer_terms.intersection(history_terms)
-    if not history_text or len(overlap) < min(2, len(answer_terms)):
-        raise ModelResponseRejected("The model did not return a conversation-grounded answer")
     return answer
 
 
@@ -3100,8 +3088,6 @@ def parse_model_selection(
         raise ModelResponseRejected("The model returned an invalid response")
     selected_id = parsed["pick"]
     if selected_id == SELECTOR_ASK:
-        if require_answer:
-            raise ModelResponseRejected("The model asked instead of providing a safe handoff")
         return model_clarification_response(
             question,
             parsed["answer"],
@@ -3165,8 +3151,6 @@ def model_selection_retry_reason(
     if not parsed:
         return "invalid response"
     if parsed["pick"] == SELECTOR_ASK:
-        if require_answer:
-            return "resolved source can answer"
         try:
             model_clarification_response(question, parsed["answer"])
         except ModelResponseRejected:
@@ -3320,7 +3304,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         "provider": "openrouter",
                         "model": FALLBACK_MODEL,
                         "configured": bool(OPENROUTER_KEY),
-                        "enabled": bool(OPENROUTER_KEY and (CAIL_KEY or KEY)),
+                        "enabled": False,
                     },
                 },
                 "index_loaded": SITE_INDEX_PATH.exists(),
@@ -3544,6 +3528,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     interaction=interaction,
                 )
                 return
+            active_prompt = EVALUATION_STORE.get_active_prompt() if EVALUATION_STORE.ready else None
+            if active_prompt:
+                interaction["prompt_policy_version"] = f"{PROMPT_POLICY_VERSION}+team-{active_prompt['version']}"
             sensitive_request = needs_human_handoff(question)
             if sensitive_request:
                 retrieval_scope = "staff"
@@ -3606,17 +3593,18 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 for source in retrieved
             ]
             messages = [{"role": "system", "content": retrieval_prompt(
-                evidence_query,
+                question,
                 model_sources,
                 page_context,
                 interaction,
                 previous_answer=prior_answer,
                 conversation_history=safe_history,
+                team_prompt=(active_prompt or {}).get("body", ""),
             )}]
-            model_question = semantic_question(question) or (
-                "Ask one short question about what the participant needs from "
-                "the Digital Equity site."
-            )
+            # Retrieval may normalize a query; the model must still see what
+            # the visitor actually asked, including slang and frustration.
+            messages.extend(safe_history)
+            model_question = question
             messages.append({
                 "role": "user",
                 "content": model_question[:MAX_QUESTION_CHARS],
@@ -3706,6 +3694,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json(429, {
                 "error": "This conversation reached its turn limit. Start again from the current page."
             })
+        except ModelProviderBusy:
+            self._chat_failure(
+                429, "Guide busy. Try again shortly.", turn, started_at,
+                question=question, error_code="provider_rate_limit",
+                interaction=interaction, retrieval_scope=retrieval_scope,
+                model_called=model_attempted,
+                privacy_state=("sensitive_handoff" if sensitive_request else "clear"),
+                headers={"Retry-After": "60"},
+            )
         except Exception:
             self._chat_failure(
                 503,

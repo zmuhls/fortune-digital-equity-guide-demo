@@ -47,7 +47,7 @@ if lsof -nP -iTCP:"$DEMO_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -z "${OLLAMA_API_KEY:-}" ]]; then
+if [[ -z "${CAIL_API_KEY:-}${OLLAMA_API_KEY:-}${OPENROUTER_API_KEY:-}" ]]; then
   read -r -s -p "Ollama Cloud API key: " OLLAMA_API_KEY
   echo
   export OLLAMA_API_KEY

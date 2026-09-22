@@ -73,7 +73,7 @@ class EvaluationSchemaTests(unittest.TestCase):
     def test_evaluation_schema_version_tracks_shared_prompt_and_review_history(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "013_automated_review_exclusion",
+            "014_prompt_activation",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 
@@ -423,7 +423,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
             css,
         )
         self.assertIn(
-            "repeat(auto-fit, minmax(min(260px, 100%), 1fr))",
+            "repeat(auto-fit, minmax(min(310px, 100%), 1fr))",
             css,
         )
         self.assertIn("align-items: start", css)
@@ -504,10 +504,10 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('timeHtml(message.created_at, "message-time")', javascript)
         self.assertIn("readableTimestamp(detail.last_turn_at)", javascript)
         self.assertIn("versionLabel(conversation)", javascript)
-        self.assertIn("versionLabel(detail, true)", javascript)
+        self.assertIn("versionLabel(detail)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260901-bucket-controls-1", html)
+        self.assertIn("20260922-ux-v36", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -520,7 +520,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
     def test_conversation_cards_keep_compact_readable_type_rhythm(self):
         css = (DEMO / "evaluation.css").read_text(encoding="utf-8")
 
-        self.assertIn('--font-sans: "Source Sans 3 Variable", "Avenir Next"', css)
+        self.assertIn('--font-sans: -apple-system, BlinkMacSystemFont', css)
         self.assertIn("font-synthesis: none", css)
         self.assertIn(
             "grid-template-columns: max-content minmax(128px, 1fr)",
@@ -570,10 +570,10 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('id="prompt-lab-tab"', html)
         self.assertIn('id="prompt-lab-panel"', html)
         self.assertIn('tabindex="-1">Prompts</button>', html)
-        self.assertIn("<h2>Prompts</h2>", html)
+        self.assertIn("Saved team instructions apply to the next guide message.", html)
         self.assertNotIn(">Prompt Lab<", html)
-        self.assertIn("Current compiled prompt", html)
-        self.assertIn("20260901-bucket-controls-1", html)
+        self.assertIn("Full active prompt and boundaries", html)
+        self.assertIn("20260922-ux-v36", html)
         self.assertIn("Describe what changed concisely", html)
         self.assertIn("data-archive-bucket", javascript)
         self.assertIn("async function archiveBucket", javascript)
@@ -588,14 +588,14 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         )
         self.assertIn('current_variant: "advance_or_name_limit"', javascript)
         self.assertIn('current_variant: "freshest_specific_sitewide"', javascript)
-        self.assertIn("Production changes still require code review", html)
+        self.assertIn("Saved team instructions apply to the next guide message.", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)
         self.assertIn('class="compiled-prompt-card"', javascript)
         self.assertIn("Live prompt · read only", javascript)
         self.assertIn('id="shared-prompt-form"', html)
         self.assertIn('api("/api/evaluation/prompt-draft"', javascript)
-        self.assertIn("Saving creates a named edit for review", html)
+        self.assertIn("Save &amp; apply</button>", html)
         self.assertIn("promptDisplayVersion", javascript)
         self.assertIn("max-height: 360px", css)
         self.assertIn("Proposed", javascript)

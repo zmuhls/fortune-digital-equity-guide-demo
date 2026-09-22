@@ -20,10 +20,11 @@ from prompt_policy import (
     PROMPT_RELEASE_NUMBER,
     SYSTEM_PROMPT,
     TEAM_TUNABLE_PROMPT_MODULES,
+    compile_runtime_prompt,
 )
 
 
-EVALUATION_SCHEMA_VERSION = "013_automated_review_exclusion"
+EVALUATION_SCHEMA_VERSION = "014_prompt_activation"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -905,7 +906,7 @@ class EvaluationStore:
         cursor.execute(
             """
             SELECT draft.scope_key, draft.release_number, draft.edit_number,
-                   draft.body, draft.change_note, draft.version,
+                   draft.body, draft.change_note, draft.version, draft.activated_version,
                    draft.updated_by,
                    COALESCE(account.display_name,
                             INITCAP(REPLACE(draft.updated_by, '-', ' ')))
@@ -922,6 +923,7 @@ class EvaluationStore:
         if not row:
             raise EvaluationUnavailable("The shared prompt draft is unavailable.")
         draft = dict(row)
+        draft["active"] = draft.get("activated_version") == draft["version"]
         cursor.execute(
             """
             SELECT revision.release_number, revision.edit_number,
@@ -1071,19 +1073,32 @@ class EvaluationStore:
                 "behavior_release": str(behavior_release or "unknown")[:120],
                 "editable": False,
             },
-            "compiled_prompt": SYSTEM_PROMPT,
+            "compiled_prompt": compile_runtime_prompt(shared_draft["body"] if shared_draft.get("active") else ""),
             "shared_draft": shared_draft,
             "editable_modules": self._prompt_module_catalog(),
             "code_controlled": [
                 "Grounding and no-guessing rules",
                 "Approved source access",
                 "Privacy and safety rules",
-                "Response validation and release activation",
+                "Response format and eight-exchange context",
             ],
-            "activation": "code_review_and_deploy_only",
+            "activation": "next_message_after_save",
             "can_mark_status": account_slot == SHARED_BUCKET_OWNER,
             "proposals": proposals,
         })
+
+    def get_active_prompt(self) -> dict | None:
+        """Read one committed revision per request; never a browser's unsaved draft."""
+        with self._pool.connection() as connection:
+            with connection.cursor(row_factory=self._dict_row) as cursor:
+                scope = self._prompt_workspace_scope(cursor)
+                cursor.execute(
+                    "SELECT body, version FROM shared_prompt_drafts "
+                    "WHERE scope_key = %s AND activated_version = version",
+                    (scope,),
+                )
+                row = cursor.fetchone()
+        return dict(row) if row else None
 
     def update_shared_prompt_draft(
         self,
@@ -1109,7 +1124,7 @@ class EvaluationStore:
                 )
                 cursor.execute(
                     """
-                    SELECT scope_key, release_number, edit_number, body, version
+                    SELECT scope_key, release_number, edit_number, body, version, activated_version
                     FROM shared_prompt_drafts
                     WHERE scope_key = %s
                     FOR UPDATE
@@ -1133,7 +1148,7 @@ class EvaluationStore:
                         "The shared draft changed; refresh before saving.",
                         _json_value(self._shared_prompt_draft_record(cursor, scope)),
                     )
-                if body == str(current["body"]).strip():
+                if body == str(current["body"]).strip() and current.get("activated_version") == current["version"]:
                     raise EvaluationValidation("Change the shared prompt before saving a new edit.")
                 next_version = expected_version + 1
                 next_edit = int(current["edit_number"]) + 1
@@ -1141,12 +1156,12 @@ class EvaluationStore:
                     """
                     UPDATE shared_prompt_drafts
                     SET edit_number = %s, body = %s, change_note = %s,
-                        version = %s, updated_by = %s, updated_at = NOW()
+                        version = %s, updated_by = %s, updated_at = NOW(), activated_version = %s
                     WHERE scope_key = %s
                     """,
                     (
                         next_edit, body, change_note, next_version,
-                        account_slot, scope,
+                        account_slot, next_version, scope,
                     ),
                 )
                 cursor.execute(

@@ -61,6 +61,7 @@ EXCLUDED_PAGE_PATHS = {
     "/pdf2-upload": "administrative upload page",
     "/test": "test page",
     "/test-calendy": "test page",
+    "/workshops/staff": "page explicitly marked inactive",
 }
 ARCHIVE_PAGE_PATHS = {
     "/techfair/techfair22", "/techfair/techfair23", "/techfair/techfair24",
@@ -420,8 +421,11 @@ def internal_links(base_url, links):
 
 
 def reviewed_authority(row, previous=None):
-    """Keep recorded source decisions; hold newly discovered URLs for review."""
-    if previous:
+    """Use current public pages; preserve explicit archival and exclusion decisions."""
+    proposed = authority_for(row)
+    if proposed[0] == "excluded":
+        return proposed
+    if previous and previous.get("authority_reason") != "new public URL pending Fortune staff source review":
         return (
             previous.get("authority", "excluded"),
             previous.get(
@@ -429,10 +433,9 @@ def reviewed_authority(row, previous=None):
                 "existing source classification retained during content refresh",
             ),
         )
-    proposed = authority_for(row)
     if proposed[0] != "answer":
         return proposed
-    return "excluded", "new public URL pending Fortune staff source review"
+    return "answer", "current public Digital Equity page; published site is the factual authority"
 
 
 def crawl_page(row, previous=None):

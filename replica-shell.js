@@ -127,7 +127,7 @@
     "allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
   );
   const frameUrl = new URL("sidecar.html", assetRoot);
-  frameUrl.searchParams.set("v", "20260831-v33-1");
+  frameUrl.searchParams.set("v", "20260922-ux-v36");
   frameUrl.searchParams.set("embed", "1");
   frameUrl.searchParams.set("page", canonicalUrl(sourceUrl) || sourceUrl);
   if (new URLSearchParams(window.location.search).get("open") === "1") {

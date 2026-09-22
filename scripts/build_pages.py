@@ -43,8 +43,8 @@ SHARED_ASSETS = (
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
-REPLICA_WIDGET_CSS_VERSION = "20260921-responsive-fit-1"
-REPLICA_SHELL_JS_VERSION = "20260921-responsive-fit-1"
+REPLICA_WIDGET_CSS_VERSION = "20260922-ux-v36"
+REPLICA_SHELL_JS_VERSION = "20260922-ux-v36"
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),

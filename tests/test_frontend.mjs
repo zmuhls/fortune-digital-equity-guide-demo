@@ -543,8 +543,8 @@ test("Pages and Wix label masked headless browser runs as automation", () => {
 test("loading labels fit the narrow submit button", () => {
   assert.doesNotMatch(appSource, /Sending…/);
   assert.doesNotMatch(wixSource, /Sending…/);
-  assert.match(appSource, /value \? "Sending"/);
-  assert.match(wixSource, /value \? "Sending"/);
+  assert.match(appSource, /value \? "Working…"/);
+  assert.match(wixSource, /value \? "Working…"/);
 });
 
 test("canonical URLs stay on the approved public host", () => {
@@ -565,15 +565,15 @@ test("all 150 routes receive one of the reviewed page families", () => {
     counts[family] = (counts[family] || 0) + 1;
   }
   assert.deepEqual(counts, {
-    program: 3,
-    excluded: 30,
+    program: 6,
+    excluded: 9,
     action: 3,
     directory: 6,
     support: 2,
-    event: 4,
+    event: 6,
     archive: 21,
     news: 9,
-    service: 72,
+    service: 88,
   });
   assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 150);
 });
@@ -774,7 +774,7 @@ test("Pages and Wix accept one Return submission and preserve model provenance",
   assert.equal(wixSession.turns[0].payload.model_called, true);
 });
 
-test("Pages and Wix retain the latest five prior exchanges and then discard only the oldest", async () => {
+test("Pages and Wix retain the latest eight prior exchanges and then discard only the oldest", async () => {
   const pages = await pagesHarness({ chatPayload: validModelAnswer });
   for (let number = 1; number <= 9; number += 1) {
     pages.input.value = `Question ${number}`;
@@ -784,12 +784,12 @@ test("Pages and Wix retain the latest five prior exchanges and then discard only
       `Pages turn ${number} did not settle`,
     );
   }
-  assert.equal(pages.chatRequests[8].history.length, 10);
-  assert.equal(pages.chatRequests[8].history[0].content, "Question 4");
-  assert.equal(pages.window.FortuneGuide.state().turnCount, 5);
+  assert.equal(pages.chatRequests[8].history.length, 16);
+  assert.equal(pages.chatRequests[8].history[0].content, "Question 1");
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 8);
   const pageSession = JSON.parse([...pages.storage.values.values()][0]);
-  assert.equal(pageSession.turns.length, 5);
-  assert.equal(pageSession.turns[0].question, "Question 5");
+  assert.equal(pageSession.turns.length, 8);
+  assert.equal(pageSession.turns[0].question, "Question 2");
 
   const wix = await wixHarness({ chatPayload: validModelAnswer });
   for (let number = 1; number <= 9; number += 1) {
@@ -800,12 +800,12 @@ test("Pages and Wix retain the latest five prior exchanges and then discard only
       `Wix turn ${number} did not settle`,
     );
   }
-  assert.equal(wix.chatRequests[8].history.length, 10);
-  assert.equal(wix.chatRequests[8].history[0].content, "Question 4");
-  assert.equal(wix.guide.turns.length, 5);
+  assert.equal(wix.chatRequests[8].history.length, 16);
+  assert.equal(wix.chatRequests[8].history[0].content, "Question 1");
+  assert.equal(wix.guide.turns.length, 8);
   const wixSession = JSON.parse([...wix.storage.values.values()][0]);
-  assert.equal(wixSession.turns.length, 5);
-  assert.equal(wixSession.turns[0].question, "Question 5");
+  assert.equal(wixSession.turns.length, 8);
+  assert.equal(wixSession.turns[0].question, "Question 2");
 });
 
 test("Pages and Wix reject successful nonprivacy payloads outside the model contract", async t => {
@@ -915,7 +915,7 @@ test("Pages and Wix retry an in-progress turn with the same client event ID", as
 test("Pages and Wix distinguish bounded HTTP failures without adding Guide turns", async t => {
   const cases = [
     { status: 429, message: "Guide busy. Try again shortly.", backendReady: true },
-    { status: 502, message: "Try rephrasing.", backendReady: true },
+    { status: 502, message: "The guide couldn’t finish. Your message is kept—try sending again.", backendReady: true },
     { status: 503, message: "Guide unavailable. Try again.", backendReady: false },
   ];
 

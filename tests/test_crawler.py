@@ -119,12 +119,12 @@ class AuthorityTests(NoNetworkTestCase):
             ),
         )
 
-    def test_new_sitemap_url_is_held_out_of_answers_pending_review(self):
+    def test_new_public_sitemap_url_is_available_to_the_guide(self):
         self.assertEqual(
             crawler.reviewed_authority(row("/calendar/test")),
             (
-                "excluded",
-                "new public URL pending Fortune staff source review",
+                "answer",
+                "current public Digital Equity page; published site is the factual authority",
             ),
         )
 

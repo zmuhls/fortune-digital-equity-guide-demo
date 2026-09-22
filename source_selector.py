@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 
-from prompt_policy import SYSTEM_PROMPT
+from prompt_policy import SYSTEM_PROMPT, compile_runtime_prompt
 
 
 ASK = "ASK"
@@ -29,11 +29,12 @@ def build_prompt(
     current_date: str = "",
     conversation_history: list[dict] | None = None,
     current_time: str = "",
+    team_prompt: str = "",
 ) -> str:
     """Build a grounded prompt with bounded, server-sanitized conversation context."""
 
     return (
-        SYSTEM_PROMPT
+        compile_runtime_prompt(team_prompt)
         + "\nCURRENT DATE:\n"
         + json.dumps(current_date or None)
         + "\nCURRENT TIME (America/New_York; an ended session is not upcoming):\n"
@@ -52,9 +53,8 @@ def build_prompt(
 def parse_response(raw: str, allowed_ids):
     """Return one allowed record and the model's complete answer.
 
-    A single retrieved record already resolves source selection. In that case,
-    accept a plain-language model answer instead of failing the participant's
-    turn merely because a text-only provider omitted the JSON envelope.
+    Accept plain model prose without a repair generation. A single candidate
+    resolves its citation; with several candidates, do not invent a source ID.
     """
 
     allowed = {str(value) for value in allowed_ids}
@@ -62,8 +62,8 @@ def parse_response(raw: str, allowed_ids):
     match = re.search(r"\{[^{}]*\}", text, re.DOTALL)
     if not match:
         answer = normalize_answer(text)
-        if len(allowed) == 1 and answer and "{" not in text and "}" not in text:
-            return {"pick": next(iter(allowed)), "answer": answer}
+        if answer and "{" not in text and "}" not in text:
+            return {"pick": next(iter(allowed)) if len(allowed) == 1 else ASK, "answer": answer}
         return None
     try:
         parsed = json.loads(match.group(0))

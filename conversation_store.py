@@ -25,7 +25,7 @@ from prompt_policy import PROMPT_POLICY_VERSION
 
 CAPTURE_MODES = {"none", "metadata", "transcript"}
 HUMAN_REVIEW_SURFACES = frozenset({"replica", "wix"})
-SCHEMA_VERSION = "013_automated_review_exclusion"
+SCHEMA_VERSION = "014_prompt_activation"
 
 
 class CaptureUnavailable(RuntimeError):

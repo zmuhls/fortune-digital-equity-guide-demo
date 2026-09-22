@@ -23,10 +23,10 @@ import source_selector
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-21-v35")
-        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.35")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-22-v36")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.36")
         self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
-        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 35)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 36)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -50,7 +50,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("Pick the most specific current record", source_selector.SYSTEM_PROMPT)
         self.assertIn("Paraphrase direct implications naturally", source_selector.SYSTEM_PROMPT)
         self.assertIn("without making Digital Equity claims", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Use the latest five exchanges", source_selector.SYSTEM_PROMPT)
+        self.assertIn("Use the latest eight exchanges", source_selector.SYSTEM_PROMPT)
         self.assertIn("active page matters only", source_selector.SYSTEM_PROMPT)
         self.assertIn("anywhere on the site", source_selector.SYSTEM_PROMPT)
         self.assertIn("stock refusal", source_selector.SYSTEM_PROMPT)
@@ -58,7 +58,7 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("Never call this the Fortune Society site", source_selector.SYSTEM_PROMPT)
         self.assertIn("one short sentence", source_selector.SYSTEM_PROMPT)
         self.assertIn("cannot enroll or book", source_selector.SYSTEM_PROMPT)
-        self.assertIn("latest five exchanges", source_selector.SYSTEM_PROMPT)
+        self.assertIn("latest eight exchanges", source_selector.SYSTEM_PROMPT)
         self.assertIn("questions about earlier turns", source_selector.SYSTEM_PROMPT)
         self.assertIn("repeat a clarification", source_selector.SYSTEM_PROMPT)
         self.assertIn("live calendar", source_selector.SYSTEM_PROMPT)
@@ -70,11 +70,8 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertIn("ASK is a source-selection value", source_selector.SYSTEM_PROMPT)
         self.assertIn("With no candidate records, use ASK", source_selector.SYSTEM_PROMPT)
         self.assertIn("useful partial answer", source_selector.SYSTEM_PROMPT)
-        self.assertLess(len(source_selector.SYSTEM_PROMPT.split()), 600)
-        self.assertEqual(
-            set(prompt_policy.RETRY_INSTRUCTIONS),
-            {"invalid response", "resolved source can answer"},
-        )
+        self.assertLess(len(source_selector.SYSTEM_PROMPT.split()), 700)
+        self.assertFalse(hasattr(prompt_policy, "RETRY_INSTRUCTIONS"))
         self.assertNotIn("conversation logs are recorded", source_selector.SYSTEM_PROMPT.lower())
         self.assertNotIn("988", source_selector.SYSTEM_PROMPT)
         self.assertNotIn("laptop", source_selector.SYSTEM_PROMPT.lower())
@@ -162,23 +159,13 @@ class PromptPolicyTests(unittest.TestCase):
                 f'current_value: "{module["current_value"]}"',
                 javascript,
             )
-        self.assertIn('"compiled_prompt": SYSTEM_PROMPT', evaluation_source)
+        self.assertIn('"compiled_prompt": compile_runtime_prompt', evaluation_source)
         self.assertIn("Website Guide for the Digital Equity site", javascript)
         self.assertIn("live calendar", javascript)
 
-    def test_retry_text_is_allowlisted_and_versioned(self):
-        base = prompt_policy.SYSTEM_PROMPT + "\nCANDIDATE RECORDS:\n[]"
-        retry = prompt_policy.build_retry_prompt(base, "invalid response")
-        self.assertIn(prompt_policy.RETRY_INSTRUCTIONS["invalid response"], retry)
-        resolved = prompt_policy.build_retry_prompt(base, "resolved source can answer")
-        self.assertIn(prompt_policy.RETRY_INSTRUCTIONS["resolved source can answer"], resolved)
-        self.assertIn("Return that page ID, not ASK", resolved)
-        self.assertEqual(
-            prompt_policy.build_retry_prompt(base, "participant supplied text"),
-            base,
-        )
-        self.assertNotIn("response too long", prompt_policy.RETRY_INSTRUCTIONS)
-        self.assertNotIn("unsupported factual wording", prompt_policy.RETRY_INSTRUCTIONS)
+    def test_repair_generation_prompt_path_is_removed(self):
+        self.assertFalse(hasattr(prompt_policy, "build_retry_prompt"))
+        self.assertFalse(hasattr(prompt_policy, "RETRY_INSTRUCTIONS"))
 
     def test_manifest_artifact_hashes_and_current_prompt_hash(self):
         manifest_path = ROOT / "prompts" / "manifest.json"
