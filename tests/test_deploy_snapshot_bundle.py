@@ -34,6 +34,10 @@ def sha256(value: bytes) -> str:
 
 
 class DeploySnapshotBundleTests(unittest.TestCase):
+    def test_checked_in_railway_bundle_matches_current_reviewed_manifest(self):
+        # Fixture-only tests miss a stale deployment archive after a recapture.
+        pack.verify_bundle(pack.BUNDLE_PATH, pack.load_manifest(pack.MANIFEST_PATH))
+
     def write_fixture(self, root: pathlib.Path) -> tuple[dict, bytes]:
         snapshots = root / "replica-snapshots"
         snapshots.mkdir()

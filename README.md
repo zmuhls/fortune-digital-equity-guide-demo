@@ -117,6 +117,7 @@ Refresh the public Wix index manually when a source review is planned:
 
 ```bash
 ./run.sh index
+python3 scripts/pack_deploy_snapshots.py
 python3 scripts/build_pages.py --check-index
 ./run.sh test
 ```
