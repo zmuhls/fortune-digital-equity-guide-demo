@@ -83,6 +83,7 @@
   const WORKSPACE_REFRESH_INTERVAL_MS = 10000;
   let lastWorkspaceRefreshAt = 0;
   let workspaceRefreshPromise = null;
+  let promptRefreshInFlight = false;
   const state = {
     session: null,
     csrf: "",
@@ -126,6 +127,7 @@
     writeDraft("prompt", {
       ...existing, body: sharedPromptBody.value, changeNote: sharedPromptChangeNote.value,
       version: existing?.version ?? state.promptLab?.shared_draft?.version ?? 0,
+      baseBody: existing?.baseBody ?? state.promptLab?.shared_draft?.body ?? "",
     });
   }
   function rememberNote() {
@@ -769,9 +771,22 @@
     const draft = lab.shared_draft || null;
     deployedPromptVersion.textContent = `${draft?.active ? draft.display_version : lab.deployed.display_version || promptDisplayVersion(lab.deployed.version)} · ${lab.deployed.behavior_release}`;
     if (draft) {
-      const local = readDraft("prompt");
-      sharedPromptBody.value = local?.body ?? draft.body ?? "";
-      sharedPromptChangeNote.value = local?.changeNote ?? "";
+      let local = readDraft("prompt");
+      const matchesSaved = local?.body?.trim() === (draft.body || "").trim();
+      const stale = local && (Number(local.version) !== Number(draft.version)
+        || (local.baseBody !== undefined && local.baseBody !== draft.body));
+      if (local && (stale || (matchesSaved && !local.changeNote?.trim()))) {
+        if (!matchesSaved || local.changeNote?.trim()) {
+          const recovered = readDraft("prompt-recovery") || [];
+          writeDraft("prompt-recovery", [...recovered, local]);
+        }
+        writeDraft("prompt", null);
+        local = null;
+      }
+      const editorBody = local?.body ?? draft.body ?? "";
+      const editorNote = local?.changeNote ?? "";
+      if (sharedPromptBody.value !== editorBody) sharedPromptBody.value = editorBody;
+      if (sharedPromptChangeNote.value !== editorNote) sharedPromptChangeNote.value = editorNote;
       if (local) sharedPromptStatus.textContent = "Unsaved draft retained in this tab.";
       if (local?.conflict) showSavedConflict(sharedPromptBody, draft.body);
       else sharedPromptBody.parentElement.querySelector(".draft-conflict-copy")?.remove();
@@ -779,6 +794,37 @@
       if (!local) sharedPromptStatus.textContent = draft.active
         ? "Active for subsequent messages."
         : "Not active yet. Save & apply to publish this prompt.";
+      const oldRecovery = sharedPromptBody.parentElement.querySelector(".prompt-draft-recovery");
+      const recoveryOpen = oldRecovery?.open || false;
+      oldRecovery?.remove();
+      const recovered = readDraft("prompt-recovery") || [];
+      if (recovered.length) {
+        const panel = document.createElement("details");
+        panel.className = "prompt-draft-recovery";
+        panel.open = recoveryOpen;
+        const summary = document.createElement("summary");
+        summary.textContent = "Earlier unsaved drafts (preserved in this tab)";
+        panel.append(summary);
+        recovered.forEach((saved, index) => {
+          const copy = document.createElement("pre");
+          copy.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere";
+          copy.textContent = saved.body + (saved.changeNote ? `\n\nChange note: ${saved.changeNote}` : "");
+          const restore = document.createElement("button");
+          restore.type = "button";
+          restore.className = "secondary-button";
+          restore.textContent = `Restore draft ${index + 1} for editing`;
+          restore.addEventListener("click", () => {
+            if (readDraft("prompt") && !window.confirm("Replace your current unsaved editor text? It will be kept in the recovery list.")) return;
+            const current = readDraft("prompt");
+            if (current) writeDraft("prompt-recovery", [...(readDraft("prompt-recovery") || []), current]);
+            writeDraft("prompt", { ...saved, version: draft.version, baseBody: draft.body, conflict: true });
+            renderPromptLab();
+          });
+          panel.append(copy, restore);
+        });
+        sharedPromptBody.after(panel);
+        if (!local) sharedPromptStatus.textContent = "Latest saved prompt loaded. Earlier unsaved text is preserved below the editor.";
+      }
       const revisions = draft.revisions || [];
       sharedPromptHistorySummary.textContent = `${revisions.length} ${revisions.length === 1 ? "edit" : "edits"}`;
       sharedPromptHistory.innerHTML = revisions.map(revision => `
@@ -867,7 +913,7 @@
         writeDraft("prompt", null);
         sharedPromptChangeNote.value = "";
       } else {
-        writeDraft("prompt", { ...readDraft("prompt"), version: updated.version, conflict: false });
+        writeDraft("prompt", { ...readDraft("prompt"), version: updated.version, baseBody: updated.body, conflict: false });
       }
       if (localPreview) {
         previewSave();
@@ -881,7 +927,7 @@
     } catch (error) {
       if (error.status === 409 && error.payload?.current) {
         state.promptLab.shared_draft = error.payload.current;
-        writeDraft("prompt", { ...readDraft("prompt"), version: error.payload.current.version, conflict: true });
+        if (error.payload.current.active) state.promptLab.compiled_prompt = error.payload.current.body.trim() + "\n";
         renderPromptLab();
       }
       sharedPromptStatus.textContent = `Not saved. Your draft is preserved. ${error.message}`;
@@ -898,12 +944,18 @@
   }
 
   async function refreshPromptLab(silent = false) {
-    if (localPreview) return;
+    if (localPreview || !state.session || promptRefreshInFlight || sharedPromptForm.querySelector('button[type="submit"]').disabled) return;
+    promptRefreshInFlight = true;
     try {
-      state.promptLab = (await api("/api/evaluation/prompt-lab")).prompt_lab;
+      const updated = (await api("/api/evaluation/prompt-lab")).prompt_lab;
+      if (sharedPromptForm.querySelector('button[type="submit"]').disabled) return;
+      if (Number(updated?.shared_draft?.version) < Number(state.promptLab?.shared_draft?.version)) return;
+      state.promptLab = updated;
       renderPromptLab();
     } catch (error) {
       if (!silent) moveStatus.textContent = `Prompt proposals could not be refreshed. ${error.message}`;
+    } finally {
+      promptRefreshInFlight = false;
     }
   }
 
@@ -1694,6 +1746,7 @@
   });
   window.setInterval(() => {
     if (!conversationsPanel.hidden) refreshVisibleWorkspace();
+    else if (!document.hidden) refreshPromptLab(true);
   }, WORKSPACE_REFRESH_INTERVAL_MS);
   newProposalButton.addEventListener("click", () => openPromptProposalDialog());
   promptProposalClose.addEventListener("click", () => {
