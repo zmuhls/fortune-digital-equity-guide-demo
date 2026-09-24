@@ -39,3 +39,10 @@ history, then saves and activates a new revision based on the reviewed first
 half of v1.36. The calendar audit adds instructions to follow actual labeled
 signup links and select a supporting candidate when stating site facts. It does
 not modify conversation or evaluation data.
+
+Migration `016_source_linked_actions` appends and activates v1.38, preserving
+all v1.37 and evaluator revisions. The model selects `pick` for the supporting
+evidence and `action_url` for the next step it describes. The action destination
+must be a URL supplied in the candidate records or their captured labeled links;
+it does not have to be the page supplying the answer's facts. Ordinary replies
+use `action_url: null`. Both fields are produced in the same model request.

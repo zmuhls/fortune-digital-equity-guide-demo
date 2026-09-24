@@ -774,6 +774,26 @@ test("Pages and Wix link the selected calendar, including page-scoped and same-p
   }
 });
 
+test("Pages and Wix preserve the model action separately from the factual source", async () => {
+  for (const actionUrl of ["https://www.fortunedigitalequity.org/calendar", "javascript:alert(1)"]) {
+    const chatPayload = { ...validModelAnswer,
+      sources: [{url: "https://www.fortunedigitalequity.org/contact", title: "Contact"}],
+      action: {url: actionUrl, title: "Calendar"},
+    };
+    const expected = actionUrl.startsWith("https:") ? "/calendar" : "/contact";
+    for (const create of [pagesHarness, wixHarness]) {
+      const client = await create({chatPayload});
+      client.input.value = "How can I register?";
+      client.input.dispatchEvent(keyEvent("Enter"));
+      await waitFor(() => client.chatRequests.length === 1 && !(client.guide?.answering || client.window?.FortuneGuide.state().answering));
+      const link = descendants(client.transcript).find(item => item.classList.contains("chat-destination") || item.classList.contains("destination"));
+      assert.equal(new URL(link.href).pathname, expected);
+      const saved = JSON.parse([...client.storage.values.values()][0]);
+      assert.equal(saved.turns[0].payload.action.url, actionUrl);
+    }
+  }
+});
+
 test("Pages and Wix accept one Return submission and preserve model provenance", async () => {
   const pages = await pagesHarness({ chatPayload: validModelAnswer });
   pages.input.value = "What is available?";

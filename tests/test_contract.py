@@ -207,7 +207,8 @@ class RetrievalTests(unittest.TestCase):
         evidence = "\n".join(blocks)
         self.assertIn("September 1, 2026", evidence)
         self.assertIn("September 12, 2026", evidence)
-        self.assertEqual(sum("Class " in block for block in blocks), 12)
+        self.assertEqual(sum(" · Class " in block for block in blocks), 12)
+        self.assertIn("Class address: Room 133", blocks)
 
         prompt = server.retrieval_prompt(
             "What classes are listed after August 28, 2026?",
@@ -2238,7 +2239,7 @@ class ResponseContractTests(unittest.TestCase):
             "¿Cómo me registro?", retrieved, None, interaction
         )
         self.assertIn(
-            '{"pick":"<candidate ID or ASK>","answer":"<direct response>"}',
+            '{"pick":"<candidate ID or ASK>","answer":"<direct response>","action_url":null}',
             prompt,
         )
         self.assertIn("ASK is a source-selection value", prompt)

@@ -24,10 +24,10 @@ import test_contract
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-23-v37")
-        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.37")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-23-v38")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.38")
         self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
-        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 37)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 38)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -141,11 +141,22 @@ class PromptPolicyTests(unittest.TestCase):
         self.assertEqual(json.loads(block), history)
 
     def test_single_prompt_migration_activates_exact_current_reviewed_prompt(self):
-        migration = (ROOT / "migrations" / "015_single_system_prompt.sql").read_text()
+        migration = (ROOT / "migrations" / "016_source_linked_actions.sql").read_text()
         migrated_body = migration.split("$system_prompt$", 2)[1]
         self.assertEqual(prompt_policy.compile_runtime_prompt(migrated_body), prompt_policy.SYSTEM_PROMPT)
         self.assertNotIn("TEAM INSTRUCTIONS", prompt_policy.SYSTEM_PROMPT)
-        self.assertIn("follow the supplied labeled signup or booking links", prompt_policy.SYSTEM_PROMPT)
+        self.assertIn("follow labeled signup or booking links", prompt_policy.SYSTEM_PROMPT)
+        self.assertIn("Keep pick as the factual source", prompt_policy.SYSTEM_PROMPT)
+        self.assertIn('"action_url":null', prompt_policy.SYSTEM_PROMPT)
+
+    def test_v37_migration_and_prompt_remain_consistent_after_v38(self):
+        artifact = (ROOT / "prompts" / "versions" / "2026-09-23-v37.md").read_bytes()
+        self.assertEqual(hashlib.sha256(artifact).hexdigest(),
+                         "59e38bc18045f31aba236be690e9e3ec76fa684f855c8a2d062f9b9de9526e49")
+        prior_prompt = re.search(r"## Compiled prompt\n\n```text\n(.*?)```",
+                                 artifact.decode(), re.DOTALL).group(1)
+        migration = (ROOT / "migrations" / "015_single_system_prompt.sql").read_text()
+        self.assertEqual(migration.split("$system_prompt$", 2)[1] + "\n", prior_prompt)
 
     def test_dashboard_active_preview_is_exact_prompt_sent_to_provider(self):
         store = evaluation_store.EvaluationStore(enabled=False)

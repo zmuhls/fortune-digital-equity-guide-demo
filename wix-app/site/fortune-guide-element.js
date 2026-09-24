@@ -621,6 +621,7 @@
           ? payload.retrieval_scope
           : "site",
         choices,
+        action: safeRows(payload?.action ? [payload.action] : [])[0] || null,
         sources: safeRows(payload?.sources),
         related: safeRows(payload?.related),
         model_called: payload?.model_called === true
@@ -1029,6 +1030,11 @@
     }
 
     distinctDestination(payload) {
+      try {
+        const action = payload?.action;
+        const url = new URL(action?.url);
+        if (action?.title && ["http:", "https:"].includes(url.protocol)) return action;
+      } catch { /* Only valid web URLs can be actions. */ }
       const sources = Array.isArray(payload?.sources) ? payload.sources : [];
       const related = Array.isArray(payload?.related) ? payload.related : [];
       return [...sources, ...related].find((item) => item?.title

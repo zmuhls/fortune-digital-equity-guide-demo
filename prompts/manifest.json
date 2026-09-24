@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-09-23-v37",
+  "current_policy_id": "2026-09-23-v38",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "30491805ac7ff326419859eac6700f801e808f0d1488fee0ed00f42fe07c9f58",
-  "current_compiled_prompt_sha256": "053024fdfde12b8513214671e01f25b3d26db3e7588e01e654f30387c34bfe9e",
+  "current_policy_source_sha256": "6501d18b089c2e4e2b0bf15eec85d88cbf4732657462f750f7171948637e4f7e",
+  "current_compiled_prompt_sha256": "6d1efdaf292ef1fa7f37e2f5b698ff16f3b0776cdd6018b8db79d74e0e2ff477",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -406,6 +406,16 @@
       "behavior_release": "digital-equity-conversation-grounding",
       "artifact": "versions/2026-09-23-v37.md",
       "artifact_sha256": "59e38bc18045f31aba236be690e9e3ec76fa684f855c8a2d062f9b9de9526e49",
+      "reconstructed": false
+    },
+    {
+      "policy_id": "2026-09-23-v38",
+      "label": "Separate answer evidence and source-linked next action",
+      "source_state": "Production registration follow-up selected Contact as factual FAQ evidence while describing the Calendar action; model now returns a distinct supplied action URL",
+      "source_date": "2026-09-23",
+      "behavior_release": "digital-equity-conversation-grounding",
+      "artifact": "versions/2026-09-23-v38.md",
+      "artifact_sha256": "ad6a7ddcf6168d99af9e1892b756bcff571de56658c4cc41fd0ee0f52a14f0f9",
       "reconstructed": false
     }
   ]

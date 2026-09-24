@@ -43,7 +43,7 @@ button outside its collapsed details. Desktop/mobile preview checks covered
 opening/closing transcripts, pagination, and prompt save/readback. No real shared
 prompt was changed during those preview tests.
 
-## Verification
+## v1.37 candidate verification
 
 | Check | Result |
 | --- | --- |
@@ -74,6 +74,55 @@ An independent source review found no release-blocking factual/action errors in
 the final 26 replies. Two precision improvements remain: “next regular class” is
 clearer than “next listed session” when open lab starts earlier, and an open-lab
 follow-up could state 1:30 PM explicitly rather than only “before class.”
+
+### Production retest and v1.38 correction
+
+The v1.37 production-container retest exposed a failure missed by that candidate
+run: the answer told the visitor to register on Calendar, but selected Contact as
+its factual source. A citation and an action destination cannot safely be treated
+as the same field.
+
+The v1.38 model response therefore keeps `pick` for evidence and adds `action_url`
+for its chosen next step. The server accepts only exact candidate URLs or labeled
+links supplied in the evidence. The browser displays that validated action before
+the citation fallback, preserving it across pages. There is no keyword route table,
+action classifier, hardcoded answer, or extra model request. Invalid action URLs
+cannot become executable links and do not suppress an otherwise valid answer.
+
+The expanded checker tests source and button independently: 11 journeys, 30 turns,
+with 13 explicit button checks. Its first run passed those structural checks but
+semantic review caught a missing walk-in FAQ and omitted email-class availability.
+The excerpt filter had retained only one FAQ question, dropping equally relevant
+answers. It now ranks intact question/answer pairs and retains relevant pairs
+within the existing content budget. The prompt also carries program availability
+limits into next-step guidance.
+
+Migration 016 appends and activates v1.38 while preserving v1.37 and all earlier
+revisions. No conversation, review, or account data is changed.
+
+The final v1.38 run passed **429 Python, 34 frontend, and 18 snapshot tests**.
+All **30 live turns and 13 explicit button checks** passed. Mean latency was
+3.99 seconds, with a 10.36-second maximum. See the
+[complete v1.38 release replay](../evals/website-guide/results/2026-09-24-action-journeys-v38-release.json).
+The earlier failed candidate is retained separately, with its semantic findings.
+
+Independent review confirmed correct registration buttons even when Contact is
+the factual citation, the restored walk-in FAQ, current dates, and the actual
+capstone description. It also identified remaining conversational limitations:
+
+- Tutoring hours match the September PDF (10–11:30), but one answer does not
+  acknowledge the conflicting 10:30–12 schedule on the support page. The answer
+  is supported by one current source; the source conflict remains unresolved.
+- “No appointment is mentioned” is weaker than the source's explicit statement
+  that no scheduling is necessary for Open Computer Lab.
+- Email signup advice correctly says to check available calendar dates without
+  promising a bookable session, but could mention the service page's availability
+  limitation more explicitly.
+
+These are not represented as a perfect semantic pass. No model-output rewriting
+or canned responses were added to conceal them. Calendar evidence now labels
+class hours/address separately from support programs to avoid transferring a
+classroom address to an appointment service.
 
 A real browser run at 375 px clicked the generated “Go to Digital Equity calendar”
 button and reached the local /calendar/ route, not Contact. Menu typography and

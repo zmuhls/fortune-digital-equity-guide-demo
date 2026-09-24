@@ -1692,9 +1692,10 @@ def calendar_evidence_blocks(source, query, today=None, now=None):
             for value in (
                 str(schedule.get("month") or "").strip(),
                 str(schedule.get("theme") or "").strip(),
-                str(schedule.get("default_hours") or "").strip(),
-                str(location.get("name") or "").strip(),
-                str(location.get("address") or "").strip(),
+                "Class hours: " + str(schedule["default_hours"]).strip() if schedule.get("default_hours") else "",
+                "Class location: " + str(location["name"]).strip() if location.get("name") else "",
+                "Class address: " + str(location["address"]).strip() if location.get("address") else "",
+                "Separate support programs:" if schedule.get("support") else "",
                 *[str(value).strip() for value in schedule.get("support", [])],
             )
             if value
@@ -1856,13 +1857,15 @@ def source_excerpt(source, query, limit=1800, today=None, now=None):
     for index, block in enumerate(cleaned_blocks):
         if not block.endswith("?"):
             continue
-        overlap = len(query_terms.intersection(expanded_query_terms(block)))
+        # Visitors often use words from the answer, not the site's question.
+        # Rank the intact FAQ pair so that selecting an excerpt cannot hide it.
+        answer = cleaned_blocks[index + 1] if index + 1 < len(cleaned_blocks) else ""
+        overlap = len(query_terms.intersection(expanded_query_terms(block + " " + answer)))
         if overlap < 2:
             continue
         faq_matches.append((overlap, index))
     matched_faq_indices = set()
-    if faq_matches:
-        overlap, index = max(faq_matches, key=lambda row: (row[0], -row[1]))
+    for overlap, index in faq_matches:
         matched_faq_indices.add(index)
         priorities[index] = max(priorities[index], 140 + overlap)
         if index + 1 < len(cleaned_blocks) and cleaned_blocks[index + 1]:
@@ -3125,6 +3128,24 @@ def model_answer_is_grounded(answer, source, question=""):
     return True
 
 
+def model_action_link(value, sources):
+    """Accept only an exact destination actually supplied in the model evidence."""
+    if not isinstance(value, str):
+        return None
+    for source in sources:
+        links = [{"label": clean_source_title(source), "url": source["url"]},
+                 *source_navigation_links(source)]
+        for link in links:
+            if value != link["url"]:
+                continue
+            parsed = urllib.parse.urlsplit(value)
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+                return None
+            linked = SOURCE_BY_ID.get(SOURCE_ID_BY_URL.get(canonical_url(value), ""))
+            return {"url": value, "title": clean_source_title(linked) if linked else link["label"]}
+    return None
+
+
 def parse_model_selection(
     raw,
     question,
@@ -3169,7 +3190,7 @@ def parse_model_selection(
         if language_code == "es"
         else "From an approved Digital Equity page."
     )
-    return response_contract(
+    response = response_contract(
         kind="answer",
         message=message,
         reason=reason,
@@ -3178,6 +3199,10 @@ def parse_model_selection(
         model_called=True,
         retrieval_scope=retrieval_scope,
     )
+    action = model_action_link(parsed.get("action_url"), retrieved)
+    if action:
+        response["action"] = action
+    return response
 
 
 def model_selection_retry_reason(

@@ -69,7 +69,8 @@ def parse_response(raw: str, allowed_ids):
         parsed = json.loads(match.group(0))
     except json.JSONDecodeError:
         return None
-    if not isinstance(parsed, dict) or set(parsed) != {"pick", "answer"}:
+    if (not isinstance(parsed, dict) or not {"pick", "answer"}.issubset(parsed)
+            or set(parsed) - {"pick", "answer", "action_url"}):
         return None
     pick = str(parsed.get("pick") or "").strip()
     answer = normalize_answer(parsed.get("answer"))
@@ -77,7 +78,10 @@ def parse_response(raw: str, allowed_ids):
         return None
     if pick != ASK and pick not in allowed:
         return None
-    return {"pick": pick, "answer": answer}
+    result = {"pick": pick, "answer": answer}
+    if isinstance(parsed.get("action_url"), str):
+        result["action_url"] = parsed["action_url"].strip()
+    return result
 
 
 def parse_pick(raw: str, allowed_ids) -> str:

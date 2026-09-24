@@ -116,6 +116,7 @@
         ? data.retrieval_scope
         : "site",
       choices,
+      action: safeRows(data?.action ? [data.action] : [])[0] || null,
       sources: safeRows(data?.sources),
       related: safeRows(data?.related),
       model_called: data?.model_called === true,
@@ -253,10 +254,16 @@
     if (options.destination?.url) {
       const action = document.createElement("a");
       action.className = "chat-destination";
-      action.dataset.mockUrl = options.destination.url;
-      const baseHref = window.FortuneMockSite.hrefFor(options.destination.url);
-      const connector = String(baseHref).includes("?") ? "&" : "?";
-      action.href = `${baseHref}${connector}open=1`;
+      if (options.destination.external) {
+        action.href = options.destination.url;
+        action.target = "_blank";
+        action.rel = "noopener noreferrer";
+      } else {
+        action.dataset.mockUrl = options.destination.url;
+        const baseHref = window.FortuneMockSite.hrefFor(options.destination.url);
+        const connector = String(baseHref).includes("?") ? "&" : "?";
+        action.href = `${baseHref}${connector}open=1`;
+      }
       action.textContent = options.destination.title || "Go to the next page";
       article.append(action);
     }
@@ -268,6 +275,14 @@
   }
 
   function distinctDestination(data) {
+    try {
+      const action = data?.action;
+      const url = new URL(action?.url);
+      if (action?.title && ["http:", "https:"].includes(url.protocol)) {
+        return { url: action.url, title: Core.destinationLabel(action.title),
+          external: !window.FortuneMockSite.isKnown(action.url) || !!(url.search || url.hash) };
+      }
+    } catch { /* Invalid action metadata never becomes an executable link. */ }
     const sourceRows = Array.isArray(data?.sources) ? data.sources : [];
     const relatedRows = Array.isArray(data?.related) ? data.related : [];
     // Keep the model's selected source, even when it is the current page.

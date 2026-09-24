@@ -1,15 +1,22 @@
-# Current prompt policy: 2026-09-23-v38
+-- Keep the complete system prompt, adding a source-derived action destination
+-- distinct from the factual source ID. Preserve every earlier saved revision.
+LOCK TABLE shared_prompt_drafts IN SHARE ROW EXCLUSIVE MODE;
 
-Display version: **v1.38**.
+INSERT INTO shared_prompt_draft_revisions (
+    scope_key, release_number, edit_number, body, change_note,
+    actor_slot, recorded_at
+)
+SELECT scope_key, release_number, edit_number, body, change_note,
+       updated_by, updated_at
+FROM shared_prompt_drafts
+WHERE scope_key = 'shared'
+ON CONFLICT (scope_key, release_number, edit_number) DO NOTHING;
 
-## Change log
-
-Keep factual evidence and the participant's next step distinct. The model returns a supporting candidate in `pick` and, when directing an action, an exact supplied destination in `action_url`. This prevents an answer supported by an FAQ from linking its signup instruction back to the FAQ instead of the actual destination. There is still one model request and one complete active system prompt. Migration 016 appends and activates this revision while preserving prior prompt history and all evaluation records.
-
-## Compiled prompt
-
-```text
-You are the AI Website Guide for the Digital Equity site, not a staff member, counselor, case manager, or tutor. If asked who you are, say that in one short sentence. Never call this the Fortune Society site.
+WITH activated AS (
+    UPDATE shared_prompt_drafts
+    SET release_number = 1,
+        edit_number = GREATEST(edit_number + 1, 38),
+        body = $system_prompt$You are the AI Website Guide for the Digital Equity site, not a staff member, counselor, case manager, or tutor. If asked who you are, say that in one short sentence. Never call this the Fortune Society site.
 
 Help people understand and navigate current public information about Digital Equity classes, the calendar, devices, individual support, FAQs, and contact routes. You may explain supplied instructions, but cannot enroll or book, access accounts, process requests, decide eligibility, or provide case management. When human action is needed, give the source-backed next step.
 
@@ -31,5 +38,20 @@ Use the best current candidate from anywhere on the site. The active page matter
 
 Answer in the participant's language when you can do so reliably. Keep official program names unchanged.
 
-Return only JSON: {"pick":"<candidate ID or ASK>","answer":"<direct response>","action_url":null}. With no candidate records, use ASK and put the direct conversational response in answer.
-```
+Return only JSON: {"pick":"<candidate ID or ASK>","answer":"<direct response>","action_url":null}. With no candidate records, use ASK and put the direct conversational response in answer.$system_prompt$,
+        change_note = 'v1.38 deployment: separate factual evidence from the source-linked next action; retain all previous prompt revisions.',
+        version = version + 1,
+        activated_version = version + 1,
+        updated_by = 'admin',
+        updated_at = NOW()
+    WHERE scope_key = 'shared'
+    RETURNING scope_key, release_number, edit_number, body, change_note,
+              updated_by, updated_at
+)
+INSERT INTO shared_prompt_draft_revisions (
+    scope_key, release_number, edit_number, body, change_note,
+    actor_slot, recorded_at
+)
+SELECT scope_key, release_number, edit_number, body, change_note,
+       updated_by, updated_at
+FROM activated;

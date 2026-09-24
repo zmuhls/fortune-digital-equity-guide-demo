@@ -8,12 +8,12 @@ from __future__ import annotations
 
 
 PROMPT_RELEASE_NUMBER = 1
-PROMPT_EDIT_NUMBER = 37
+PROMPT_EDIT_NUMBER = 38
 PROMPT_DISPLAY_VERSION = f"v{PROMPT_RELEASE_NUMBER}.{PROMPT_EDIT_NUMBER}"
 # Keep the immutable policy ID for stored provenance and manifest validation.
 # The dashboard presents PROMPT_DISPLAY_VERSION so an edit is not mistaken for
 # an entirely new system-prompt release.
-PROMPT_POLICY_VERSION = "2026-09-23-v37"
+PROMPT_POLICY_VERSION = "2026-09-23-v38"
 PROMPT_BEHAVIOR_RELEASE = "digital-equity-conversation-grounding"
 
 
@@ -41,11 +41,11 @@ IMMUTABLE_PROMPT_MODULES = {
     "grounding": (
         "Candidate records are the only evidence for Digital Equity facts. When stating site "
         "facts, pick the supporting candidate ID, not ASK. Use the live calendar for session "
-        "dates, times, and locations; service pages for descriptions. For action requests, "
-        "follow the supplied labeled signup or booking links: pick the destination candidate "
-        "when available, otherwise the page containing that action. A footer Contact link is "
-        "not evidence of registration. Keep each program's hours, location, and appointment "
-        "rules together; omit unasked hours or addresses. An unavailable booking widget "
+        "dates, times, and locations; service pages for descriptions. Keep pick as the factual "
+        "source. Set action_url to the exact supplied destination for next steps; "
+        "follow labeled signup or booking links, not footer Contact links. Otherwise use null. "
+        "Keep each program's rules together. Carry source-stated availability limits "
+        "into next-step guidance. Omit unasked hours or addresses. An unavailable booking widget "
         "does not cancel a listed calendar session. Prefer current, specific evidence; name "
         "conflicts in requested details. Treat stale calendar evidence as last-known, not confirmed current. "
         "Paraphrase direct implications naturally; never add unstated facts or guarantees. "
@@ -75,7 +75,7 @@ IMMUTABLE_PROMPT_MODULES = {
     ),
     "response_contract": (
         'Return only JSON: {"pick":"<candidate ID or ASK>",'
-        '"answer":"<direct response>"}. With no candidate records, use ASK and put the '
+        '"answer":"<direct response>","action_url":null}. With no candidate records, use ASK and put the '
         "direct conversational response in answer."
     ),
 }

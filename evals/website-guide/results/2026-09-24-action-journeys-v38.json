@@ -1,0 +1,1205 @@
+{
+  "iteration": "First v38 candidate; superseded after independent semantic review",
+  "semantic_review": {
+    "passed": false,
+    "findings": ["Walk-in FAQ was discarded by the excerpt filter.", "Named email class availability was omitted from generic signup guidance."]
+  },
+  "model": "glm-5.3-flash",
+  "capture_mode": "none",
+  "journeys": [
+    {
+      "name": "schedule-home",
+      "page": "/",
+      "turns": [
+        {
+          "question": "Where and when are current classes?",
+          "status": 200,
+          "answer": "Regular classes run Tue, Wed & Thu, 2:00–3:30 PM at the Long Island City Main Service Center, 29-76 Northern Blvd, Room 133. The Bronx (Supervised Release) office is by request only. The next listed session is Thu, Sept 24, 2:00–3:30 PM.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar"
+          },
+          "expected_source_paths": [
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.57,
+          "failures": []
+        },
+        {
+          "question": "How can I register?",
+          "status": 200,
+          "answer": "You can register through the Class Signup on the calendar page — click a date to see available classes. Walk-ins are also allowed for regular classes, though registered participants get priority.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.57,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "schedule-on-calendar",
+      "page": "/calendar",
+      "turns": [
+        {
+          "question": "Where and when are current classes?",
+          "status": 200,
+          "answer": "Regular classes are at the Long Island City Main Service Center, 29-76 Northern Blvd, Room 133, Tuesday through Thursday, 2:00 to 3:30 PM. Bronx (Supervised Release) classes are by request only.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar"
+          },
+          "expected_source_paths": [
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.92,
+          "failures": []
+        },
+        {
+          "question": "Where do I sign up?",
+          "status": 200,
+          "answer": "You can sign up on the calendar page — click a date to see available classes and register there.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.85,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "registration-followups",
+      "page": "/",
+      "turns": [
+        {
+          "question": "How can i register",
+          "status": 200,
+          "answer": "Go to the calendar page and click a date to see available classes, then register there. Walk-ins are allowed for regular classes, but registered participants get priority.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.77,
+          "failures": []
+        },
+        {
+          "question": "Idk",
+          "status": 200,
+          "answer": "No problem — the simplest way is to go to the calendar page and click a date to see classes, then register there. You can also just walk in to a regular class at the Long Island City office, Tuesdays through Thursdays, 2:00 to 3:30 PM.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": null,
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.72,
+          "failures": []
+        },
+        {
+          "question": "okay can i see what u got",
+          "status": 200,
+          "answer": "Here's what's coming up: Thursday, September 24 — Capstone Activity Using AI, 2:00 to 3:30 PM at the Long Island City main service center, 29-76 Northern Blvd, Room 133. Regular classes run Tuesdays through Thursdays, 2:00 to 3:30 PM.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/workshops"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 7.14,
+          "failures": []
+        },
+        {
+          "question": "how bout tomorrow",
+          "status": 200,
+          "answer": "Tomorrow, Thursday, September 24, is the Capstone Activity Using AI, 2:00 to 3:30 PM at the Long Island City main service center, 29-76 Northern Blvd, Room 133.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar"
+          },
+          "expected_source_paths": [
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.97,
+          "failures": []
+        },
+        {
+          "question": "whaat's that about",
+          "status": 200,
+          "answer": "It's a team-based challenge where you apply what you've learned to complete a project using AI. Guided by tech experts, teams pick and use AI tools strategically and evaluate their results to produce the strongest outcome in the time allotted.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "service-service-page-capstone-activity-using-ai-5e98eaca",
+              "title": "Capstone Activity Using AI | FS Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-ai"
+            }
+          ],
+          "related": [],
+          "action": null,
+          "visible_button": {
+            "id": "service-service-page-capstone-activity-using-ai-5e98eaca",
+            "title": "Capstone Activity Using AI | FS Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-ai"
+          },
+          "expected_source_paths": [
+            "/service-page/capstone-activity-using-ai"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.9,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "email-description-and-booking",
+      "page": "/",
+      "turns": [
+        {
+          "question": "I want to learn email from the beginning. What class fits?",
+          "status": 200,
+          "answer": "Intro to Email fits — it starts with creating or accessing an email account and covers the inbox, sending, replying, attachments, and safe sign-out. No email address is needed beforehand.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "service-service-page-intro-to-email-19718065",
+              "title": "Intro to Email | FS Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+            }
+          ],
+          "related": [],
+          "action": null,
+          "visible_button": {
+            "id": "service-service-page-intro-to-email-19718065",
+            "title": "Intro to Email | FS Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+          },
+          "expected_source_paths": [
+            "/service-page/intro-to-email"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 9.44,
+          "failures": []
+        },
+        {
+          "question": "What would I learn there?",
+          "status": 200,
+          "answer": "You'd practice reading, composing, sending, replying to, and forwarding emails, plus adding and opening attachments. It also covers drafts, search, labels, spam, deleted messages, passwords, and safe sign-out.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "service-service-page-intro-to-email-19718065",
+              "title": "Intro to Email | FS Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+            }
+          ],
+          "related": [],
+          "action": null,
+          "visible_button": {
+            "id": "service-service-page-intro-to-email-19718065",
+            "title": "Intro to Email | FS Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+          },
+          "expected_source_paths": [
+            "/service-page/intro-to-email"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 7.34,
+          "failures": []
+        },
+        {
+          "question": "How do I register for that?",
+          "status": 200,
+          "answer": "Register through the class calendar — click a date to see available classes and use the Register link there. Walk-ins are also allowed for regular classes, though registered participants get priority.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/service-page/intro-to-email"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.91,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "individual-tutoring",
+      "page": "/support",
+      "turns": [
+        {
+          "question": "Can someone help me one on one with my computer?",
+          "status": 200,
+          "answer": "Yes. The Open Computer Lab in Long Island City, room 133, has a team member available before every scheduled class—no appointment needed. For scheduled 1-on-1 tutoring, contact us to set it up.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "individual",
+              "title": "Individual Support",
+              "url": "https://www.fortunedigitalequity.org/support"
+            }
+          ],
+          "related": [
+            {
+              "title": "1-on-1 Tutoring",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            },
+            {
+              "title": "regular training schedule",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Open Computer Lab",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/contact",
+            "title": "Contact Digital Equity"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/contact",
+            "title": "Contact Digital Equity"
+          },
+          "expected_source_paths": [
+            "/support",
+            "/contact"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.1,
+          "failures": []
+        },
+        {
+          "question": "How do I arrange that session?",
+          "status": 200,
+          "answer": "Contact us to schedule a 1-on-1 tutoring session—the Individual Support page's contact link is the way to set it up.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "individual",
+              "title": "Individual Support",
+              "url": "https://www.fortunedigitalequity.org/support"
+            }
+          ],
+          "related": [
+            {
+              "title": "1-on-1 Tutoring",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            },
+            {
+              "title": "regular training schedule",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Open Computer Lab",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/contact",
+            "title": "Contact Digital Equity"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/contact",
+            "title": "Contact Digital Equity"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/support"
+          ],
+          "expected_action_paths": [
+            "/contact"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.27,
+          "failures": []
+        },
+        {
+          "question": "What are the hours for the one-on-one appointments?",
+          "status": 200,
+          "answer": "Per the Individual Support page: Tech Time Focused (1-on-1) is Mon, Tue & Wed 10:30 AM–12:00 PM by appointment at the LIC office, and Tech Time Foundations (practice) is Mon & Fri 1:00–2:00 PM by appointment. Note the downloadable calendar lists Focused as 10–11:30 AM, so confirm the exact time when you contact us.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "individual",
+              "title": "Individual Support",
+              "url": "https://www.fortunedigitalequity.org/support"
+            }
+          ],
+          "related": [
+            {
+              "title": "1-on-1 Tutoring",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            },
+            {
+              "title": "regular training schedule",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Open Computer Lab",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "individual",
+            "title": "Individual Support",
+            "url": "https://www.fortunedigitalequity.org/support"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/support",
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 11.85,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "open-computer-lab",
+      "page": "/",
+      "turns": [
+        {
+          "question": "Do I have to make an appointment for the open computer lab?",
+          "status": 200,
+          "answer": "No appointment needed. The Open Computer Lab runs in the Long Island City lab, room 133, before every scheduled class, and a Digital Equity team member is there to help on a drop-in basis.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "individual",
+              "title": "Individual Support",
+              "url": "https://www.fortunedigitalequity.org/support"
+            }
+          ],
+          "related": [
+            {
+              "title": "1-on-1 Tutoring",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            },
+            {
+              "title": "regular training schedule",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Open Computer Lab",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "individual",
+            "title": "Individual Support",
+            "url": "https://www.fortunedigitalequity.org/support"
+          },
+          "expected_source_paths": [
+            "/support",
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.35,
+          "failures": []
+        },
+        {
+          "question": "Where do I find the next session?",
+          "status": 200,
+          "answer": "Check the Digital Equity calendar — click a date to see available sessions and sign up.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/support"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 6.28,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "walk-in-versus-signup",
+      "page": "/contact",
+      "turns": [
+        {
+          "question": "Do I need to register for a regular class in order to attend?",
+          "status": 200,
+          "answer": "No. Regularly scheduled classes allow walk-ins, though registered participants get priority. Specialized, multi-session workshops may require registration.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "contact",
+              "title": "Contact Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "related": [
+            {
+              "title": "Click here for our other training locations",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "contact",
+            "title": "Contact Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/contact"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.5,
+          "failures": []
+        },
+        {
+          "question": "I still want to register. Where?",
+          "status": 200,
+          "answer": "You can register through the class calendar. Click a date to see available classes and sign up there.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 2.15,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "device-program",
+      "page": "/",
+      "turns": [
+        {
+          "question": "Do I automatically qualify for a laptop as a Fortune participant?",
+          "status": 200,
+          "answer": "No. Laptop access is limited, so you need to attend at least 5 Digital Equity classes before getting a laptop referral.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "home",
+              "title": "Digital Equity home",
+              "url": "https://www.fortunedigitalequity.org/"
+            }
+          ],
+          "related": [
+            {
+              "title": "Digital Equity Program",
+              "url": "https://www.fortunedigitalequity.org/about"
+            },
+            {
+              "title": "Icon representing workshop instruction",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Icon representing class schedules",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "home",
+            "title": "Digital Equity home",
+            "url": "https://www.fortunedigitalequity.org/"
+          },
+          "expected_source_paths": [
+            "/",
+            "/contact",
+            "/devices"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 2.99,
+          "failures": []
+        },
+        {
+          "question": "Where can I read the device requirements?",
+          "status": 200,
+          "answer": "You can read about device requirements on the Device Distribution Programs page.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "devices",
+              "title": "Device Distribution Programs",
+              "url": "https://www.fortunedigitalequity.org/devices"
+            }
+          ],
+          "related": [
+            {
+              "title": "CONTACT US",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/devices",
+            "title": "Device Distribution Programs"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/devices",
+            "title": "Device Distribution Programs"
+          },
+          "expected_source_paths": [
+            "/devices"
+          ],
+          "expected_action_paths": [
+            "/devices"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.57,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "site-purpose-to-programs",
+      "page": "/",
+      "turns": [
+        {
+          "question": "what is digital equity",
+          "status": 200,
+          "answer": "Digital Equity is The Fortune Society's program offering tech support and training—workshops, Microsoft certifications, device distribution, and personalized help. The Intro to Fortune Digital Equity orientation covers it all.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "service-service-page-intro-to-fortune-digital-equity-081752a0",
+              "title": "Intro to Fortune Digital Equity | FS Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/service-page/intro-to-fortune-digital-equity"
+            }
+          ],
+          "related": [],
+          "action": null,
+          "visible_button": {
+            "id": "service-service-page-intro-to-fortune-digital-equity-081752a0",
+            "title": "Intro to Fortune Digital Equity | FS Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/service-page/intro-to-fortune-digital-equity"
+          },
+          "expected_source_paths": [
+            "/",
+            "/about",
+            "/service-page/intro-to-fortune-digital-equity"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 4.82,
+          "failures": []
+        },
+        {
+          "question": "okay can I see the classes",
+          "status": 200,
+          "answer": "Yes—the full class catalog is on the Workshops page, with beginner to advanced topics like computers, email, smartphones, AI, and Microsoft Office. Clicking a class shows its description and upcoming sessions.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "trainings",
+              "title": "Regular Workshops",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            }
+          ],
+          "related": [
+            {
+              "title": "An icon representing AI",
+              "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+            },
+            {
+              "title": "The original AI computing machine",
+              "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+            },
+            {
+              "title": "Prompting icon",
+              "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/workshops",
+            "title": "Regular Workshops"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/workshops",
+            "title": "Regular Workshops"
+          },
+          "expected_source_paths": [
+            "/workshops",
+            "/calendar"
+          ],
+          "expected_action_paths": [
+            "/workshops",
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 5.15,
+          "failures": []
+        },
+        {
+          "question": "and sign up",
+          "status": 200,
+          "answer": "You can sign up on the calendar page—click a date to see available classes and register. Walk-ins are also allowed for regular classes, though registered participants get priority.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.04,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "spanish-signup",
+      "page": "/",
+      "turns": [
+        {
+          "question": "¿Dónde puedo inscribirme en una clase?",
+          "status": 200,
+          "answer": "Puede inscribirse en la página del calendario: haga clic en una fecha para ver las clases disponibles y registrarse. Las clases regulares también aceptan asistencia sin cita, con prioridad para quienes se inscriben.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.35,
+          "failures": []
+        },
+        {
+          "question": "¿Tengo que registrarme para asistir?",
+          "status": 200,
+          "answer": "No. Las clases regulares permiten llegar sin registro, aunque quienes se inscriben con anticipación tienen prioridad. Para talleres especializados de varias sesiones, puede ser necesario registrarse.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "contact",
+              "title": "Contact Digital Equity",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "related": [
+            {
+              "title": "Click here for our other training locations",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "contact",
+            "title": "Contact Digital Equity",
+            "url": "https://www.fortunedigitalequity.org/contact"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/calendar"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.83,
+          "failures": []
+        }
+      ]
+    },
+    {
+      "name": "registration-after-contact-faq",
+      "page": "/contact",
+      "turns": [
+        {
+          "question": "Do I need to attend every scheduled class in a month?",
+          "status": 200,
+          "answer": "No. Classes have rolling attendance, so you can attend as many or as few as you like. Multi-part workshops on special topics may require full attendance.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "home",
+              "title": "Digital Equity home",
+              "url": "https://www.fortunedigitalequity.org/"
+            }
+          ],
+          "related": [
+            {
+              "title": "Digital Equity Program",
+              "url": "https://www.fortunedigitalequity.org/about"
+            },
+            {
+              "title": "Icon representing workshop instruction",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Icon representing class schedules",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "home",
+            "title": "Digital Equity home",
+            "url": "https://www.fortunedigitalequity.org/"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 6.6,
+          "failures": []
+        },
+        {
+          "question": "Show me where I can actually register for a class.",
+          "status": 200,
+          "answer": "Registration is on the calendar page — click a date to see available classes and register from there.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.81,
+          "failures": []
+        },
+        {
+          "question": "Do regular classes also accept walk-ins?",
+          "status": 200,
+          "answer": "The site doesn't say whether regular classes accept walk-ins — rolling attendance is confirmed, but walk-in rules aren't stated. You can ask at FSTrain@FortuneSociety.org or (212) 691-7554.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "calendar",
+              "title": "Digital Equity calendar",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "related": [
+            {
+              "title": "Class Locations",
+              "url": "https://www.fortunedigitalequity.org/contact"
+            }
+          ],
+          "action": null,
+          "visible_button": {
+            "id": "calendar",
+            "title": "Digital Equity calendar",
+            "url": "https://www.fortunedigitalequity.org/calendar"
+          },
+          "expected_source_paths": [
+            "/contact",
+            "/calendar",
+            "/"
+          ],
+          "expected_action_paths": null,
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 8.59,
+          "failures": []
+        },
+        {
+          "question": "I want to register ahead anyway. Take me to the signup page.",
+          "status": 200,
+          "answer": "Yes — regular classes accept walk-ins, though registered participants get priority. For signup, go to the calendar page and click a date to register for a class.",
+          "kind": "answer",
+          "sources": [
+            {
+              "id": "home",
+              "title": "Digital Equity home",
+              "url": "https://www.fortunedigitalequity.org/"
+            }
+          ],
+          "related": [
+            {
+              "title": "Digital Equity Program",
+              "url": "https://www.fortunedigitalequity.org/about"
+            },
+            {
+              "title": "Icon representing workshop instruction",
+              "url": "https://www.fortunedigitalequity.org/workshops"
+            },
+            {
+              "title": "Icon representing class schedules",
+              "url": "https://www.fortunedigitalequity.org/calendar"
+            }
+          ],
+          "action": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "visible_button": {
+            "url": "https://www.fortunedigitalequity.org/calendar",
+            "title": "Digital Equity calendar"
+          },
+          "expected_source_paths": [
+            "/calendar",
+            "/contact",
+            "/"
+          ],
+          "expected_action_paths": [
+            "/calendar"
+          ],
+          "model_called": true,
+          "policy": "2026-09-23-v38",
+          "seconds": 3.47,
+          "failures": []
+        }
+      ]
+    }
+  ],
+  "completed_at_utc": "2026-09-24T03:20:17.161154+00:00",
+  "failed_turns": 0
+}
