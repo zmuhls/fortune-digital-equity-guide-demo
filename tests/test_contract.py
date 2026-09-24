@@ -2889,7 +2889,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
-        self.assertIn('styles.css?v=20260923-responsive-menu-v1', html)
+        self.assertIn('styles.css?v=20260924-launcher-hit-area-v2', html)
         for source in (styles, wix):
             self.assertIn("@keyframes guide-ray-intro", source)
             self.assertIn("@keyframes guide-ray-interaction", source)
@@ -2908,10 +2908,13 @@ class FrontendAndDeploymentTests(unittest.TestCase):
             "Regular Workshops", "Individual Support", "Special Events & Sessions",
             "Professional Digital Foundations", "Microsoft Certifications", "Tech Fair",
             "Practice Your Skills", "Device Distribution", "Find Opportunities",
-            "Other Digital Resources", "CHOOSE A SERVICE", "EXPLORE LEARNING PATHS",
+            "Other Digital Resources",
         ):
             self.assertIn(label, shell)
         self.assertIn('aria-controls="fortune-responsive-navigation"', shell)
+        self.assertIn('aria-label="Open navigation menu"', shell)
+        self.assertNotIn('className = "fortune-responsive-actions"', shell)
+        self.assertNotIn('<span>MENU</span>', shell)
         self.assertIn('event.key !== "Escape"', shell)
         self.assertIn('html[data-replica-viewport-fit="true"] #SITE_HEADER', styles)
         self.assertIn(".fortune-responsive-navigation[data-open=\"true\"]", styles)
@@ -2930,7 +2933,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260923-responsive-menu-v1")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20260924-launcher-hit-area-v2")', replica_shell)
         self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
         self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)
@@ -2961,7 +2964,8 @@ class FrontendAndDeploymentTests(unittest.TestCase):
 
         self.assertIn('document.querySelector("#SITE_CONTAINER")', replica_shell)
         self.assertIn('window.innerWidth / designWidth', replica_shell)
-        self.assertIn('canvas.style.zoom = fitted ? String(scale) : ""', replica_shell)
+        self.assertIn('nativeMobile', replica_shell)
+        self.assertIn('String(scale)', replica_shell)
         self.assertIn('window.addEventListener("resize", scheduleViewportFit', replica_shell)
         self.assertIn('window.addEventListener("orientationchange", scheduleViewportFit', replica_shell)
         self.assertIn('html[data-replica-viewport-fit="true"]', replica_widget)

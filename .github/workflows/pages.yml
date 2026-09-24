@@ -13,11 +13,17 @@ on:
       - "calendar-source.json"
       - "site-index.json"
       - "replica-manifest.json"
+      - "replica-post-controls.json"
+      - "replica-galleries.json"
       - "replica-snapshots/**"
       - "replica-snapshots.raw.tar.xz"
+      - "replica-mobile/**"
       - "replica-shell.css"
       - "replica-widget.css"
+      - "replica-calendar.css"
+      - "replica-notice.css"
       - "replica-shell.js"
+      - "replica-services.js"
       - "embed-frame.js"
       - "server.py"
       - "tests/**"
@@ -54,6 +60,9 @@ jobs:
 
       - name: Install pinned Node.js dependencies
         run: npm ci --ignore-scripts
+
+      - name: Install Firefox for mirror interaction regressions
+        run: npx playwright install --with-deps firefox
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

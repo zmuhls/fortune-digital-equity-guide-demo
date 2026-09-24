@@ -273,7 +273,7 @@ class EvaluationStore:
             "FORTUNE_EVALUATOR_INVITE_SECONDS", 86400, 900, 604800
         )
         self.min_inactive_seconds = _bounded_int(
-            "FORTUNE_EVALUATOR_MIN_INACTIVE_SECONDS", 60, 0, 3600
+            "FORTUNE_EVALUATOR_MIN_INACTIVE_SECONDS", 0, 0, 3600
         )
         self._pool = None
         self._dict_row = None
@@ -1653,12 +1653,12 @@ class EvaluationStore:
                          c.evaluator_attribution_version,
                          c.evaluator_attribution_source,
                          c.evaluator_attributed_at
-                HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0
             )
         """
 
-    def list_conversations(self, account_slot: str, limit: int = 100) -> list[dict]:
+    def list_conversations(self, account_slot: str, limit: int = 100, offset: int = 0) -> list[dict]:
         limit = max(1, min(int(limit), 500))
+        offset = max(0, int(offset))
         query = self._eligible_cte() + """
             SELECT e.id, e.last_turn_at, e.turn_count,
                    e.complete_turn_count, e.failed_turn_count,
@@ -1703,11 +1703,11 @@ class EvaluationStore:
                 LIMIT 1
             ) review_attribution ON TRUE
             ORDER BY e.last_turn_at DESC, e.id
-            LIMIT %s
+            LIMIT %s OFFSET %s
         """
         with self._pool.connection() as connection:
             with connection.cursor(row_factory=self._dict_row) as cursor:
-                cursor.execute(query, (self.min_inactive_seconds, SHARED_BUCKET_OWNER, limit))
+                cursor.execute(query, (self.min_inactive_seconds, SHARED_BUCKET_OWNER, limit, offset))
                 return [_json_value(dict(row)) for row in cursor.fetchall()]
 
     def get_conversation(self, account_slot: str, conversation_value: Any) -> dict:
@@ -1851,21 +1851,9 @@ class EvaluationStore:
             JOIN conversation_turns t ON t.conversation_id = c.id
             WHERE c.id = %s AND c.capture_mode = 'transcript'
               AND c.client_surface IN ('replica', 'wix') AND c.expires_at > NOW()
+              AND NOT c.is_automated
               AND c.last_turn_at <= NOW() - (%s * INTERVAL '1 second')
               AND {VISIBLE_HUMAN_TURN_PREDICATE}
-              AND EXISTS (
-                  SELECT 1
-                  FROM conversation_turns completed
-                  WHERE completed.conversation_id = c.id
-                    AND completed.status = 'complete'
-                    AND completed.privacy_state = 'clear'
-                    AND completed.review_state = 'ready'
-                    AND (
-                        SELECT COUNT(*)
-                        FROM conversation_messages completed_messages
-                        WHERE completed_messages.turn_id = completed.id
-                    ) = 2
-              )
             """,
             (conversation_id, self.min_inactive_seconds),
         )

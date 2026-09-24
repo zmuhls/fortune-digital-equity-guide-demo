@@ -34,6 +34,10 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(HERE, "..");
 export const SOURCE_ORIGIN = "https://www.fortunedigitalequity.org";
 export const VIEWPORT = Object.freeze({ width: 1440, height: 1200 });
+export const MOBILE_VIEWPORT = Object.freeze({ width: 375, height: 812 });
+export const MOBILE_USER_AGENT =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) " +
+  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 export const FIXED_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:128.0) " +
   "Gecko/20100101 Firefox/128.0 FortuneReplicaCapture/1.0";
@@ -109,6 +113,7 @@ export function parseArgs(argv) {
     limit: null,
     allowedStatuses: new Map(),
     help: false,
+    profile: "desktop",
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -119,6 +124,14 @@ export function parseArgs(argv) {
     }
     if (argument === "--index") {
       options.indexPath = path.resolve(valueAfter(argv, index, argument));
+      index += 1;
+      continue;
+    }
+    if (argument === "--profile") {
+      options.profile = valueAfter(argv, index, argument);
+      if (!["desktop", "mobile"].includes(options.profile)) {
+        throw new CaptureError("--profile must be desktop or mobile");
+      }
       index += 1;
       continue;
     }
@@ -182,6 +195,7 @@ main-frame HTML, and atomically publish deterministic gzip snapshots.
 
 Options:
   --index PATH                 Read a different site index.
+  --profile desktop|mobile     Capture the original Wix desktop or mobile layout.
   --output-dir PATH            Put replica-manifest.json and replica-snapshots/
                                under PATH. Required for a partial smoke run.
   --concurrency NUMBER         Capture this many routes at once (default: 2).
@@ -317,6 +331,9 @@ export function selectRoutes(routes, options) {
 
   const partial = selected.length !== routes.length;
   const canonicalOutput = sameFilesystemPath(options.outputDir, ROOT);
+  if (canonicalOutput && options.profile === "mobile") {
+    throw new CaptureError("mobile captures require a separate --output-dir");
+  }
   if (partial && canonicalOutput) {
     throw new CaptureError("a partial capture requires --output-dir different from the repository root");
   }
@@ -1128,6 +1145,34 @@ export function replaceWixNavigationMenusWithNativeDisclosures() {
   return converted;
 }
 
+/** Preserve the actual Wix mobile navigation, including its source link order. */
+export function preserveMobileNavigation() {
+  const menu = document.querySelector("#MENU_AS_CONTAINER");
+  const toggle = document.querySelector("#MENU_AS_CONTAINER_TOGGLE");
+  if (!menu || !toggle) return;
+  toggle.setAttribute("data-replica-mobile-toggle", "true");
+  menu.setAttribute("data-replica-mobile-menu", "true");
+  for (const item of menu.querySelectorAll("nav li")) {
+    const submenu = [...item.children].find(child => child.localName === "ul");
+    const wrapper = [...item.children].find(child => child.querySelector("[data-testid='expandablemenu-toggle']"));
+    if (!submenu || !wrapper) continue;
+    const details = document.createElement("details");
+    details.setAttribute("data-replica-mobile-submenu", "true");
+    const summary = document.createElement("summary");
+    summary.className = wrapper.className;
+    summary.replaceChildren(...wrapper.childNodes);
+    summary.querySelectorAll("button").forEach(button => {
+      const arrow = document.createElement("span");
+      arrow.className = button.className;
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.replaceChildren(...button.childNodes);
+      button.replaceWith(arrow);
+    });
+    details.append(summary, submenu);
+    item.replaceChildren(details);
+  }
+}
+
 
 /**
  * This function is passed directly to page.evaluate, so it must remain
@@ -1155,6 +1200,22 @@ export function sanitizeDocument() {
 
   document.querySelectorAll("img").forEach((image) => {
     if (image.currentSrc) image.setAttribute("src", image.currentSrc);
+    if (!image.getAttribute("src")?.trim()) {
+      try {
+        const metadata = JSON.parse(image.closest("wow-image[data-image-info]")?.getAttribute("data-image-info") || "{}");
+        const uri = String(metadata.imageData?.uri || "");
+        const mime = metadata.imageData?.mimeType || metadata.mimeType;
+        const filename = /^[a-z0-9][a-z0-9_.~-]*\.(?:png|jpe?g|gif|webp|avif|svg)$/i;
+        const candidate = filename.test(uri) ? new URL(uri, "https://static.wixstatic.com/media/") : new URL(uri);
+        if ((!mime || /^image\/(?:png|jpe?g|gif|webp|avif|svg\+xml)$/i.test(mime))
+            && candidate.protocol === "https:" && candidate.hostname === "static.wixstatic.com"
+            && !candidate.port && !candidate.username && !candidate.password && !candidate.search && !candidate.hash
+            && candidate.pathname.startsWith("/media/") && filename.test(candidate.pathname.slice(7))) {
+          image.setAttribute("src", candidate.href);
+          image.dataset.replicaRestoredImage = "true";
+        }
+      } catch { /* Missing or unsupported source metadata is not an invented image. */ }
+    }
     image.removeAttribute("srcset");
     image.removeAttribute("sizes");
   });
@@ -1217,7 +1278,7 @@ export function sanitizeDocument() {
   // original public action available by replacing visible action controls with
   // a direct link to the approved source page that supplied the snapshot.
   const liveSourceHref = window.location.href;
-  const actionLabelPattern = /^(?:register(?:\s+here)?|book(?:\s+now)?|submit|send|share|subscribe|view|see|read|upload(?:\s+(?:a\s+)?(?:file|photo|design|resume))?|apply|sign\s*up|reserve|continue|join(?:\s+now)?)\b/i;
+  const actionLabelPattern = /^(?:register(?:\s+here)?|book(?:\s+now)?|submit|send|share|print(?:\s+post)?|expand\s+image|subscribe|view|see|read|upload(?:\s+(?:a\s+)?(?:file|photo|design|resume))?|apply|sign\s*up|reserve|continue|join(?:\s+now)?)\b/i;
   const makeLiveActionLink = (label) => {
     const link = document.createElement("a");
     link.href = liveSourceHref;
@@ -1240,7 +1301,6 @@ export function sanitizeDocument() {
     // Wix can temporarily report a collapsed client rect for an otherwise
     // published control while a page is hydrating. Semantic hidden state is
     // reliable; geometry and opacity are not.
-    if (control.closest("[hidden],[aria-hidden='true']")) return;
     const label = (
       control.getAttribute("aria-label") ||
       control.getAttribute("value") ||
@@ -1248,8 +1308,18 @@ export function sanitizeDocument() {
       control.textContent ||
       ""
     ).replace(/\s+/g, " ").trim();
+    // Offscreen gallery slides are still published content. Preserve their
+    // images even when the source carousel marks the inactive slide hidden.
+    if (control.closest("[hidden],[aria-hidden='true']") && !/^expand image$/i.test(label)) return;
     if (!actionLabelPattern.test(label)) return;
     const link = makeLiveActionLink(label);
+    if (control.querySelector("img,picture") || (control.querySelector("svg") && !normalizedText(control))) {
+      // Keep published media and icon-only controls. Removing a gallery's
+      // Expand image button must not remove the source photo inside it, and
+      // sentence labels overflow the original fixed-width share toolbar.
+      link.replaceChildren(...[...control.childNodes].map(node => node.cloneNode(true)));
+      link.title = `${label} on the Digital Equity site`;
+    }
     for (const name of ["id", "class", "style"]) {
       if (control.hasAttribute(name)) link.setAttribute(name, control.getAttribute(name));
     }
@@ -1725,8 +1795,8 @@ async function navigateToOfficialPage(page, route, navigationTimeoutMs) {
 
 async function captureRoute(browser, route, snapshotDirectory, options) {
   const context = await browser.newContext({
-    viewport: VIEWPORT,
-    userAgent: FIXED_USER_AGENT,
+    viewport: options.profile === "mobile" ? MOBILE_VIEWPORT : VIEWPORT,
+    userAgent: options.profile === "mobile" ? MOBILE_USER_AGENT : FIXED_USER_AGENT,
     locale: "en-US",
     timezoneId: "America/New_York",
     colorScheme: "light",
@@ -1752,6 +1822,10 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     }
 
     await hydratePage(page);
+    if (options.profile === "mobile") {
+      const optimized = await page.evaluate(() => document.body.classList.contains("device-mobile-optimized"));
+      if (!optimized) throw new CaptureError(`${route.url} did not render Wix's native mobile layout`);
+    }
     const progressiveCollections = await materializeProgressiveCollections(page);
     if (progressiveCollections.load_more_clicks > 0) await hydratePage(page);
     const accordionRecords = await materializeWixAccordionContent(page);
@@ -1770,6 +1844,7 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
     const staticNavigationMenus = await page.evaluate(
       replaceWixNavigationMenusWithNativeDisclosures,
     );
+    if (options.profile === "mobile") await page.evaluate(preserveMobileNavigation);
     const staticSlideshows = await materializeWixSlideshows(page);
     const embedPreviews = await captureIframePreviews(page);
     const capturedCookies = await context.cookies();
@@ -1790,12 +1865,20 @@ async function captureRoute(browser, route, snapshotDirectory, options) {
       throw new CaptureError(`${route.url} has an unsupported Wix published revision`);
     }
 
-    await page.evaluate(sanitizeDocument);
-    const sanitizationIssues = await page.evaluate(auditSanitizedDocument);
+    // Serialize in the same browser task as sanitization. A pending Wix render
+    // must not reinsert live controls between an audit and page.content().
+    const sanitized = await page.evaluate(`(() => {
+      (${sanitizeDocument.toString()})();
+      return {
+        issues: (${auditSanitizedDocument.toString()})(),
+        html: '<!DOCTYPE html>\\n' + document.documentElement.outerHTML,
+      };
+    })()`);
+    const sanitizationIssues = sanitized.issues;
     if (sanitizationIssues.length > 0) {
       throw new CaptureError(`${route.url} failed sanitization: ${sanitizationIssues.join("; ")}`);
     }
-    const html = await page.content();
+    const html = sanitized.html;
     assertSanitized(html);
     assertStaticContentMaterialized(html, {
       disclosures: staticContent.disclosures,
@@ -1852,7 +1935,7 @@ async function captureRoutes(browser, routes, snapshotDirectory, options) {
         results[index] = await captureRoute(browser, route, snapshotDirectory, options);
         process.stderr.write(`[${index + 1}/${routes.length}] captured ${route.path}\n`);
       } catch (error) {
-        failure = error;
+        failure = new CaptureError(`${route.path}: ${error.message}`);
       }
     }
   });
@@ -2055,14 +2138,15 @@ async function acquireCaptureLock(outputRoot) {
 }
 
 
-export function buildManifest({ timestamp, browserVersion, pages }) {
+export function buildManifest({ timestamp, browserVersion, pages, profile = "desktop" }) {
   return {
     captured_at: timestamp,
     source_origin: SOURCE_ORIGIN,
     route_count: pages.length,
     capture: {
       browser: { name: "firefox", version: browserVersion },
-      viewport: VIEWPORT,
+      viewport: profile === "mobile" ? MOBILE_VIEWPORT : VIEWPORT,
+      profile,
     },
     pages,
   };
@@ -2096,6 +2180,7 @@ export async function run(options) {
       timestamp: capturedAt(),
       browserVersion: browser.version(),
       pages,
+      profile: options.profile,
     });
     await writeFile(
       path.join(stagingRoot, "replica-manifest.json"),

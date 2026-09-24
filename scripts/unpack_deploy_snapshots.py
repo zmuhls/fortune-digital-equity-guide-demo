@@ -19,9 +19,10 @@ def sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def compressed_snapshots_are_current(manifest: dict) -> bool:
+def compressed_snapshots_are_current(manifest: dict, capture_root=None) -> bool:
+    root = capture_root or ROOT
     for page in manifest["pages"]:
-        snapshot = ROOT / page["file"]
+        snapshot = root / page["file"]
         try:
             value = snapshot.read_bytes()
         except OSError:
@@ -31,11 +32,12 @@ def compressed_snapshots_are_current(manifest: dict) -> bool:
     return True
 
 
-def safe_extract_bundle() -> None:
-    root = ROOT.resolve()
-    with tarfile.open(BUNDLE, "r:xz") as archive:
+def safe_extract_bundle(capture_root=None) -> None:
+    root = (capture_root or ROOT).resolve()
+    bundle = root / "replica-snapshots.raw.tar.xz" if capture_root else BUNDLE
+    with tarfile.open(bundle, "r:xz") as archive:
         for member in archive.getmembers():
-            target = (ROOT / member.name).resolve()
+            target = (root / member.name).resolve()
             inside_snapshot_root = member.name == "replica-snapshots" or member.name.startswith(
                 "replica-snapshots/"
             )
@@ -43,30 +45,34 @@ def safe_extract_bundle() -> None:
                 raise RuntimeError("The Railway snapshot bundle contains an unsafe path.")
             if not (member.isdir() or member.isfile()):
                 raise RuntimeError("The Railway snapshot bundle contains an unsupported entry.")
-        archive.extractall(ROOT)
+        archive.extractall(root)
 
 
-def main() -> None:
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    if compressed_snapshots_are_current(manifest):
+def restore_capture(capture_root=None) -> None:
+    root = capture_root or ROOT
+    snapshots = root / "replica-snapshots" if capture_root else SNAPSHOTS
+    bundle = root / "replica-snapshots.raw.tar.xz" if capture_root else BUNDLE
+    manifest_path = root / "replica-manifest.json" if capture_root else MANIFEST_PATH
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if compressed_snapshots_are_current(manifest, root):
         return
-    if not BUNDLE.is_file():
+    if not bundle.is_file():
         raise RuntimeError("The reviewed Railway snapshot bundle is missing.")
 
-    shutil.rmtree(SNAPSHOTS, ignore_errors=True)
-    SNAPSHOTS.mkdir(parents=True)
-    safe_extract_bundle()
+    shutil.rmtree(snapshots, ignore_errors=True)
+    snapshots.mkdir(parents=True)
+    safe_extract_bundle(capture_root)
 
     expected_raw = {
         pathlib.Path(page["file"]).name.removesuffix(".gz"): page
         for page in manifest["pages"]
     }
-    actual_raw = {item.name for item in SNAPSHOTS.glob("*.html")}
+    actual_raw = {item.name for item in snapshots.glob("*.html")}
     if actual_raw != set(expected_raw):
         raise RuntimeError("The Railway snapshot bundle does not match the reviewed manifest.")
 
     for filename, page in expected_raw.items():
-        raw_path = SNAPSHOTS / filename
+        raw_path = snapshots / filename
         raw = raw_path.read_bytes()
         if len(raw) != page["source_bytes"] or sha256(raw) != page["source_sha256"]:
             raise RuntimeError(f"The Railway snapshot bundle changed reviewed HTML: {filename}")
@@ -76,13 +82,20 @@ def main() -> None:
         page["snapshot_bytes"] = len(compressed)
         page["snapshot_sha256"] = sha256(compressed)
 
-    MANIFEST_PATH.write_text(
+    manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    if not compressed_snapshots_are_current(manifest):
+    if not compressed_snapshots_are_current(manifest, root):
         raise RuntimeError("The restored Railway snapshots failed manifest verification.")
     print(f"restored {manifest['route_count']} verified replica snapshots")
+
+
+def main() -> None:
+    restore_capture()
+    mobile_root = ROOT / "replica-mobile"
+    if (mobile_root / "replica-manifest.json").is_file():
+        restore_capture(mobile_root)
 
 
 if __name__ == "__main__":

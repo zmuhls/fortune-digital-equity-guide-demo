@@ -409,13 +409,32 @@
   async function loadConversationWorkspace() {
     const [bucketPayload, conversationPayload] = await Promise.all([
       api("/api/evaluation/buckets"),
-      api("/api/evaluation/conversations?limit=500"),
+      loadAllConversations(),
     ]);
     state.buckets = bucketPayload.buckets || [];
     state.conversations = conversationPayload.conversations || [];
     showWorkspace();
     renderBoard();
     lastWorkspaceRefreshAt = Date.now();
+  }
+
+  async function loadAllConversations() {
+    // The board paginates visually; the API also pages so older conversations
+    // never disappear silently once the shared workspace exceeds 500 records.
+    const conversations = new Map();
+    let offset = 0;
+    while (true) {
+      const payload = await api(`/api/evaluation/conversations?limit=500&offset=${offset}`);
+      for (const conversation of payload.conversations || []) {
+        if (!conversations.has(conversation.id)) conversations.set(conversation.id, conversation);
+      }
+      if (payload.next_offset === null || payload.next_offset === undefined) break;
+      if (!Number.isInteger(payload.next_offset) || payload.next_offset <= offset) {
+        throw new Error("Conversation pagination did not advance.");
+      }
+      offset = payload.next_offset;
+    }
+    return { conversations: [...conversations.values()] };
   }
 
   function previewSave() {
@@ -430,7 +449,7 @@
     if (localPreview) return previewLoad();
     const [bucketPayload, conversationPayload, promptPayload, evaluatorPayload] = await Promise.all([
       api("/api/evaluation/buckets"),
-      api("/api/evaluation/conversations?limit=500"),
+      loadAllConversations(),
       api("/api/evaluation/prompt-lab"),
       api("/api/evaluation/evaluators"),
     ]);

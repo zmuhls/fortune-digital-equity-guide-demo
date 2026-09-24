@@ -16,6 +16,7 @@ if [[ "${1:-}" == "test" ]]; then
   "$NODE_EXE" --check "$DEMO_DIR/site.js"
   "$NODE_EXE" --check "$DEMO_DIR/app.js"
   "$NODE_EXE" --check "$DEMO_DIR/replica-shell.js"
+  "$NODE_EXE" --check "$DEMO_DIR/replica-services.js"
   "$NODE_EXE" --check "$DEMO_DIR/embed-frame.js"
   "$NODE_EXE" --check "$DEMO_DIR/evaluation.js"
   "$NODE_EXE" --check "$DEMO_DIR/wix-app/site/fortune-guide-element.js"
@@ -27,6 +28,8 @@ if [[ "${1:-}" == "test" ]]; then
   if [[ -f "$DEMO_DIR/tests/test_snapshot_generator.mjs" ]]; then
     "$NODE_EXE" --test "$DEMO_DIR/tests/test_snapshot_generator.mjs"
   fi
+  "$NODE_EXE" --test "$DEMO_DIR/tests/test_replica_navigation.mjs" "$DEMO_DIR/tests/test_replica_services.mjs"
+  "$NODE_EXE" --test "$DEMO_DIR/tests/test_mobile_typography.mjs"
   exit 0
 fi
 

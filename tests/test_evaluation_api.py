@@ -148,8 +148,9 @@ class _FakeEvaluationStore:
             "archived_at": "2026-09-01T00:45:00Z",
         }
 
-    def list_conversations(self, _slot, _limit):
-        return []
+    def list_conversations(self, _slot, _limit, offset=0):
+        self.last_conversation_query = (_slot, _limit, offset)
+        return getattr(self, "conversation_rows", [])[offset:offset + _limit]
 
     def list_evaluator_options(self):
         return [
@@ -381,6 +382,28 @@ class EvaluationApiTests(unittest.TestCase):
         self.assertEqual(headers["X-Frame-Options"], "DENY")
         self.assertIn("frame-ancestors 'none'", headers["Content-Security-Policy"])
         self.assertIn(b"Review conversations", body)
+
+    def test_conversation_pages_expose_older_rows_and_are_bounded(self):
+        store = server.EVALUATION_STORE
+        store.conversation_rows = [{"id": f"fixture-{index}"} for index in range(503)]
+        try:
+            headers = {"Cookie": "__Host-fs_eval=session-token"}
+            status, _, body = self.request("GET", "/api/evaluation/conversations?limit=999&offset=-1", headers=headers)
+            payload = json.loads(body)
+            self.assertEqual(status, 200)
+            self.assertEqual(store.last_conversation_query, ("editor-1", 500, 0))
+            self.assertEqual(len(payload["conversations"]), 500)
+            self.assertEqual(payload["next_offset"], 500)
+            status, _, body = self.request("GET", "/api/evaluation/conversations?limit=500&offset=500", headers=headers)
+            payload = json.loads(body)
+            self.assertEqual(status, 200)
+            self.assertEqual([row["id"] for row in payload["conversations"]], ["fixture-500", "fixture-501", "fixture-502"])
+            self.assertIsNone(payload["next_offset"])
+            status, _, body = self.request("GET", "/api/evaluation/conversations?limit=bad&offset=bad", headers=headers)
+            self.assertEqual(status, 200)
+            self.assertEqual(store.last_conversation_query, ("editor-1", 100, 0))
+        finally:
+            del store.conversation_rows
 
     def test_repository_source_and_private_paths_are_not_static_assets(self):
         for path in (

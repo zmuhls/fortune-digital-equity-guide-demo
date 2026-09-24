@@ -128,7 +128,7 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
         self.assertIn("automation-badge", javascript)
         self.assertIn(".automation-badge", css)
 
-    def test_failed_only_reports_are_hidden_but_mixed_failures_remain_visible(self):
+    def test_failed_only_and_mixed_human_attempts_are_visible_without_exposing_private_turns(self):
         predicate = evaluation_store.REVIEWABLE_TURN_PREDICATE
         failed_predicate = evaluation_store.FAILED_HUMAN_ATTEMPT_PREDICATE
         visible_predicate = evaluation_store.VISIBLE_HUMAN_TURN_PREDICATE
@@ -160,14 +160,22 @@ class EvaluationStoreBoundaryTests(unittest.TestCase):
             self.assertIn(clause, visible_predicate)
             self.assertIn(clause, eligible_source)
         self.assertNotIn("privacy_state = 'blocked'", failed_predicate)
-        self.assertIn(
+        self.assertNotIn(
             "HAVING COUNT(t.id) FILTER (WHERE t.status = 'complete') > 0",
             eligible_source,
         )
-        self.assertIn("AND EXISTS", current_version_source)
-        self.assertIn("completed.status = 'complete'", current_version_source)
+        self.assertNotIn("completed.status = 'complete'", current_version_source)
+        self.assertIn("AND NOT c.is_automated", current_version_source)
         self.assertNotIn("HAVING BOOL_AND", eligible_source)
         self.assertNotIn("HAVING BOOL_AND", current_version_source)
+
+    def test_conversation_query_supports_bounded_pages_beyond_first_500(self):
+        source = inspect.getsource(evaluation_store.EvaluationStore.list_conversations)
+        self.assertIn("offset: int = 0", source)
+        self.assertIn("max(1, min(int(limit), 500))", source)
+        self.assertIn("offset = max(0, int(offset))", source)
+        self.assertIn("ORDER BY e.last_turn_at DESC, e.id", source)
+        self.assertIn("LIMIT %s OFFSET %s", source)
 
     def test_all_evaluators_use_one_shared_review_workspace(self):
         self.assertEqual(evaluation_store.SHARED_BUCKET_OWNER, "admin")
@@ -453,7 +461,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('previewKey = "fortune-evaluation-preview-v6"', javascript)
         self.assertIn('viewKeyPrefix = "fortune-evaluation-view-v3"', javascript)
         self.assertIn("const UNREVIEWED_PAGE_SIZE = 8", javascript)
-        self.assertIn('api("/api/evaluation/conversations?limit=500")', javascript)
+        self.assertIn('api(`/api/evaluation/conversations?limit=500&offset=${offset}`)', javascript)
+        self.assertIn("loadAllConversations()", javascript)
         self.assertIn("items.slice(start, end)", javascript)
         self.assertIn('aria-label="Not yet reviewed pages"', javascript)
         self.assertIn('aria-current="page"', javascript)
@@ -507,7 +516,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260924-review-v38", html)
+        self.assertIn("20260924-human-review-v1", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -570,7 +579,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("Save &amp; apply replaces it for subsequent messages.", html)
         self.assertNotIn(">Prompt Lab<", html)
         self.assertIn("Prompt currently sent to the model", html)
-        self.assertIn("20260924-review-v38", html)
+        self.assertIn("20260924-human-review-v1", html)
         self.assertIn("Describe what changed concisely", html)
         self.assertIn("data-archive-bucket", javascript)
         self.assertIn("async function archiveBucket", javascript)
