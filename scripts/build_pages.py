@@ -54,7 +54,7 @@ SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
 REPLICA_WIDGET_CSS_VERSION = "20260924-native-menu-launcher-v3"
-REPLICA_SHELL_JS_VERSION = "20260924-native-menu-launcher-v3"
+REPLICA_SHELL_JS_VERSION = "20260924-webkit-launcher-v4"
 REPLICA_CALENDAR_CSS_VERSION = "20260924-calendar-source-v1"
 REPLICA_NOTICE_CSS_VERSION = "20260924-pilot-v1"
 # Wix stores these public anchor destinations outside the rendered link href.

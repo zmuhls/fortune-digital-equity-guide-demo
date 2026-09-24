@@ -726,9 +726,12 @@
   launcher.hidden = true;
   launcher.setAttribute("aria-label", "Open Website Guide");
   launcher.textContent = "Website Guide";
-  launcher.addEventListener("click", () => frame.contentWindow.postMessage({ type: "fortune-sidecar-open" }, window.location.origin));
+  // Use the parent realm's method. WebKit otherwise identifies this sender as
+  // the iframe itself, which correctly fails the child's strict source check.
+  const postToGuide = message => window.postMessage.call(frame.contentWindow, message, window.location.origin);
+  launcher.addEventListener("click", () => postToGuide({ type: "fortune-sidecar-open" }));
   for (const type of ["mouseenter", "mouseleave", "focus", "blur"]) {
-    launcher.addEventListener(type, () => frame.contentWindow.postMessage({ type: "fortune-sidecar-launcher-hover", active: type === "mouseenter" || type === "focus" }, window.location.origin));
+    launcher.addEventListener(type, () => postToGuide({ type: "fortune-sidecar-launcher-hover", active: type === "mouseenter" || type === "focus" }));
   }
   host.append(frame);
   host.append(launcher);

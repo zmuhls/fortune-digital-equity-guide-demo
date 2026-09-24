@@ -61,8 +61,8 @@ jobs:
       - name: Install pinned Node.js dependencies
         run: npm ci --ignore-scripts
 
-      - name: Install Firefox for mirror interaction regressions
-        run: npx playwright install --with-deps firefox
+      - name: Install Firefox and WebKit for mirror interaction regressions
+        run: npx playwright install --with-deps firefox webkit
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -70,6 +70,7 @@ jobs:
       - name: Run source, privacy, and route contracts
         env:
           PYTHONDONTWRITEBYTECODE: "1"
+          FORTUNE_TYPOGRAPHY_BROWSERS: "firefox,webkit"
         run: ./run.sh test
 
       - name: Build and validate allowlisted site
