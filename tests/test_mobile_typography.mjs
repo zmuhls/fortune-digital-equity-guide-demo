@@ -47,8 +47,9 @@ before(async () => {
     }
     if (!/^\/[a-zA-Z0-9_.-]+$/.test(path)) { response.writeHead(404); response.end(); return; }
     try {
-      const bytes = await readFile(new URL(path.slice(1), root));
-      response.setHeader('Content-Type', path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : 'application/json');
+      const file = path === '/sidecar.html' ? 'index.html' : path.slice(1);
+      const bytes = await readFile(new URL(file, root));
+      response.setHeader('Content-Type', path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : path.endsWith('.html') ? 'text/html' : 'application/json');
       response.end(bytes);
     } catch { response.writeHead(404); response.end(); }
   });
@@ -135,6 +136,51 @@ for (const name of names) for (const width of [375, 390, 430, 768, 1440]) {
         'The disclosure must not intercept the mobile menu close button');
     }
     assert.deepEqual(errors, []);
+    await context.close();
+  });
+}
+
+for (const name of names) {
+  test(`${name}: real guide proxy opens, hovers, closes, and reopens after a page anchor`, async () => {
+    const context = await browsers.get(name).newContext({
+      ...(name !== 'firefox' ? devices['iPhone 13'] : {}),
+      viewport: { width: 390, height: 900 },
+    });
+    const page = await context.newPage();
+    const errors = [], modelRequests = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/*', route => {
+      const url = new URL(route.request().url());
+      if (['/api/chat', '/api/warmup'].includes(url.pathname)) {
+        modelRequests.push(url.pathname);
+        return route.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ready"}' });
+      }
+      return url.origin === origin ? route.continue() : route.abort();
+    });
+    await page.goto(origin);
+    const launcher = page.locator('#fortune-sidecar-launcher');
+    await launcher.waitFor({ state: 'visible' });
+    const guide = page.frameLocator('#fortune-sidecar-frame');
+    await launcher.click();
+    await guide.locator('#guide-panel').waitFor({ state: 'visible', timeout: 2000 });
+    // Firefox places focus on the iframe body after it resizes; Chromium and
+    // WebKit retain the Close button. Both must move keyboard focus into the
+    // guide rather than leave it on the now-hidden proxy.
+    await page.waitForFunction(() => document.activeElement?.id === 'fortune-sidecar-frame', null, { timeout: 2000 });
+    await guide.locator('#guide-close').click();
+    await launcher.waitFor({ state: 'visible' });
+    const frame = page.frames().find(frame => frame.url().includes('/sidecar.html'));
+    await page.locator('#fortune-pilot-notice a').focus();
+    await page.mouse.move(0, 0);
+    await frame.waitForFunction(() => !document.querySelector('#guide-toggle').classList.contains('is-proxy-hovered'), null, { timeout: 2000 });
+    await launcher.hover();
+    await frame.waitForFunction(() => document.querySelector('#guide-toggle').classList.contains('is-proxy-hovered'), null, { timeout: 2000 });
+    await page.getByRole('link', { name: 'CHOOSE A SERVICE', exact: true }).click();
+    assert.equal(new URL(page.url()).hash, '#comp-mbzt50my');
+    await launcher.click();
+    await guide.locator('#guide-panel').waitFor({ state: 'visible', timeout: 2000 });
+    assert.deepEqual(errors, []);
+    assert.deepEqual(modelRequests, [], 'A local UI-only test never calls the provider or captures a conversation');
     await context.close();
   });
 }
