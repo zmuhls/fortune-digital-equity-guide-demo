@@ -140,6 +140,36 @@ class AuthorityTests(NoNetworkTestCase):
 
 
 class RecordUtilityTests(NoNetworkTestCase):
+    def test_source_links_keep_real_labels_and_actions_without_navigation_noise(self):
+        links = crawler.source_links("https://www.fortunedigitalequity.org/calendar", """
+          <header><a href="/contact">Header contact</a></header>
+          <main id="PAGES_CONTAINER">
+            <nav><a href="/contact">Navigation contact</a></nav>
+            <h2>Class Signup</h2>
+            <a href="/calendar" data-replica-live-action="true"><span>REGISTER</span> on the Digital Equity site</a>
+            <a href="/calendar" data-replica-live-action="true">REGISTER on the Digital Equity site</a>
+            <p><a href="/contact#hours">Office <strong>hours</strong></a></p>
+            <a href="https://example.org/instructions?q=1&amp;page=2">Class instructions</a>
+            <div data-replica-embed-placeholder="true"><a href="https://runtime.wix.test/frame">Open embedded content</a></div>
+            <footer><a href="/contact">Footer contact</a></footer>
+            <a href="javascript:bad()">Unsafe</a>
+          </main>
+          <a href="/about">Outside main</a>
+        """)
+        self.assertEqual(links, [
+            {"label": "REGISTER", "url": "https://www.fortunedigitalequity.org/calendar"},
+            {"label": "Office hours", "url": "https://www.fortunedigitalequity.org/contact#hours"},
+            {"label": "Class instructions", "url": "https://example.org/instructions?q=1&page=2"},
+        ])
+
+    def test_source_links_bound_large_collections_without_duplicate_labels(self):
+        markup = '<main data-main-content="true">' + ''.join(
+            f'<a href="/service-page/class-{i}">Class {i}</a>' for i in range(100)
+        ) + '</main>'
+        links = crawler.source_links("https://www.fortunedigitalequity.org/catalog", markup)
+        self.assertEqual(len(links), 80)
+        self.assertEqual(links[-1]["label"], "Class 79")
+
     def test_page_ids_are_stable_distinct_and_kind_prefixed(self):
         training = row("/trainings")
         service = row("/service-page/intro-to-computers", "booking-services")

@@ -50,6 +50,8 @@ REPLICA_PRESENTATION_ATTRIBUTES = {
     "data-replica-embed-placeholder",
     "data-replica-static-preview-note",
     "data-replica-live-action",
+    "data-replica-live-calendar-note",
+    "data-replica-static-slideshow",
 }
 
 EXCLUDED_PAGE_PATHS = {
@@ -165,6 +167,85 @@ def sitemap_entries():
 def normalize_text(value):
     value = unescape(value or "").replace("\u00a0", " ")
     return re.sub(r"\s+", " ", value).strip()
+
+
+class SourceLinkExtractor(HTMLParser):
+    """Keep labeled actions from the actual main content, separate from prose."""
+
+    VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self, page_url):
+        super().__init__(convert_charrefs=True)
+        self.page_url = page_url
+        self.links = []
+        self._stack = []
+        self._anchor = None
+        self._seen = set()
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if not self._stack:
+            if tag == "main" and (values.get("id") == "PAGES_CONTAINER" or values.get("data-main-content") == "true"):
+                self._stack.append((tag, False))
+            return
+        ignored = tag in SKIP_TAGS | {"nav", "header", "footer"} or any(
+            key in values for key in (
+                "data-replica-embed-placeholder", "data-replica-static-preview",
+                "data-replica-static-preview-note",
+                "data-replica-live-calendar-note",
+                "data-replica-static-slide-previous", "data-replica-static-slide-next",
+                "data-replica-static-slide-navigation",
+            )
+        )
+        if tag not in self.VOID_TAGS:
+            self._stack.append((tag, ignored))
+        if ignored or any(skip for _, skip in self._stack):
+            return
+        if tag == "a" and values.get("href"):
+            self._anchor = {
+                "url": urllib.parse.urljoin(self.page_url, values["href"]),
+                "label": [],
+                "aria_label": values.get("aria-label", ""),
+                "live": "data-replica-live-action" in values,
+            }
+        elif tag == "img" and self._anchor and values.get("alt"):
+            label = values["alt"]
+            if "data-replica-slideshow-preview" in values:
+                label = re.sub(r"\s*\(static preview\)$", "", label, flags=re.I)
+            self._anchor["label"].append(label)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self.VOID_TAGS:
+            self.handle_endtag(tag)
+
+    def handle_data(self, data):
+        if self._anchor and not any(skip for _, skip in self._stack):
+            self._anchor["label"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self._anchor:
+            anchor = self._anchor
+            self._anchor = None
+            label = normalize_text(" ".join(anchor["label"])) or normalize_text(anchor["aria_label"])
+            if anchor["live"]:
+                label = re.sub(r" on the (?:live )?Digital Equity (?:site|page)$", "", label, flags=re.I)
+            url = anchor["url"]
+            parsed = urllib.parse.urlsplit(url)
+            pair = (label, url)
+            if label and parsed.scheme in {"https", "http", "mailto", "tel"} and pair not in self._seen and len(self.links) < 80:
+                self._seen.add(pair)
+                self.links.append({"label": label[:240], "url": url})
+        for index in range(len(self._stack) - 1, -1, -1):
+            if self._stack[index][0] == tag:
+                self._stack = self._stack[:index]
+                break
+
+
+def source_links(page_url, markup):
+    parser = SourceLinkExtractor(page_url)
+    parser.feed(markup)
+    return parser.links
 
 
 class PageExtractor(HTMLParser):
@@ -450,8 +531,9 @@ def crawl_page(row, previous=None):
     ))
     try:
         body, status = fetch(row["url"])
+        markup = body.decode("utf-8", errors="replace")
         parser = PageExtractor()
-        parser.feed(body.decode("utf-8", errors="replace"))
+        parser.feed(markup)
         blocks = clean_blocks(parser.blocks)
         content_characters = sum(len(block) for block in blocks)
         if record["authority"] == "answer" and content_characters < 80:
@@ -464,6 +546,7 @@ def crawl_page(row, previous=None):
             "headings": clean_blocks(parser.headings)[:30],
             "blocks": blocks,
             "internal_links": internal_links(row["url"], parser.links),
+            "source_links": source_links(row["url"], markup),
             "content_characters": content_characters,
             "content_hash": hashlib.sha256("\n".join(blocks).encode()).hexdigest(),
             "source_owner": (previous or {}).get(
@@ -577,6 +660,7 @@ def _rendered_snapshot_content(page, manifest_page, snapshot_root, captured_at="
         "headings": clean_blocks(parser.headings)[:30],
         "blocks": blocks,
         "internal_links": internal_links(page["url"], parser.links),
+        "source_links": source_links(page["url"], markup),
         "content_characters": content_characters,
         "content_hash": hashlib.sha256("\n".join(blocks).encode()).hexdigest(),
         "rendered_snapshot": {

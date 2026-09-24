@@ -24,7 +24,7 @@ from prompt_policy import (
 )
 
 
-EVALUATION_SCHEMA_VERSION = "014_prompt_activation"
+EVALUATION_SCHEMA_VERSION = "015_single_system_prompt"
 COOKIE_NAME = "__Host-fs_eval"
 SLOT_KEYS = ("admin", "editor-1", "editor-2", "editor-3")
 SHARED_BUCKET_OWNER = "admin"
@@ -864,15 +864,15 @@ class EvaluationStore:
 
     @staticmethod
     def _ensure_shared_prompt_draft(cursor) -> None:
-        """Seed the collaborative draft once without changing the live prompt."""
+        """Seed the complete shared prompt once; preserve existing saved revisions."""
 
         change_note = f"Initial shared draft copied from live prompt {PROMPT_DISPLAY_VERSION}."
         cursor.execute(
             """
             INSERT INTO shared_prompt_drafts (
                 scope_key, release_number, edit_number, body, change_note,
-                version, updated_by
-            ) VALUES ('shared', %s, %s, %s, %s, 1, %s)
+                version, updated_by, activated_version
+            ) VALUES ('shared', %s, %s, %s, %s, 1, %s, 1)
             ON CONFLICT (scope_key) DO NOTHING
             """,
             (
@@ -927,7 +927,7 @@ class EvaluationStore:
         cursor.execute(
             """
             SELECT revision.release_number, revision.edit_number,
-                   revision.change_note, revision.actor_slot,
+                   revision.change_note, revision.body, revision.actor_slot,
                    COALESCE(account.display_name,
                             INITCAP(REPLACE(revision.actor_slot, '-', ' ')))
                        AS actor_name,
@@ -1077,10 +1077,9 @@ class EvaluationStore:
             "shared_draft": shared_draft,
             "editable_modules": self._prompt_module_catalog(),
             "code_controlled": [
-                "Grounding and no-guessing rules",
-                "Approved source access",
-                "Privacy and safety rules",
-                "Response format and eight-exchange context",
+                "Approved source retrieval",
+                "Conversation data handling",
+                "Response parsing and eight-exchange context",
             ],
             "activation": "next_message_after_save",
             "can_mark_status": account_slot == SHARED_BUCKET_OWNER,
@@ -1149,7 +1148,7 @@ class EvaluationStore:
                         _json_value(self._shared_prompt_draft_record(cursor, scope)),
                     )
                 if body == str(current["body"]).strip() and current.get("activated_version") == current["version"]:
-                    raise EvaluationValidation("Change the shared prompt before saving a new edit.")
+                    raise EvaluationValidation("Change the system prompt before saving a new edit.")
                 next_version = expected_version + 1
                 next_edit = int(current["edit_number"]) + 1
                 cursor.execute(

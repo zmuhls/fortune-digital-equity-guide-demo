@@ -19,14 +19,15 @@ import evaluation_store
 import prompt_policy
 import server
 import source_selector
+import test_contract
 
 
 class PromptPolicyTests(unittest.TestCase):
     def test_runtime_and_capture_use_one_policy_id(self):
-        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-22-v36")
-        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.36")
+        self.assertEqual(prompt_policy.PROMPT_POLICY_VERSION, "2026-09-23-v37")
+        self.assertEqual(prompt_policy.PROMPT_DISPLAY_VERSION, "v1.37")
         self.assertEqual(prompt_policy.PROMPT_RELEASE_NUMBER, 1)
-        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 36)
+        self.assertEqual(prompt_policy.PROMPT_EDIT_NUMBER, 37)
         self.assertEqual(
             prompt_policy.PROMPT_BEHAVIOR_RELEASE,
             "digital-equity-conversation-grounding",
@@ -47,7 +48,7 @@ class PromptPolicyTests(unittest.TestCase):
     def test_selector_uses_compiled_reviewed_policy(self):
         self.assertEqual(source_selector.SYSTEM_PROMPT, prompt_policy.SYSTEM_PROMPT)
         self.assertIn("only evidence for Digital Equity facts", source_selector.SYSTEM_PROMPT)
-        self.assertIn("Pick the most specific current record", source_selector.SYSTEM_PROMPT)
+        self.assertIn("pick the supporting candidate ID, not ASK", source_selector.SYSTEM_PROMPT)
         self.assertIn("Paraphrase direct implications naturally", source_selector.SYSTEM_PROMPT)
         self.assertIn("without making Digital Equity claims", source_selector.SYSTEM_PROMPT)
         self.assertIn("Use the latest eight exchanges", source_selector.SYSTEM_PROMPT)
@@ -138,6 +139,63 @@ class PromptPolicyTests(unittest.TestCase):
             "\nCANDIDATE RECORDS:\n", 1
         )[0]
         self.assertEqual(json.loads(block), history)
+
+    def test_single_prompt_migration_activates_exact_current_reviewed_prompt(self):
+        migration = (ROOT / "migrations" / "015_single_system_prompt.sql").read_text()
+        migrated_body = migration.split("$system_prompt$", 2)[1]
+        self.assertEqual(prompt_policy.compile_runtime_prompt(migrated_body), prompt_policy.SYSTEM_PROMPT)
+        self.assertNotIn("TEAM INSTRUCTIONS", prompt_policy.SYSTEM_PROMPT)
+        self.assertIn("follow the supplied labeled signup or booking links", prompt_policy.SYSTEM_PROMPT)
+
+    def test_dashboard_active_preview_is_exact_prompt_sent_to_provider(self):
+        store = evaluation_store.EvaluationStore(enabled=False)
+        store._pool = mock.MagicMock()
+        cursor = store._pool.connection.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+        cursor.fetchall.return_value = []
+        harness = test_contract.StagedRetrievalTests()
+        for version, body in (
+            (5, prompt_policy.SYSTEM_PROMPT),
+            (6, prompt_policy.SYSTEM_PROMPT.replace(
+                "Ordinary replies are one or two short sentences and under 40 words.",
+                "Ordinary replies use one short sentence when that answers the question.",
+            )),
+        ):
+            with self.subTest(version=version):
+                cursor.fetchone.return_value = {"body": body, "version": version}
+                draft = {"body": body, "version": version, "active": True}
+                with mock.patch.object(store, "_prompt_workspace_scope", return_value="shared"), \
+                     mock.patch.object(store, "_shared_prompt_draft_record", return_value=draft), \
+                     mock.patch.object(server, "EVALUATION_STORE", store), \
+                     mock.patch.object(server, "CONVERSATION_RECORDER", conversation_store.ConversationRecorder(mode="none")):
+                    preview = store.get_prompt_lab("admin", prompt_policy.PROMPT_POLICY_VERSION,
+                                                   prompt_policy.PROMPT_BEHAVIOR_RELEASE)
+                    result, calls = harness.dispatch_chat(
+                        "hello", server.ROOT_URL,
+                        model_raws=['{"pick":"ASK","answer":"Hello!"}'],
+                    )
+                self.assertEqual(result["status"], 200)
+                self.assertEqual(len(calls), 1)
+                self.assertEqual(calls[0][0]["role"], "system")
+                sent_prompt = calls[0][0]["content"].split("\nCURRENT DATE:\n", 1)[0]
+                self.assertEqual(sent_prompt, preview["compiled_prompt"])
+                self.assertEqual(sent_prompt, body.strip() + "\n")
+                self.assertEqual(sent_prompt.count("Candidate records are the only evidence"), 1)
+                self.assertNotIn("TEAM INSTRUCTIONS", sent_prompt)
+                self.assertEqual(result["payload"]["prompt_policy_version"],
+                                 f"{prompt_policy.PROMPT_POLICY_VERSION}+prompt-{version}")
+
+    def test_inactive_shared_draft_cannot_replace_deployed_preview(self):
+        store = evaluation_store.EvaluationStore(enabled=False)
+        store._pool = mock.MagicMock()
+        cursor = store._pool.connection.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+        cursor.fetchall.return_value = []
+        with mock.patch.object(store, "_prompt_workspace_scope", return_value="shared"), \
+             mock.patch.object(store, "_shared_prompt_draft_record", return_value={
+                 "body": "An old inactive draft", "version": 3, "active": False,
+             }):
+            preview = store.get_prompt_lab("admin", prompt_policy.PROMPT_POLICY_VERSION,
+                                          prompt_policy.PROMPT_BEHAVIOR_RELEASE)
+        self.assertEqual(preview["compiled_prompt"], prompt_policy.SYSTEM_PROMPT)
 
     def test_visible_prompts_preview_matches_current_policy_registry(self):
         javascript = (ROOT / "evaluation.js").read_text(encoding="utf-8")

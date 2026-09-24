@@ -23,6 +23,76 @@ body[data-replica-viewport-fit="true"] #site-root {
   display: none;
 }
 
+.fortune-calendar-restored [data-replica-calendar-controls] {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fortune-calendar-restored button:focus-visible,
+.fortune-calendar-restored select:focus-visible {
+  outline: 3px solid #0074bd;
+  outline-offset: 2px;
+}
+
+@media (max-width: 979px) {
+  .fortune-calendar-restored {
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  .fortune-calendar-restored #daily-agenda-header-wrapper,
+  .fortune-calendar-restored [data-hook="header"] {
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-container"],
+  .fortune-calendar-restored [data-hook="weekly-datepicker-container"],
+  .fortune-calendar-restored [data-hook="weekly-date-picker-container"],
+  .fortune-calendar-restored [data-hook="weekly-date-picker"],
+  .fortune-calendar-restored [data-hook="filters-wrapper"] {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  .fortune-calendar-restored [data-hook="daily-agenda-day"] > section {
+    display: block !important;
+  }
+
+  .fortune-calendar-restored [data-hook="daily-agenda-day"] [role="presentation"] {
+    position: static !important;
+    padding: 16px 0 !important;
+  }
+
+  .fortune-calendar-restored [data-hook="agenda-item-list-layout"] {
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .fortune-calendar-restored [data-hook="agenda-item-list-layout"] > :first-child {
+    width: 64px !important;
+    min-width: 0 !important;
+  }
+
+  .fortune-calendar-restored .snJl6TD,
+  .fortune-calendar-restored .sHkPhPs,
+  .fortune-calendar-restored .sZJBAyO,
+  .fortune-calendar-restored .sgWQsSV {
+    display: block !important;
+    min-width: 0 !important;
+  }
+
+  .fortune-calendar-restored .sgWQsSV { margin-top: 12px; }
+  .fortune-calendar-restored .sbv_koX { display: block !important; width: 100% !important; }
+  .fortune-calendar-restored .ssaqcAw { display: block !important; }
+  .fortune-calendar-restored .sg55uRh { display: inline !important; margin-left: 4px; }
+  .fortune-calendar-restored [data-replica-live-action] { white-space: normal !important; }
+}
+
 html[data-replica-viewport-fit="true"] #SITE_HEADER {
   display: none !important;
 }
@@ -264,8 +334,7 @@ details[data-replica-static-disclosure] > summary::-webkit-details-marker {
 
 details[data-replica-static-menu] > summary {
   color: #281a39;
-  font: inherit !important;
-  font-size: 16px !important;
+  font: var(--fnt, 700 15px/30px helvetica-w01-roman, sans-serif) !important;
   line-height: 30px !important;
   padding-inline: 11px !important;
   text-transform: uppercase;

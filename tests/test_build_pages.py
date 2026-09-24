@@ -155,6 +155,66 @@ class IndexRouteTests(unittest.TestCase):
 
 
 class SnapshotRenderingTests(unittest.TestCase):
+    def test_visual_mirror_preserves_live_actions_while_localizing_ordinary_links(self):
+        route = dict(HOME_ROUTE, path="/calendar", sourceUrl="https://www.fortunedigitalequity.org/calendar")
+        snapshot = (
+            '<html><head></head><body>'
+            '<a href="https://www.fortunedigitalequity.org/calendar" data-replica-live-action="true">REGISTER</a>'
+            '<a data-live-action="true" href="https://www.fortunedigitalequity.org/calendar?booking=1&amp;day=2#schedule">Continue</a>'
+            '<a href="https://www.fortunedigitalequity.org/calendar">CALENDAR</a>'
+            '</body></html>'
+        )
+        rendered = build_pages.render_visual_snapshot_page(route, "../", [HOME_ROUTE, route], snapshot)
+        self.assertIn('href="https://www.fortunedigitalequity.org/calendar" data-replica-live-action="true"', rendered)
+        self.assertIn('href="https://www.fortunedigitalequity.org/calendar?booking=1&amp;day=2#schedule"', rendered)
+        self.assertIn('href="../calendar/">CALENDAR', rendered)
+
+    def test_calendar_places_current_registration_handoff_before_captured_agenda(self):
+        route = dict(HOME_ROUTE, path="/calendar", sourceUrl="https://www.fortunedigitalequity.org/calendar", page={"source_captured_at": "2026-09-21T20:47:21Z"})
+        snapshot = '<html><head></head><body><div data-hook="DailyAgenda-wrapper"><h2>Regular Class Schedule</h2></div></body></html>'
+        rendered = build_pages.render_visual_snapshot_page(route, "../", [route], snapshot)
+        self.assertIn("Schedule captured 2026-09-21.", rendered)
+        self.assertIn('href="https://www.fortunedigitalequity.org/calendar" target="_blank"', rendered)
+        self.assertLess(rendered.index("current availability and registration"), rendered.index("Regular Class Schedule"))
+
+    def test_visual_embed_links_open_source_page_instead_of_expired_wix_runtime(self):
+        snapshot = (
+            '<html><head></head><body>'
+            '<a href="https://members.wixapps.net/_api/members-area/app/members?instance=expired">Members</a>'
+            '<a href="https://static.parastorage.com/services/editor-elements-library/dist/siteAssets/media/googleMap.html">Map</a>'
+            '<a href="https://example.org/public-map">Other public map</a>'
+            '</body></html>'
+        )
+        rendered = build_pages.render_visual_snapshot_page(HOME_ROUTE, "", [HOME_ROUTE], snapshot)
+        self.assertEqual(rendered.count('href="https://www.fortunedigitalequity.org/" data-replica-live-action="true"'), 2)
+        self.assertNotIn("instance=expired", rendered)
+        self.assertIn('href="https://example.org/public-map"', rendered)
+
+    def test_source_anchor_targets_survive_without_wix_javascript(self):
+        calendar = dict(HOME_ROUTE, path="/calendar", sourceUrl="https://www.fortunedigitalequity.org/calendar")
+        snapshot = (
+            '<html><head></head><body>'
+            '<a data-anchor="anchors-mshp66j83" href="https://www.fortunedigitalequity.org/">PROGRAM UPDATES</a>'
+            '<a href="https://www.fortunedigitalequity.org/calendar" data-anchor="dataItem-ltg15sf7">Locations</a>'
+            '<a href="https://www.fortunedigitalequity.org/calendar#class-locations">Long Island City office</a>'
+            '</body></html>'
+        )
+        rendered = build_pages.render_visual_snapshot_page(HOME_ROUTE, "", [HOME_ROUTE, calendar], snapshot)
+        self.assertIn('href="index.html#comp-mshp66eu"', rendered)
+        self.assertEqual(rendered.count('href="calendar/#locations"'), 2)
+
+    def test_restored_menu_dropdown_is_not_forced_into_navigation_row(self):
+        snapshot = (
+            '<html><head></head><body><li data-replica-static-menu-item="true" style="position:static!important;color:red">'
+            '<details data-replica-static-menu="true"><summary>Services</summary>'
+            '<ul style="position: static !important;display:block!important" data-replica-static-menu-content="true"><li>Workshops</li></ul>'
+            '</details></li></body></html>'
+        )
+        rendered = build_pages.render_visual_snapshot_page(HOME_ROUTE, "", [HOME_ROUTE], snapshot)
+        self.assertNotIn("position:", rendered)
+        self.assertIn("color:red", rendered)
+        self.assertIn("display:block!important", rendered)
+
     def test_visual_snapshot_keeps_wix_design_and_adds_only_guide_runtime(self):
         route = dict(HOME_ROUTE)
         snapshot = (
@@ -725,6 +785,26 @@ class SnapshotRenderingTests(unittest.TestCase):
             with self._patched_snapshot_paths(root):
                 with self.assertRaisesRegex(build_pages.BuildError, "hash or size"):
                     build_pages.load_snapshots([HOME_ROUTE])
+
+
+class NavigationValidationTests(unittest.TestCase):
+    def test_missing_cross_page_fragment_fails_even_when_destination_exists(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "index.html").write_text('<a href="calendar/#missing">Locations</a>')
+            (root / "calendar").mkdir()
+            (root / "calendar/index.html").write_text('<div id="locations">Locations</div>')
+            with self.assertRaisesRegex(build_pages.BuildError, "missing navigation fragment"):
+                build_pages.validate_navigation(root)
+            (root / "index.html").write_text('<a href="calendar/#locations">Locations</a>')
+            self.assertEqual(build_pages.validate_navigation(root)["validated_local_links"], 1)
+
+    def test_live_action_local_reload_fails_navigation_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "index.html").write_text('<a href="index.html" data-replica-live-action="true">REGISTER</a>')
+            with self.assertRaisesRegex(build_pages.BuildError, "live action points back"):
+                build_pages.validate_navigation(root)
 
 
 class ArtifactTests(unittest.TestCase):

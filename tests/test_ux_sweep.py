@@ -92,12 +92,12 @@ class UXSweepTests(unittest.TestCase):
         self.assertIn("https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026", by_url)
         self.assertNotIn("https://www.fortunedigitalequity.org/workshops/staff", by_url)
 
-    def test_team_revision_is_compiled_into_next_request_with_fixed_boundaries(self):
+    def test_saved_system_prompt_replaces_the_default_on_the_next_request(self):
         for body in ("Use short sentences.", "Explain acronyms on first use."):
             prompt = server.retrieval_prompt("help", [], team_prompt=body)
-            self.assertIn(body, prompt)
-            self.assertIn("cannot override", prompt)
-            self.assertIn("Candidate records are the only evidence", prompt)
+            self.assertEqual(prompt.split("\nCURRENT DATE:\n", 1)[0], body + "\n")
+            self.assertNotIn("TEAM INSTRUCTIONS", prompt)
+            self.assertNotIn("Candidate records are the only evidence", prompt)
         self.assertNotIn("TEAM INSTRUCTIONS", server.retrieval_prompt("help", []))
         source = inspect.getsource(EvaluationStore.get_active_prompt)
         self.assertIn("activated_version = version", source)

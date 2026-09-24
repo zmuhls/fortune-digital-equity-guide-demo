@@ -7,8 +7,8 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="theme-color" content="#281a39">
   <title>Review conversations · Digital Equity</title>
-  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260922-ux-v36">
-  <script src="/evaluation/assets/evaluation.js?v=20260922-ux-v36" defer></script>
+  <link rel="stylesheet" href="/evaluation/assets/evaluation.css?v=20260924-review-v37">
+  <script src="/evaluation/assets/evaluation.js?v=20260924-review-v37" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#evaluation-main">Skip to review workspace</a>
@@ -116,20 +116,20 @@
 
       <section class="prompt-lab" id="prompt-lab-panel" role="tabpanel" aria-labelledby="prompt-lab-tab" hidden>
         <header class="prompt-lab-heading">
-          <p>Saved team instructions apply to the next guide message.</p>
+          <p>One system prompt is sent with each guide message. Save &amp; apply replaces it for subsequent messages.</p>
         </header>
 
         <section class="shared-prompt-draft" aria-labelledby="shared-prompt-title">
           <div class="shared-prompt-heading">
             <div>
               <p class="eyebrow">Editable by every evaluator</p>
-              <h3 id="shared-prompt-title">Team instructions</h3>
-              <p>Unsaved edits stay in this tab. Source and privacy boundaries remain in place.</p>
+              <h3 id="shared-prompt-title">System prompt</h3>
+              <p>Edit the complete prompt below. Unsaved edits stay in this tab; earlier versions remain in edit history.</p>
             </div>
             <p id="shared-prompt-meta"></p>
           </div>
           <form id="shared-prompt-form">
-            <label class="sr-only" for="shared-prompt-body">Team instructions</label>
+            <label class="sr-only" for="shared-prompt-body">System prompt</label>
             <textarea id="shared-prompt-body" maxlength="20000" rows="10" required></textarea>
             <div class="shared-prompt-save-row">
               <label for="shared-prompt-change-note">What changed?</label>
@@ -145,7 +145,7 @@
         </section>
 
         <details class="current-policy" aria-labelledby="current-policy-title">
-          <summary id="current-policy-title">Full active prompt and boundaries</summary>
+          <summary id="current-policy-title">Prompt currently sent to the model</summary>
           <div>
             <p class="eyebrow">Read only</p>
             <p id="deployed-prompt-version"></p>
@@ -154,13 +154,17 @@
           <p class="code-controlled" id="code-controlled-note"></p>
         </details>
 
-        <div class="proposal-heading">
-          <h3>Team proposals</h3>
-          <p id="proposal-count"></p>
-          <button class="secondary-button" id="new-proposal-button" type="button">New proposal</button>
-        </div>
-        <div class="proposal-list" id="prompt-proposal-list"></div>
-        <p class="empty-state" id="prompt-proposal-empty" hidden>No prompt proposals yet.</p>
+        <details class="prompt-proposals-history">
+          <summary>Previous module proposals</summary>
+          <p>These proposals are reference material. They are not added to the active system prompt.</p>
+          <div class="proposal-heading">
+            <h3>Module proposals</h3>
+            <p id="proposal-count"></p>
+            <button class="secondary-button" id="new-proposal-button" type="button">New proposal</button>
+          </div>
+          <div class="proposal-list" id="prompt-proposal-list"></div>
+          <p class="empty-state" id="prompt-proposal-empty" hidden>No prompt proposals yet.</p>
+        </details>
       </section>
     </section>
   </main>

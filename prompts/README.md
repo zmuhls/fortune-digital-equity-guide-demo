@@ -1,33 +1,41 @@
 # Website Guide prompt history
 
-This directory records the versioned base policy. Evaluators can edit shared
-team instructions in Prompts and apply them to subsequent messages.
+This directory records the versioned default system prompt. Evaluators can edit
+the complete shared System prompt in Prompts and apply it to subsequent messages.
 
 - `manifest.json` is the release ledger. Historical entries are reconstructed
   from the named Git commit and say so explicitly.
 - `versions/` contains human-readable snapshots of each meaningful prompt or
   prompt-behavior release.
-- `current.md` describes the compiled policy and the boundary between fixed
-  server invariants and team-tunable presentation choices.
+- `current.md` contains the complete reviewed default system prompt.
 - Runtime data such as the participant question, prior guide answer, current
   page ID, and approved candidate records is deliberately absent.
 
-The base policy is `prompt_policy.py`. The current compiled prompt combines it
-with the latest explicitly saved team instructions from PostgreSQL and is shown
-in Prompts. Source IDs are validated; natural model prose is not classified or
+The default is assembled in `prompt_policy.py`. The active prompt is either that
+default or the latest saved complete system prompt from PostgreSQL. It is shown
+in Prompts using the same compilation function as the model request. Saved
+revisions replace the prompt; no older prompt or additional instruction block is
+appended. Source IDs are validated; natural model prose is not classified or
 sent for a second generation. Historical version numbers
 skip where a release changed routing or validation without creating a distinct
 prompt artifact.
 
 ## Change process
 
-1. Edit Team instructions in Prompts and describe the change concisely.
+1. Edit the complete System prompt in Prompts and describe the change concisely.
 2. Save & apply commits a named, timestamped revision. The next message uses it;
    unsaved typing and older drafts are never activated implicitly.
 3. A conflicting save preserves the evaluator's draft for reconciliation.
-4. Transcript provenance records the base policy and applied team revision.
+4. Transcript provenance records the deployed policy and active prompt revision.
 
-Source grounding, privacy, identity, and rephrasing limits remain base-policy
-boundaries. Changes to that base still require tests and deployment. Module
-proposals and annotations remain discussion material until incorporated into
-Team instructions; they do not silently become model instructions.
+Keep grounding, privacy, identity, and the response contract in the saved prompt
+when editing it. Application source retrieval, data handling, and response
+parsing remain separate server behavior. Module proposals and annotations remain
+discussion material until incorporated into the System prompt.
+
+Migration `015_single_system_prompt` corrects the earlier base-plus-draft
+composition. It preserves the previous complete team prompt in append-only
+history, then saves and activates a new revision based on the reviewed first
+half of v1.36. The calendar audit adds instructions to follow actual labeled
+signup links and select a supporting candidate when stating site facts. It does
+not modify conversation or evaluation data.

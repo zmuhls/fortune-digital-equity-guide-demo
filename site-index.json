@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21T19:03:23+00:00",
+  "generated_at": "2026-09-24T02:52:09+00:00",
   "generated_from": [
     "https://www.fortunedigitalequity.org/sitemap.xml",
     "https://www.fortunedigitalequity.org/blog-feed.xml",
@@ -132,9 +132,139 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-home-e6c04f0f.html.gz",
-        "source_sha256": "173c27ef566f4145efc55f2431e873e312f211aa45b094697c172acc66da7e85",
+        "source_sha256": "657ec50dbc15bdfe0c8e04daac626ef1d38e247af1f848b8aae53ca519f18def",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "CHOOSE A SERVICE",
+          "url": "https://www.fortunedigitalequity.org"
+        },
+        {
+          "label": "EXPLORE LEARNING PATHS",
+          "url": "https://www.fortunedigitalequity.org"
+        },
+        {
+          "label": "Digital Equity Program",
+          "url": "https://www.fortunedigitalequity.org/about"
+        },
+        {
+          "label": "Fortune Society",
+          "url": "https://fortunesociety.org/"
+        },
+        {
+          "label": "MORE ABOUT US",
+          "url": "https://www.fortunedigitalequity.org/about"
+        },
+        {
+          "label": "Icon representing workshop instruction",
+          "url": "https://www.fortunedigitalequity.org/workshops"
+        },
+        {
+          "label": "FIND A WORKSHOP",
+          "url": "https://www.fortunedigitalequity.org/workshops"
+        },
+        {
+          "label": "Icon representing class schedules",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "VIEW CALENDAR",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "Icon representing devices to distribute",
+          "url": "https://www.fortunedigitalequity.org/devices"
+        },
+        {
+          "label": "GET A DEVICE",
+          "url": "https://www.fortunedigitalequity.org/devices"
+        },
+        {
+          "label": "Icon representing scholarly internships",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "INTERNSHIP",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Icon representing asking for assistance",
+          "url": "https://www.fortunedigitalequity.org/support"
+        },
+        {
+          "label": "GET SUPPORT",
+          "url": "https://www.fortunedigitalequity.org/support"
+        },
+        {
+          "label": "Icon representing finding tool assistance",
+          "url": "https://www.fortunedigitalequity.org/practice"
+        },
+        {
+          "label": "EXPLORE TOOLS",
+          "url": "https://www.fortunedigitalequity.org/practice"
+        },
+        {
+          "label": "CONTACT US",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "ATTEND AN OPEN LAB",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "MORE",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Icon representing global resource access",
+          "url": "https://www.fortunedigitalequity.org/other"
+        },
+        {
+          "label": "OTHER RESOURCES",
+          "url": "https://www.fortunedigitalequity.org/other"
+        },
+        {
+          "label": "Icon representing someone volunteering",
+          "url": "https://www.fortunedigitalequity.org/opportunities"
+        },
+        {
+          "label": "VOLUNTEER",
+          "url": "https://www.fortunedigitalequity.org/opportunities"
+        },
+        {
+          "label": "Icon representing special event announcements",
+          "url": "https://www.fortunedigitalequity.org/events"
+        },
+        {
+          "label": "SPECIAL EVENTS",
+          "url": "https://www.fortunedigitalequity.org/events"
+        },
+        {
+          "label": "Icon representing donations of devices",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "DONATE",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Icon representing tech fair grounds",
+          "url": "https://www.fortunedigitalequity.org/techfair"
+        },
+        {
+          "label": "TECH FAIR",
+          "url": "https://www.fortunedigitalequity.org/techfair"
+        },
+        {
+          "label": "Icon representing new bulletins",
+          "url": "https://www.fortunedigitalequity.org"
+        },
+        {
+          "label": "PROGRAM UPDATES",
+          "url": "https://www.fortunedigitalequity.org"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/about",
@@ -223,9 +353,87 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-about-59ff9683.html.gz",
-        "source_sha256": "b5c168c9a57ba11927771e7fc3905dee97f547e2e85a1198c23a1b9832ae883c",
+        "source_sha256": "495cbadd7bd8805d075cb321b2babacac3f192b163f3b1dfed7670256557a35b",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "digital skill classes",
+          "url": "https://www.fortunedigitalequity.org/workshops"
+        },
+        {
+          "label": "free equipment",
+          "url": "https://www.fortunedigitalequity.org/devices"
+        },
+        {
+          "label": "providing opportunities",
+          "url": "https://www.fortunedigitalequity.org/opportunities"
+        },
+        {
+          "label": "NYSDEN Logo",
+          "url": "https://nysden.org/"
+        },
+        {
+          "label": "National Digital Inclusion Alliance Logo",
+          "url": "https://www.digitalinclusion.org/"
+        },
+        {
+          "label": "Certiport Logo",
+          "url": "https://certiport.pearsonvue.com/"
+        },
+        {
+          "label": "New York City Alliance For Digital Equity logo",
+          "url": "https://www.nyccaliteracy.org/nycade.html"
+        },
+        {
+          "label": "Logo for the Telecom Insitute of New York",
+          "url": "https://www.tinynyedu.com/"
+        },
+        {
+          "label": "GMetrix-Logo-RGB.png",
+          "url": "https://www.gmetrix.com/"
+        },
+        {
+          "label": "Computers 4 People Logo",
+          "url": "https://www.computers4people.org/"
+        },
+        {
+          "label": "Coursera Logo",
+          "url": "https://www.coursera.org/"
+        },
+        {
+          "label": "Brooklyn Robot Foundry Logo",
+          "url": "https://brooklynrobotfoundry.com/"
+        },
+        {
+          "label": "Logo for Can Code Communties",
+          "url": "https://cancode.org/"
+        },
+        {
+          "label": "Logo for Raising the Floor, makers of the Morphic toolbar",
+          "url": "https://raisingthefloor.org/"
+        },
+        {
+          "label": "The Fortune Society",
+          "url": "http://FortuneSociety.org"
+        },
+        {
+          "label": "The Fortune Society",
+          "url": "http://fortunesociety.org"
+        },
+        {
+          "label": "Fortune",
+          "url": "http://fortunesociety.org"
+        },
+        {
+          "label": "Fortune Society",
+          "url": "http://fortunesociety.org"
+        },
+        {
+          "label": "LEARN MORE",
+          "url": "http://FortuneSociety.org"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/about/impact",
@@ -288,9 +496,31 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-about-impact-4bd24a44.html.gz",
-        "source_sha256": "29de360a06c1075fc362c3021d49c0dd2c07889fc58f805eaf4547232d9a2c99",
+        "source_sha256": "3b462b950b67ede035d2cc1b350f215673cd317bf7a425ad938e4ff9cb446708",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "SEE CHARTS",
+          "url": "https://www.fortunedigitalequity.org/about/impact"
+        },
+        {
+          "label": "SEE STUDENT PROJECTS",
+          "url": "https://www.fortunedigitalequity.org/projects"
+        },
+        {
+          "label": "WILLIAM R. KENAN, JR. CHARITABLE TRUST",
+          "url": "https://kenancharitabletrust.org/"
+        },
+        {
+          "label": "Donate Today To Support Our Work",
+          "url": "https://donate.fortunesociety.org/give/186379/#!/donation/checkout"
+        },
+        {
+          "label": "Contact Us Directly To Donate Equipment",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/calendar",
@@ -439,10 +669,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-calendar-86824f99.html.gz",
-        "source_sha256": "7c55533a8215076bc1aac5eb1f5a273f9afed861fa8ee7295c3aa4cd381a36c4",
+        "source_sha256": "f135432118ce84349c8d1d03a2746a6acf300f0431c62c2776bb229f42a33ccb",
         "site_revision": 2090
       },
-      "source_captured_at": "2026-09-21T18:53:24.207Z",
+      "source_captured_at": "2026-09-21T20:47:21.464Z",
       "calendar_events": [
         {
           "date": "2026-09-21",
@@ -643,6 +873,28 @@
         {
           "date": "2026-11-24",
           "label": "Tuesday, November 24, 2026: Open Computer Lab Session · 1:30 pm (30 min) · Milo Jones · Main Office (LIC) · 15 spots left"
+        }
+      ],
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "AI Month Class Schedule",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_9ba96e2dcd284a19afd0c0c0d71fe06c.pdf"
+        },
+        {
+          "label": "Class Locations",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Long Island City (Main Office)",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Supervised Release community office",
+          "url": "https://www.fortunedigitalequity.org/contact"
         }
       ]
     },
@@ -904,9 +1156,331 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-catalog-4360792f.html.gz",
-        "source_sha256": "209d99928ac25923629603fab5a6ee7ff75b8ba77017a1a53533006713682e30",
+        "source_sha256": "792bfe2979499c95216772f2f1211384b4e22dde48c6fa0b1e618d7a76e36162",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "An icon representing AI",
+          "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+        },
+        {
+          "label": "What Is AI?",
+          "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+        },
+        {
+          "label": "The original AI computing machine",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+        },
+        {
+          "label": "AI In Everyday Systems",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+        },
+        {
+          "label": "Prompting icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+        },
+        {
+          "label": "Communicating With AI",
+          "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job"
+        },
+        {
+          "label": "Choosing The Right Tool AI For The Job",
+          "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think"
+        },
+        {
+          "label": "How Does AI Think?",
+          "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs"
+        },
+        {
+          "label": "AI Effects & Tradeoffs",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs"
+        },
+        {
+          "label": "Logo for Alt AI organization Offline Base",
+          "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools"
+        },
+        {
+          "label": "Alternative, Open & Local AI Tools",
+          "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools"
+        },
+        {
+          "label": "An illustration of an AI hacker",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        },
+        {
+          "label": "AI Safety In 2026",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        },
+        {
+          "label": "A keyboard icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing"
+        },
+        {
+          "label": "Understanding Keyboarding & Mousing",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing"
+        },
+        {
+          "label": "A desktop computer icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers"
+        },
+        {
+          "label": "Understanding Computers",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers"
+        },
+        {
+          "label": "The windows logo",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop"
+        },
+        {
+          "label": "Navigating Windows Desktop",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop"
+        },
+        {
+          "label": "A computer folder icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management"
+        },
+        {
+          "label": "Understanding File Management",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management"
+        },
+        {
+          "label": "A web browser icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers"
+        },
+        {
+          "label": "Navigating Internet Browsers",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers"
+        },
+        {
+          "label": "A cloud icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud"
+        },
+        {
+          "label": "Navigating the Cloud",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud"
+        },
+        {
+          "label": "A resume icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online"
+        },
+        {
+          "label": "Job Searching Online",
+          "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone"
+        },
+        {
+          "label": "Navigating Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone"
+        },
+        {
+          "label": "Managing Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone"
+        },
+        {
+          "label": "Customizing Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features"
+        },
+        {
+          "label": "App Essentials: Smart Features",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time"
+        },
+        {
+          "label": "App Essentials: Managing Your Time",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication"
+        },
+        {
+          "label": "App Essentials: Contacts & Communication",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely"
+        },
+        {
+          "label": "App Essentials: Navigating Safely",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access"
+        },
+        {
+          "label": "App Essentials: Transactions & Access",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access"
+        },
+        {
+          "label": "a smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism"
+        },
+        {
+          "label": "Smartphone Professionalism",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism"
+        },
+        {
+          "label": "a smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake"
+        },
+        {
+          "label": "The Digital Handshake",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake"
+        },
+        {
+          "label": "the 2026 tech fair logo",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit"
+        },
+        {
+          "label": "The Tech Fair Toolkit",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit"
+        },
+        {
+          "label": "Read More",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit"
+        },
+        {
+          "label": "an animation of a smartphone taking a photo",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-essentials"
+        },
+        {
+          "label": "Smartphone Photography Essentials",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-essentials"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/certifications",
@@ -979,9 +1553,63 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-certifications-df2337b0.html.gz",
-        "source_sha256": "ba45ab45c73f1519a66725863b0e10b0a8270b3fe1b5233cdda910a1b1f55289",
+        "source_sha256": "edc34b2bd2081d28f8f7639c0de5b8590097e5def0d97530504cf77072f9f73f",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Microsoft",
+          "url": "https://learn.microsoft.com/en-us/training/"
+        },
+        {
+          "label": "GMetrix",
+          "url": "https://www.gmetrix.com/"
+        },
+        {
+          "label": "Certiport",
+          "url": "https://certiport.pearsonvue.com/"
+        },
+        {
+          "label": "Certiport Authorized Testing Center Badge",
+          "url": "https://certiport.pearsonvue.com/"
+        },
+        {
+          "label": "Microsoft Associate Certification Badge",
+          "url": "https://learn.microsoft.com/en-us/training/"
+        },
+        {
+          "label": "Microsoft Expert Certification Badge",
+          "url": "https://learn.microsoft.com/en-us/training/"
+        },
+        {
+          "label": "Word Associate 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_c8a4a246428c4ca99783f0c8f0f363f3.pdf"
+        },
+        {
+          "label": "Understanding Computers Navigating Windows Desktop",
+          "url": "https://www.fortunedigitalequity.org/workshops"
+        },
+        {
+          "label": "Word Expert 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_5e1e4d8223bf4d1993787fd6e42bce18.pdf"
+        },
+        {
+          "label": "Excel Associate 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_5fb9b7d246a1491e8f552c37a35a58fc.pdf"
+        },
+        {
+          "label": "Excel Expert 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_9e6245dfdad848b6820499011f854ddd.pdf"
+        },
+        {
+          "label": "PowerPoint Associate 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_a42619a4bfb44fe48254ef48e0308c4a.pdf"
+        },
+        {
+          "label": "Outlook Associate 2019",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_82028567c51a4e12be04d3a0a6c8f3b8.pdf"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/contact",
@@ -1053,9 +1681,59 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-contact-7c8ae02b.html.gz",
-        "source_sha256": "e8d85dbf6982057d44774bdcff6b12558758db0888e028083512978877047d98",
+        "source_sha256": "d177037527ba87614e11eff8ce9574897ff34677c6a5a1f4d8726ece01676aed",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "29-76 Northern Blvd.",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Long Island City, NY 11101",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Click here for our other training locations",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "FSTrain@FortuneSociety.org",
+          "url": "mailto:fstrain@fortunesociety.org"
+        },
+        {
+          "label": "(212) 691-7554",
+          "url": "tel:(212) 691-7554"
+        },
+        {
+          "label": "Facebook",
+          "url": "https://www.facebook.com/fortunesociety"
+        },
+        {
+          "label": "Twitter",
+          "url": "https://twitter.com/thefortunesoc"
+        },
+        {
+          "label": "YouTube",
+          "url": "https://www.youtube.com/user/FortuneSociety"
+        },
+        {
+          "label": "Instagram",
+          "url": "https://www.instagram.com/fortunesociety/"
+        },
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/company/the-fortune-society/"
+        },
+        {
+          "label": "SUBMIT",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "REGISTER HERE",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/deiqa",
@@ -1084,9 +1762,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-deiqa-dbf22eb5.html.gz",
-        "source_sha256": "e638c5a72c8c3585f49f1c6f6175ef38c5bfb75f09302b80fe307718ed05f734",
+        "source_sha256": "0301cbf3f827be11826a26583c1b91c57793d36a9f7e08f39a5d637a4d2c341a",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Submit",
+          "url": "https://www.fortunedigitalequity.org/deiqa"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/devices",
@@ -1141,9 +1825,31 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-devices-4f203f1b.html.gz",
-        "source_sha256": "c80d7dbf2d0f5e7320594d5dcf6753260b82e8d130b96aa769d94dc81a946245",
+        "source_sha256": "319c9b32065fd9eaeb94030d25fa3547947d0d214feacb45a1053a59b5838ebb",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Mobile Devices",
+          "url": "http://www.ACPBenefit.org"
+        },
+        {
+          "label": "LifeLine",
+          "url": "https://www.lifelinesupport.org/"
+        },
+        {
+          "label": "CONTACT US",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Laptops",
+          "url": "https://www.computers4people.org/"
+        },
+        {
+          "label": "Computers 4 People",
+          "url": "https://www.computers4people.org/"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/events",
@@ -1212,9 +1918,59 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-events-7b460f87.html.gz",
-        "source_sha256": "af5c4b07a327b7749fcfccf7573bf929235626376e91814ed0aefb5c6aa4c8fa",
+        "source_sha256": "e41d77d83501b6443ae5737badee99f8a16727060a3835e48112bd402c34ce30",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "AI Awareness Month Kickoff",
+          "url": "https://www.digitalinclusion.org/digital-inclusion-week-2024/"
+        },
+        {
+          "label": "Flyer for the AI Month kickoff event featuring Abran Maldonado",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_5471b6d44e244da4b27ce0dbb05c3420.pdf"
+        },
+        {
+          "label": "About the speaker:",
+          "url": "https://www.digitalinclusion.org/digital-inclusion-week-2024/"
+        },
+        {
+          "label": "C.L.Ai.R.A",
+          "url": "http://c.l.ai.r.a/"
+        },
+        {
+          "label": "Bridding The Gap Webinar 2025",
+          "url": "https://youtu.be/A6a-bw9_ocU"
+        },
+        {
+          "label": "Bridging the Gap: Accessibility for the Justice-Impacted Community",
+          "url": "https://fortunesociety.org/event-show/bridging-the-gap-webinar/"
+        },
+        {
+          "label": "Digital Inclusion Week 2025?",
+          "url": "https://www.digitalinclusion.org/digital-inclusion-week-2024/"
+        },
+        {
+          "label": "WATCH IT HERE",
+          "url": "https://youtu.be/A6a-bw9_ocU"
+        },
+        {
+          "label": "Bridging the Gap: Unlocking Digital Life Skills for the Justice-Impacted Community",
+          "url": "https://youtu.be/E7L0_J5ytxc"
+        },
+        {
+          "label": "Digital Inclusion Week 2024?",
+          "url": "https://www.digitalinclusion.org/digital-inclusion-week-2024/"
+        },
+        {
+          "label": "WATCH IT HERE",
+          "url": "https://youtu.be/E7L0_J5ytxc"
+        },
+        {
+          "label": "Digital Inclusion Week Webinar 2024",
+          "url": "https://youtu.be/E7L0_J5ytxc"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/events/ai-qa",
@@ -1243,9 +1999,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-events-ai-qa-d8e77da8.html.gz",
-        "source_sha256": "35a7851a583bc1a589fc27d430e5f78c60fadc89026946fe062a308d84f7c3f5",
+        "source_sha256": "93c2781011ccfcf11f34c9254a1a476c635c1f503f8db29396545c89cdab63f7",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Submit",
+          "url": "https://www.fortunedigitalequity.org/events/ai-qa"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/mediakit",
@@ -1306,9 +2068,39 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-mediakit-c07624f0.html.gz",
-        "source_sha256": "5ff6078d7028fc804050d66ea748dc819fd892ed06dd70b014f58ffb22056256",
+        "source_sha256": "70d8404167eb396254c40f271be0c166d9b7f0cc520aac6c22a718aae5dbc96b",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "AI Month Class Schedule",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_9ba96e2dcd284a19afd0c0c0d71fe06c.pdf"
+        },
+        {
+          "label": "Schedule of trainings for staff for August 2026",
+          "url": "https://thefortunesociety.sharepoint.com/:w:/r/_layouts/15/Doc.aspx?sourcedoc=%7B1212141B-7EFA-434D-A2EA-0F7A832F9C0E%7D&file=IT%20Training%20Schedule.docx&action=default&mobileredirect=true"
+        },
+        {
+          "label": "Keyboarding & Mousing Clinic Flyer",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_f368c28cb1384d59acde544ed8ed5c61.pdf"
+        },
+        {
+          "label": "Identify Theft One-On-One Sessions",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_ab56fe4eea3947048851848972ad2f6d.pdf"
+        },
+        {
+          "label": "Blog Squad Flyer",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_e869811e7e0444b3962022c37418a943.pdf"
+        },
+        {
+          "label": "Coursera Flyer",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_fa363fff2ba746ddb821ae79ea037030.pdf"
+        },
+        {
+          "label": "Support Desk Info Flyer",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_c461395ab3f443f181fd1527530dc45a.pdf"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/members",
@@ -1345,9 +2137,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-members-4d8b4853.html.gz",
-        "source_sha256": "5ebc12e761cccdaed24e8bfab93c363aeb7a8d0a07420e4f6d9b83a1e99c674f",
+        "source_sha256": "68c153150e639b7b111e5f2f71e6d32d2f061d203a57c5a94be5c2c91a379034",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/news",
@@ -1379,9 +2172,7 @@
         "FCC Taskforce to Prevent Digital Discrimination",
         "2023 Technology Fair",
         "Nonprofit Helps Bridge Prison Digital Divide",
-        "The Fortune Society’s Technology Fair",
-        "The Digital Equity Initiative At Fortune And Its Impact",
-        "Bridging the Digital Divide: Behind the Bars, Beyond Release"
+        "The Fortune Society’s Technology Fair"
       ],
       "blocks": [
         "Latest Updates",
@@ -1455,12 +2246,6 @@
         "The Fortune Society’s Technology Fair",
         "On April 27th, we held our 1st Annual Technology Fair on-site at our LIC service center.",
         "Apr 27, 2022",
-        "The Digital Equity Initiative At Fortune And Its Impact",
-        "The Digital Equity Initiative provides support for participants to gain knowledge of technology and prepares them for a digital world.",
-        "Apr 20, 2022",
-        "Bridging the Digital Divide: Behind the Bars, Beyond Release",
-        "Watch our latest conversation on promoting digital equity for the justice-involved.",
-        "Apr 7, 2022",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -1485,7 +2270,6 @@
         "https://www.fortunedigitalequity.org/post/2023-technology-fair",
         "https://www.fortunedigitalequity.org/post/2024-tech-fair-registration-open",
         "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles",
-        "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release",
         "https://www.fortunedigitalequity.org/post/certification-for-success",
         "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources",
         "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide",
@@ -1500,19 +2284,116 @@
         "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more",
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide",
         "https://www.fortunedigitalequity.org/post/reintroducting-the-fortune-society-lobby-reel",
-        "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact",
         "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
       ],
-      "content_characters": 3808,
-      "content_hash": "ba34079370f149d4395cc49e356cd37d57a0c7165eeb26d5673360146ece27e9",
+      "content_characters": 3453,
+      "content_hash": "9c4dce282856fd24812fac8e5645dd02ee754598ba9bb0d26dfb27a5e145bd97",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-news-f22886e6.html.gz",
-        "source_sha256": "a8a2d058c9b9b54e19ad1f8bdc9e0b1ed6cb06d6adf13be03507f332fba26fce",
+        "source_sha256": "c53d462ffbd99142cc7f0cf0c24dae1df9779039ce35f77af528744d4f053cb2",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "LIC-based Fortune Society hosts third-annual Tech Fair for justice-involved New Yorkers",
+          "url": "https://www.fortunedigitalequity.org/post/lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice-involved-new-yorkers"
+        },
+        {
+          "label": "Press",
+          "url": "https://www.fortunedigitalequity.org/news/categories/press"
+        },
+        {
+          "label": "My Experience with the Digital Equity Program",
+          "url": "https://www.fortunedigitalequity.org/post/my-experience-with-the-digital-equity-program"
+        },
+        {
+          "label": "Fortune Bloggers",
+          "url": "https://www.fortunedigitalequity.org/news/categories/fortune-bloggers"
+        },
+        {
+          "label": "Reintroducing: the Fortune Society Lobby Reel",
+          "url": "https://www.fortunedigitalequity.org/post/reintroducting-the-fortune-society-lobby-reel"
+        },
+        {
+          "label": "Updates",
+          "url": "https://www.fortunedigitalequity.org/news/categories/updates"
+        },
+        {
+          "label": "2024 Tech Fair Registration Open!",
+          "url": "https://www.fortunedigitalequity.org/post/2024-tech-fair-registration-open"
+        },
+        {
+          "label": "Events",
+          "url": "https://www.fortunedigitalequity.org/news/categories/events"
+        },
+        {
+          "label": "Digital Empowerment",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society"
+        },
+        {
+          "label": "Check Out Our Digital Resources!",
+          "url": "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources"
+        },
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Classes",
+          "url": "https://www.fortunedigitalequity.org/news/categories/classes"
+        },
+        {
+          "label": "Certification for Success",
+          "url": "https://www.fortunedigitalequity.org/post/certification-for-success"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "General",
+          "url": "https://www.fortunedigitalequity.org/news/categories/general"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        },
+        {
+          "label": "FCC Taskforce to Prevent Digital Discrimination",
+          "url": "https://www.fortunedigitalequity.org/post/fcc-taskforce-to-prevent-digital-discrimination"
+        },
+        {
+          "label": "2023 Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        },
+        {
+          "label": "The Fortune Society’s Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/classes",
@@ -1590,9 +2471,35 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-classes-2f5877df.html.gz",
-        "source_sha256": "3e54974acd3c28e843f389b82b00b64069979e932a2a62d97b1280ccec42e01e",
+        "source_sha256": "aa816181ee315344c5aface40ae1be9ebe042b73fa59d00f3599f260e275e5fc",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Classes",
+          "url": "https://www.fortunedigitalequity.org/news/categories/classes"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        },
+        {
+          "label": "Updates",
+          "url": "https://www.fortunedigitalequity.org/news/categories/updates"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/events",
@@ -1675,9 +2582,39 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-events-74c0d014.html.gz",
-        "source_sha256": "f0f919154c0caf21806246c2462adc9b70186d161fd19a36c339f2c5098211e1",
+        "source_sha256": "6cc5f8743ff5ac923e5f5eba4bddab02aa38fb19130540484e1d73e3940dc33e",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "2024 Tech Fair Registration Open!",
+          "url": "https://www.fortunedigitalequity.org/post/2024-tech-fair-registration-open"
+        },
+        {
+          "label": "Events",
+          "url": "https://www.fortunedigitalequity.org/news/categories/events"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Classes",
+          "url": "https://www.fortunedigitalequity.org/news/categories/classes"
+        },
+        {
+          "label": "2023 Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair"
+        },
+        {
+          "label": "The Fortune Society’s Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
+        },
+        {
+          "label": "Bridging the Digital Divide: Behind the Bars, Beyond Release",
+          "url": "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/fortune-bloggers",
@@ -1751,9 +2688,27 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-fortune-bloggers-b05e092d.html.gz",
-        "source_sha256": "13dd640e777957d98dd6682f9a675a4319f259c73e3d9f24acaf8a5a2c005807",
+        "source_sha256": "4eccceb22f46683466e3c46b55c5b6cd7fafc305efd64216569785e235b34bca",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "My Experience with the Digital Equity Program",
+          "url": "https://www.fortunedigitalequity.org/post/my-experience-with-the-digital-equity-program"
+        },
+        {
+          "label": "Fortune Bloggers",
+          "url": "https://www.fortunedigitalequity.org/news/categories/fortune-bloggers"
+        },
+        {
+          "label": "Digital Empowerment",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society"
+        },
+        {
+          "label": "Certification for Success",
+          "url": "https://www.fortunedigitalequity.org/post/certification-for-success"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/general",
@@ -1821,9 +2776,23 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-general-eecc9054.html.gz",
-        "source_sha256": "1e64b96a9b25a8d6427762aee3021543fcbe330423874fb0c0a1185152470c5c",
+        "source_sha256": "ef3966dfe00e6e455cba8abd4ae949994683adce2e899edfade5f0877b803385",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "General",
+          "url": "https://www.fortunedigitalequity.org/news/categories/general"
+        },
+        {
+          "label": "The Digital Equity Initiative At Fortune And Its Impact",
+          "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/press",
@@ -1901,9 +2870,31 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-press-d19e6630.html.gz",
-        "source_sha256": "4585baac761374f1b2a25510a5da9092ee042f693424d7eec52c61fc46ce76f6",
+        "source_sha256": "88f00c5e0b0407f6b4dc855951266d208d06378d76d15811a5ea4a716744353f",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "LIC-based Fortune Society hosts third-annual Tech Fair for justice-involved New Yorkers",
+          "url": "https://www.fortunedigitalequity.org/post/lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice-involved-new-yorkers"
+        },
+        {
+          "label": "Press",
+          "url": "https://www.fortunedigitalequity.org/news/categories/press"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/student",
@@ -1977,9 +2968,27 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-student-8c206e2c.html.gz",
-        "source_sha256": "c15f36ff736e3c3a8ed7e40ff0e5c960d69f9cd929b40a3198755f5742ae38ef",
+        "source_sha256": "6bac2645f55ba117f6087bd6b41eaeabc317157869ad217f2ff1a1df147f699f",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "My Experience with the Digital Equity Program",
+          "url": "https://www.fortunedigitalequity.org/post/my-experience-with-the-digital-equity-program"
+        },
+        {
+          "label": "Fortune Bloggers",
+          "url": "https://www.fortunedigitalequity.org/news/categories/fortune-bloggers"
+        },
+        {
+          "label": "Digital Empowerment",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society"
+        },
+        {
+          "label": "Certification for Success",
+          "url": "https://www.fortunedigitalequity.org/post/certification-for-success"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/categories/updates",
@@ -2073,9 +3082,51 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-categories-updates-9ee8373f.html.gz",
-        "source_sha256": "048cb646ceeb1f06d407a81a77c1b646c1f78506335f6d49d0209bb079bb0b17",
+        "source_sha256": "a45ffdec7bcafa6950fc77b18775c9474e48cb2ed83352012c4648718b23c50d",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Reintroducing: the Fortune Society Lobby Reel",
+          "url": "https://www.fortunedigitalequity.org/post/reintroducting-the-fortune-society-lobby-reel"
+        },
+        {
+          "label": "Updates",
+          "url": "https://www.fortunedigitalequity.org/news/categories/updates"
+        },
+        {
+          "label": "2024 Tech Fair Registration Open!",
+          "url": "https://www.fortunedigitalequity.org/post/2024-tech-fair-registration-open"
+        },
+        {
+          "label": "Events",
+          "url": "https://www.fortunedigitalequity.org/news/categories/events"
+        },
+        {
+          "label": "Check Out Our Digital Resources!",
+          "url": "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources"
+        },
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Classes",
+          "url": "https://www.fortunedigitalequity.org/news/categories/classes"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        },
+        {
+          "label": "FCC Taskforce to Prevent Digital Discrimination",
+          "url": "https://www.fortunedigitalequity.org/post/fcc-taskforce-to-prevent-digital-discrimination"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/page/2",
@@ -2190,9 +3241,71 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-page-2-32287912.html.gz",
-        "source_sha256": "7dd533078d76145466f85fef058f5d6ce91d85119e1ae7f3706ebe04c6ff619a",
+        "source_sha256": "fb995d30a9a31995c2291a6f6f392226c8736d94059c462b2c1b6d1da24eca93",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Press",
+          "url": "https://www.fortunedigitalequity.org/news/categories/press"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "General",
+          "url": "https://www.fortunedigitalequity.org/news/categories/general"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        },
+        {
+          "label": "Updates",
+          "url": "https://www.fortunedigitalequity.org/news/categories/updates"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        },
+        {
+          "label": "FCC Taskforce to Prevent Digital Discrimination",
+          "url": "https://www.fortunedigitalequity.org/post/fcc-taskforce-to-prevent-digital-discrimination"
+        },
+        {
+          "label": "2023 Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair"
+        },
+        {
+          "label": "Events",
+          "url": "https://www.fortunedigitalequity.org/news/categories/events"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        },
+        {
+          "label": "The Fortune Society’s Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
+        },
+        {
+          "label": "The Digital Equity Initiative At Fortune And Its Impact",
+          "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
+        },
+        {
+          "label": "Bridging the Digital Divide: Behind the Bars, Beyond Release",
+          "url": "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/news/page/3",
@@ -2260,9 +3373,27 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/category-news-page-3-1cd3d02b.html.gz",
-        "source_sha256": "1350100536abd3533c860d6fcca3058a1a77a9da6b96f23f43d3f3ea3491966b",
+        "source_sha256": "2c1851c472959d5a9c2dfc92eeae4ad437288057f2c6dd7ada35b21bd2a2d42a",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "The Digital Equity Initiative At Fortune And Its Impact",
+          "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
+        },
+        {
+          "label": "General",
+          "url": "https://www.fortunedigitalequity.org/news/categories/general"
+        },
+        {
+          "label": "Bridging the Digital Divide: Behind the Bars, Beyond Release",
+          "url": "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release"
+        },
+        {
+          "label": "Events",
+          "url": "https://www.fortunedigitalequity.org/news/categories/events"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/opportunities",
@@ -2334,9 +3465,47 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-opportunities-34b5847f.html.gz",
-        "source_sha256": "29f92c00d4837b84eedae9567a98fa9d87b6a83008fdfd65ebb379e931db1e28",
+        "source_sha256": "28a1795d34bc1c6531c8facae4ded0fd45da3dde1edeb827ffbeccb84599bdf0",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Coursera Access",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_f43fc2a9c1594c8391c492ed711581b9.pdf"
+        },
+        {
+          "label": "Coursera",
+          "url": "https://www.coursera.org/"
+        },
+        {
+          "label": "CONTACT US",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Fortune Digital Equity Bloggers",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_5272ff8800f64780a0000d6306678090.pdf"
+        },
+        {
+          "label": "Fortune Bloggers",
+          "url": "https://www.fortunedigitalequity.org/news/categories/fortune-bloggers"
+        },
+        {
+          "label": "REACH OUT",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Digital Equity Assistance Volunteers",
+          "url": "https://fortunesociety.org/volunteer-or-intern-with-us/"
+        },
+        {
+          "label": "...",
+          "url": "https://fortunesociety.org/volunteer-or-intern-with-us/"
+        },
+        {
+          "label": "CLICK HERE",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/other",
@@ -2407,9 +3576,75 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-other-8ecc2214.html.gz",
-        "source_sha256": "219eb40333d38d1828e156cacf68b765dab491670313f51c173f554c97baf7c9",
+        "source_sha256": "d70ffbbe512e5f2398be69c6b6ddd1caed7fa96e7ea3e1c3ad9dbe5493fba671",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Fortune Fresh Pantry",
+          "url": "https://app.pantrysoft.com/login/fortunesociety"
+        },
+        {
+          "label": "Click Here to sign up today.",
+          "url": "https://app.pantrysoft.com/login/fortunesociety"
+        },
+        {
+          "label": "PantrySoft Logo",
+          "url": "https://app.pantrysoft.com/login/fortunesociety"
+        },
+        {
+          "label": "Suspected Housing Discrimination Form",
+          "url": "https://forms.office.com/r/Z43SFu3tCt"
+        },
+        {
+          "label": "David Rothenberg Center for Public Policy",
+          "url": "https://fortunesociety.org/advocacy/"
+        },
+        {
+          "label": "share your experience",
+          "url": "https://forms.office.com/pages/responsepage.aspx?id=7aiF8MIl_0ydHn7yJSG4HdVmDDU8V9RInLf3sU0n691UMkM4QVhaUFkyS081TVJLN0w4TFU5NTJNVy4u&route=shorturl"
+        },
+        {
+          "label": "Click Here",
+          "url": "https://www.fairchancehousing.org/"
+        },
+        {
+          "label": "Fair Chance for Housing Logo",
+          "url": "https://www.fairchancehousing.org/"
+        },
+        {
+          "label": "Fortune Art Portal",
+          "url": "https://fortuneartportal.org/"
+        },
+        {
+          "label": "Click Here",
+          "url": "https://fortuneartportal.org/"
+        },
+        {
+          "label": "Fortune Art Portal Logo",
+          "url": "https://www.fortuneartportal.org/"
+        },
+        {
+          "label": "Arduino Resources",
+          "url": "https://arduino.cc/"
+        },
+        {
+          "label": "click here",
+          "url": "https://www.arduino.cc/en/software"
+        },
+        {
+          "label": "Arduino Logo",
+          "url": "https://www.arduino.cc/en/software"
+        },
+        {
+          "label": "click here",
+          "url": "https://docs.arduino.cc/learn/"
+        },
+        {
+          "label": "Arduino Logo",
+          "url": "https://docs.arduino.cc/learn/"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/pdf",
@@ -2485,9 +3720,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-pdf-a771070b.html.gz",
-        "source_sha256": "b2eedec25d6f3aa0ce34a66d0ed7689f8d03754278b1d90e7645bb5ea33fb25a",
+        "source_sha256": "425e9fd30b3dcc90de8cdca7a8ad9e01c7187f10200f6326c6deea80b2144f47",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/pdf/upload-practice",
@@ -2520,9 +3756,19 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-pdf-upload-practice-90540d2e.html.gz",
-        "source_sha256": "615f6a36deac71a7f0bde9a9ab12145417eea239d99ee516cf20f718cef3e257",
+        "source_sha256": "e8863b917084a86c64e3c7500a58fa942d44ae739737cad48e8833d079f26eaa",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Download Sample Resume",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_3715511e49734985bea12e0686909a3d.pdf"
+        },
+        {
+          "label": "SUBMIT",
+          "url": "https://www.fortunedigitalequity.org/pdf/upload-practice"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair",
@@ -2554,13 +3800,13 @@
         "Original Post: https://fortunesociety.org/event-show/2023-technology-fair/",
         "Events",
         "Print Post",
-        "33",
-        "33 views",
+        "36",
+        "36 views",
         "Like post",
         "Recent Posts",
         "See All",
         "The Fortune Society’s Technology Fair",
-        "20",
+        "23",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2580,15 +3826,33 @@
         "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
       ],
       "content_characters": 1232,
-      "content_hash": "4df75601d40a849dc4d3656a5e57183a1a52e6e33714a97017be010839ad06c8",
+      "content_hash": "185be32c72210ffd60c28092a4d235698959cdc93da28ba82d526995f2e35cab",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-2023-technology-fair-e4fd3211.html.gz",
-        "source_sha256": "d94974178ad13a587c38bf13b163a731c539d9eed9d6f1f9b784bff0a2570eb2",
+        "source_sha256": "c4ac0d4a6cd4022283cfef39b4949c8725cddd66ded5613d3a09b882949c6f5a",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Register Now",
+          "url": "https://www.eventbrite.com/e/the-fortune-society-2023-technology-fair-tickets-585854826557"
+        },
+        {
+          "label": "View Agenda",
+          "url": "http://fortunesociety.org/wp-content/uploads/2023/04/Comm-Shedule-4-14.pdf"
+        },
+        {
+          "label": "https://fortunesociety.org/event-show/2023-technology-fair/",
+          "url": "https://fortunesociety.org/event-show/2023-technology-fair/"
+        },
+        {
+          "label": "The Fortune Society’s Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/2024-tech-fair-registration-open",
@@ -2620,15 +3884,15 @@
         "Events",
         "Updates",
         "Print Post",
-        "30",
-        "30 views",
+        "33",
+        "33 views",
         "Like post",
         "Recent Posts",
         "See All",
         "2023 Technology Fair",
-        "33",
+        "36",
         "The Fortune Society’s Technology Fair",
-        "20",
+        "23",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2651,15 +3915,41 @@
         "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
       ],
       "content_characters": 931,
-      "content_hash": "8f610f9d5eeebfe4db75929d2792ef3fc5214de8dc6c715aeddfcfea448ab84f",
+      "content_hash": "39c6820def9db0f53331a444464d798b40600a766a9da29f50b51e3a9064c924",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-2024-tech-fair-registration-open-23c2a426.html.gz",
-        "source_sha256": "c0349f46ea9abfc12ec6151e1bdf11ea706e3b86ca282e15e342db38fd9f339f",
+        "source_sha256": "ba7de90994f37ef5f0e5b809d7dab02e5fded9885b9abefd7b9c0c8848306bc4",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "F",
+          "url": "http://www.fortunesociety.org/techfair"
+        },
+        {
+          "label": "April 24th from 10 AM - 3 PM",
+          "url": "http://www.fortunesociety.org/TechFair"
+        },
+        {
+          "label": "Long Island City office",
+          "url": "https://fortunedigitalequity.org/calendar#class-locations"
+        },
+        {
+          "label": "FortuneSociety.org/TechFair",
+          "url": "http://www.fortunesociety.org/techfair"
+        },
+        {
+          "label": "2023 Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair"
+        },
+        {
+          "label": "The Fortune Society’s Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles",
@@ -2693,15 +3983,15 @@
         "Updates",
         "Classes",
         "Print Post",
-        "29",
-        "29 views",
+        "32",
+        "32 views",
         "Like post",
         "Recent Posts",
         "See All",
         "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
-        "25",
+        "28",
         "Intro to Robotics!",
-        "27",
+        "30",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2723,15 +4013,25 @@
         "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
       ],
       "content_characters": 1130,
-      "content_hash": "0f74895cd67151584e2cd009def9485005e9a539e46df97102bc51b0af6285e6",
+      "content_hash": "6b3bb98f395c2c8bf0786c17fec18fde04b1bd5ea734867738bb6afd745e5433",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-brand-new-workshop-called-microsoft-word-styles-02c19704.html.gz",
-        "source_sha256": "5e97049c437b99e1732e47809891d6353e9bf811a1dd8796f4f60422339cc48f",
+        "source_sha256": "3f2df35404eee695ce21b2b4c7dfc27825d2a6a77cd9bf2f6089767d30e1a236",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release",
@@ -2765,15 +4065,15 @@
         "Originally Post: https://fortunesociety.org/event-show/bridging-digital-divide/",
         "Events",
         "Print Post",
-        "29",
-        "29 views",
+        "32",
+        "32 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Closing the Digital Skill Divide",
-        "25",
+        "28",
         "The Digital Equity Initiative At Fortune And Its Impact",
-        "24",
+        "27",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2794,15 +4094,29 @@
         "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
       ],
       "content_characters": 4180,
-      "content_hash": "091d246937618b6f3605442c2253454854168cfbf93bf0ed8deb8137f6304ecb",
+      "content_hash": "4c8f686356f5eed20af7b11735cc645ae60bd4085e157d7eb8d68e8d0feda418",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-bridging-the-digital-divide-behind-the-bars-beyond-release-a9ef32c8.html.gz",
-        "source_sha256": "d72eed72899ef83564ed5d97d95df5a44ac44e6be5b860630fc992972ad5fc82",
+        "source_sha256": "2162942b31fd6ecf66164082f29122f6d9f664c54f8114604f9fa1c97839e5a5",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "https://fortunesociety.org/event-show/bridging-digital-divide/",
+          "url": "https://fortunesociety.org/event-show/bridging-digital-divide/"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "The Digital Equity Initiative At Fortune And Its Impact",
+          "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/certification-for-success",
@@ -2834,17 +4148,17 @@
         "Fortune Bloggers",
         "Student",
         "Print Post",
-        "41",
-        "41 views",
+        "44",
+        "44 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Closing the Digital Skill Divide",
-        "25",
-        "The Digital Equity Initiative At Fortune And Its Impact",
-        "24",
-        "Bridging the Digital Divide: Behind the Bars, Beyond Release",
         "29",
+        "The Digital Equity Initiative At Fortune And Its Impact",
+        "27",
+        "Bridging the Digital Divide: Behind the Bars, Beyond Release",
+        "32",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2867,15 +4181,29 @@
         "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
       ],
       "content_characters": 3843,
-      "content_hash": "a529880d13d0fca78d9146a497cbd3f0ebd7f4f28a5a374982d12ce7329e9fc7",
+      "content_hash": "323d7f4fe816d1458ad891c83a9da0f13b65226f11ed894d6a831b5d816f61c1",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-certification-for-success-870f90cb.html.gz",
-        "source_sha256": "261bf9b892464c2860a6897a26c6b480540160d269eba0f86e22d457a423abe6",
+        "source_sha256": "8a552114ef4e2f81b53b8feca710b5218770fa269a2f76e4977e28744aede840",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "The Digital Equity Initiative At Fortune And Its Impact",
+          "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact"
+        },
+        {
+          "label": "Bridging the Digital Divide: Behind the Bars, Beyond Release",
+          "url": "https://www.fortunedigitalequity.org/post/bridging-the-digital-divide-behind-the-bars-beyond-release"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources",
@@ -2908,16 +4236,17 @@
         "And stay tuned as we continue to work to make the Fortune Digital Equity Program the best one-stop shop for all your digital navigation needs.",
         "Updates",
         "Print Post",
-        "27",
-        "27 views",
+        "29",
+        "29 views",
         "Like post",
         "Recent Posts",
         "See All",
         "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
-        "25",
+        "28",
         "Intro to Robotics!",
+        "30",
         "Brand New Workshop: Microsoft Word - Styles!",
-        "29",
+        "32",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -2940,16 +4269,42 @@
         "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more",
         "https://www.fortunedigitalequity.org/practice"
       ],
-      "content_characters": 1210,
-      "content_hash": "ebd9f851a8999510e6545cb66770719d4cd05c33d0e4891acdda15e6d85c0211",
+      "content_characters": 1212,
+      "content_hash": "59ecd919b6c17b1d8f1dbd7fdb6b79e2adee6cc3309309315d6918ed4f767b24",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-check-out-our-digital-resources-ba1f0e5b.html.gz",
-        "source_sha256": "9e596b5490e52c465382b3b9afa4addf974c6fd4dcd8314a81592cfe0518396a",
+        "source_sha256": "2e377e3f49bf34b6bc1f9f2316cd5509a07bd7acb5828da04ad8048216f1d032",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "practice resources",
+          "url": "https://www.fortunedigitalequity.org/practice"
+        },
+        {
+          "label": "opportunities",
+          "url": "https://www.fortunedigitalequity.org/opportunities"
+        },
+        {
+          "label": "digital resources",
+          "url": "https://www.fortunedigitalequity.org/other"
+        },
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide",
@@ -2979,15 +4334,15 @@
         "And for a copy of the full report itself, visit: https://nationalskillscoalition.org/wp-content/uploads/2023/02/NSC-DigitalDivide_report_Feb2023.pdf",
         "General",
         "Print Post",
-        "26",
-        "26 views",
+        "29",
+        "29 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
-        "36",
+        "39",
         "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
-        "30",
+        "32",
         "Nonprofit Helps Bridge Prison Digital Divide",
         "Contact Us",
         "Volunteer",
@@ -3010,15 +4365,41 @@
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
       ],
       "content_characters": 1532,
-      "content_hash": "237b4a2c50e67f2b25273f820c3833c49e31de49dcd243c6eb7c18f5397ab68a",
+      "content_hash": "2af37b8aba09c7abf2af9069ac076f122322a3d82f1b8d50d1195458d43f5ae7",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-closing-the-digital-skill-divide-dcfad8d3.html.gz",
-        "source_sha256": "2e01932fa5694ec716faca7cf4ba8f479ba50ebc4459475de5697a3ca53fd02a",
+        "source_sha256": "ee42d491889ed0941fb9085c0fb26faa84e267ef42d17329e1fd7c1a96819129",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "https://nationalskillscoalition.org/resource/publications/closing-the-digital-skill-divide/",
+          "url": "https://nationalskillscoalition.org/resource/publications/closing-the-digital-skill-divide/"
+        },
+        {
+          "label": "https://nationalskillscoalition.org/resource/webinars/closing-the-digital-skill-divide-the-payoff-for-workers-business-and-the-economy/",
+          "url": "https://nationalskillscoalition.org/resource/webinars/closing-the-digital-skill-divide-the-payoff-for-workers-business-and-the-economy/"
+        },
+        {
+          "label": "https://nationalskillscoalition.org/wp-content/uploads/2023/02/NSC-DigitalDivide_report_Feb2023.pdf",
+          "url": "https://nationalskillscoalition.org/wp-content/uploads/2023/02/NSC-DigitalDivide_report_Feb2023.pdf"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up",
@@ -3057,15 +4438,15 @@
         "Read more at News12 New York",
         "Press",
         "Print Post",
-        "30",
-        "30 views",
+        "33",
+        "33 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
-        "36",
+        "39",
         "Closing the Digital Skill Divide",
-        "26",
+        "29",
         "Nonprofit Helps Bridge Prison Digital Divide",
         "Contact Us",
         "Volunteer",
@@ -3089,15 +4470,45 @@
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
       ],
       "content_characters": 2883,
-      "content_hash": "1889a31b6a92991b165364226e1e049649336c80a9ecf0265439ea02413f8418",
+      "content_hash": "698159270853212e3e86660cd6b265b2b34d5e15a7d038746af2f59bcb2fc02e",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-digital-divide-new-initiative-allows-formerly-incarcerated-who-miss-0c64b099.html.gz",
-        "source_sha256": "9d0a6f09e3301c3fe5030796a2c433749e72ae7a9a94e21980c8623aa09f15c7",
+        "source_sha256": "d1c8b501ce446f9cd4bad24ac193d93ccd57ae1d90cd76d538627c28de9def27",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Ashley Mastronardi",
+          "url": "https://newyork.news12.com/author/ashley-mastronardi"
+        },
+        {
+          "label": "a study by the National Skills Coalition",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "Fortune’s Digital Equity Initiative",
+          "url": "https://www.fortunedigitalequity.org/"
+        },
+        {
+          "label": "News12 New York",
+          "url": "https://newyork.news12.com/digital-divide-new-initiative-allows-inmates-that-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx",
@@ -3129,17 +4540,17 @@
         "Updates",
         "Classes",
         "Print Post",
-        "28",
-        "28 views",
+        "31",
+        "31 views",
         "Like post",
         "Recent Posts",
         "See All",
         "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
-        "25",
+        "28",
         "Intro to Robotics!",
-        "27",
+        "30",
         "Brand New Workshop: Microsoft Word - Styles!",
-        "29",
+        "32",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3162,15 +4573,29 @@
         "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
       ],
       "content_characters": 897,
-      "content_hash": "5f1f1474e424109eb58cd89a464b847cffce53de3fa3a3f3a70e8845dc29d9f4",
+      "content_hash": "854db3d27c802f1706f20475e18a00104e50859cbb1149eb612be9fff8722caf",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-digital-equity-coming-to-the-bronx-efebc290.html.gz",
-        "source_sha256": "a3334b3a2e1e1655ac3e6b119c64db7bfec6d62aec5be8c0ac71073d2a548475",
+        "source_sha256": "024c5dba78c5654c2f692159400bf5aeed6507d402125c6e43974a1e2ef2297a",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "New Workshops: Intro to Keyboarding, Mousing, Browsing, and more!",
+          "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more"
+        },
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society",
@@ -3203,13 +4628,13 @@
         "Fortune Bloggers",
         "Student",
         "Print Post",
-        "39",
-        "39 views",
+        "42",
+        "42 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Certification for Success",
-        "41",
+        "44",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3230,15 +4655,21 @@
         "https://www.fortunedigitalequity.org/post/certification-for-success"
       ],
       "content_characters": 2009,
-      "content_hash": "d7d0adac5f1d6967965864dcec526e91f9ddc255a5b1f48fd9fffa06f262a4b2",
+      "content_hash": "7f64dc2f9f1a847f09bb2b788f5aa4023d97ff1f21a3a29b937f02e017e43fc2",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-digital-equity-training-program-at-the-fortune-society-1efa78e1.html.gz",
-        "source_sha256": "9b6ae3f4b6be811aaaa8714c609f48d340fa68a5f63df7585fb6803a538f3837",
+        "source_sha256": "411f86399d687785a926f8101cfabe5ac180ddb805a6a18ee5f68b423dbd9458",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Certification for Success",
+          "url": "https://www.fortunedigitalequity.org/post/certification-for-success"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/fcc-taskforce-to-prevent-digital-discrimination",
@@ -3269,13 +4700,13 @@
         "For more information on the listening session, please click here .",
         "Updates",
         "Print Post",
-        "34",
-        "34 views",
+        "37",
+        "37 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Closing the Digital Skill Divide",
-        "26",
+        "29",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3295,15 +4726,25 @@
         "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
       ],
       "content_characters": 1400,
-      "content_hash": "da110cfce77f8a2721894fc623c0e5aa2dfb257f6c87475c8899a2ac1d30090d",
+      "content_hash": "b07badf0dd982834b1261c2748ef8139f00682d3940c68c3546e9d2e0622ffb4",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-fcc-taskforce-to-prevent-digital-discrimination-e5e0d2a5.html.gz",
-        "source_sha256": "420e335be86a2607c0f641ac0bc3a5de9db89f05a2809e75eea37cb05e6c3c44",
+        "source_sha256": "2889411915155371989cb93c43af8762c5a9f81faa9f3939a4060fde3f8817a5",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "click here",
+          "url": "https://www.fcc.gov/news-events/events/2023/09/task-force-prevent-digital-discrimination-listening-session-new-york"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom",
@@ -3346,15 +4787,15 @@
         "Read more at CBS News",
         "Press",
         "Print Post",
-        "37",
-        "37 views",
+        "40",
+        "40 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
-        "30",
+        "33",
         "Closing the Digital Skill Divide",
-        "26",
+        "29",
         "Nonprofit Helps Bridge Prison Digital Divide",
         "Contact Us",
         "Volunteer",
@@ -3377,15 +4818,41 @@
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
       ],
       "content_characters": 2427,
-      "content_hash": "afee6f054c07958de4b2e5acaeb9191e20317ad996620089724655e1daf5189d",
+      "content_hash": "6f34bf0a0a7f99e25b95522404bb676be00d6fb5d111ba4a117a8ee468952df1",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-fortune-society-offers-lessons-in-technology-for-new-yorkers-who-we-aef9e2d5.html.gz",
-        "source_sha256": "5f9862b3d748fef4652b3adbb0133777d7eaebede801b5117a08e5871a9b34b3",
+        "source_sha256": "93baa1ea95dec30eae61c1cac50d23318992d9f24b92fff239a63fb4947224d8",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Elle McLogan",
+          "url": "https://www.cbsnews.com/newyork/search/author/elle-mclogan/"
+        },
+        {
+          "label": "National Skills Coalition report",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "CBS News",
+          "url": "https://www.cbsnews.com/newyork/news/fortune-society-digital-equity-initiative/"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Closing the Digital Skill Divide",
+          "url": "https://www.fortunedigitalequity.org/post/closing-the-digital-skill-divide"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics",
@@ -3419,15 +4886,15 @@
         "Classes",
         "Events",
         "Print Post",
-        "28",
-        "28 views",
+        "31",
+        "31 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Check Out Our Digital Resources!",
-        "27",
+        "30",
         "Brand New Workshop: Microsoft Word - Styles!",
-        "29",
+        "32",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3449,15 +4916,37 @@
         "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources"
       ],
       "content_characters": 890,
-      "content_hash": "ac289f83ca6684b54bcb91b72efc506e85f010b994505fe4790589a6b0afcc08",
+      "content_hash": "2719aae68f385c6677b1af9f47e032488946413a530008e94e4641b00657197c",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-intro-to-robotics-7607367b.html.gz",
-        "source_sha256": "57d10ef78ac338d6181e685fd61a611cd95df9b48fe2a61338ff3a04738db566",
+        "source_sha256": "9aae379f235de56f36a200a387cde6a5ad9b5ca29229474a964697ebcfd382e0",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "View on Instagram",
+          "url": "https://www.instagram.com/p/C1pwTAoIqA6/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
+        },
+        {
+          "label": "View on Facebook",
+          "url": "https://www.facebook.com/fortunesociety/posts/pfbid02D9oHmtHNt5AMfkccqCEpWYjQdds2hgpGk1QKv8cXRTwLWXpfLFr7NMvosh221quGl"
+        },
+        {
+          "label": "View on LinkedIn",
+          "url": "https://www.linkedin.com/posts/the-fortune-society_fortunes-digital-equity-team-recently-held-activity-7148417748925128704-qSho?utm_source=li_share&utm_content=feedcontent&utm_medium=g_dt_web&utm_campaign=copy"
+        },
+        {
+          "label": "Check Out Our Digital Resources!",
+          "url": "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice-involved-new-yorkers",
@@ -3498,17 +4987,17 @@
         "Read more at QueensPost",
         "Press",
         "Print Post",
-        "24",
-        "24 views",
+        "27",
+        "27 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
-        "37",
+        "40",
         "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
-        "30",
+        "33",
         "Nonprofit Helps Bridge Prison Digital Divide",
-        "26",
+        "29",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3530,15 +5019,33 @@
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
       ],
       "content_characters": 3480,
-      "content_hash": "7015fa16839787cd44998f1a4336cb7a36533df1164ca372f2739137b535ac32",
+      "content_hash": "6264a4042680d7f4fd14c7b8968d80c6dc28d3e788c2cc33a89cd48e9d16c3df",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice--3152da88.html.gz",
-        "source_sha256": "ac6b64dda118d0bc123d8c97777d062179066a137015db9af501557132a8f07d",
+        "source_sha256": "8a7bfabfa7e59caa1ffc9d117f1e2dc740543b229247f4afb30ca537786ee2d7",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "QueensPost",
+          "url": "https://queenspost.com/lic-based-fortune-society-hosts-third-annual-tech-fair-for-justice-involved-new-yorkers"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/my-experience-with-the-digital-equity-program",
@@ -3572,15 +5079,15 @@
         "Fortune Bloggers",
         "Student",
         "Print Post",
-        "53",
-        "53 views",
+        "56",
+        "56 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Digital Empowerment",
-        "39",
+        "42",
         "Certification for Success",
-        "41",
+        "44",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3602,15 +5109,25 @@
         "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society"
       ],
       "content_characters": 2594,
-      "content_hash": "f55879f58937f0e116deb75e00092676a0a8b7932bd3961e6839f44d6691a67a",
+      "content_hash": "8249f4eea84670db5b208de597c4caf4294178756a65c6cb93182aae48e7e74b",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-my-experience-with-the-digital-equity-program-5c57ae3d.html.gz",
-        "source_sha256": "44d00cbb6ddde97821b22af1fb3f0434f57d26189d21b117e8cd16fbd0c2aca8",
+        "source_sha256": "e5e941d2284d166f204aec94c2eb2a9d81e8de3432e5416b9525cb924771cfcb",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Digital Empowerment",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-training-program-at-the-fortune-society"
+        },
+        {
+          "label": "Certification for Success",
+          "url": "https://www.fortunedigitalequity.org/post/certification-for-success"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/new-workshops-intro-to-keyboarding-mousing-browsing-and-more",
@@ -3645,16 +5162,16 @@
         "Classes",
         "Updates",
         "Print Post",
-        "26",
-        "26 views",
+        "29",
+        "29 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Intro to Robotics!",
-        "28",
+        "31",
         "Digital Equity Coming to the Bronx!",
         "Brand New Workshop: Microsoft Word - Styles!",
-        "29",
+        "32",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3677,15 +5194,29 @@
         "https://www.fortunedigitalequity.org/post/intro-to-robotics"
       ],
       "content_characters": 1214,
-      "content_hash": "b5c85aa7529c163d69b7ecd621fcc2d08535807f3325b0209ea8415413faa463",
+      "content_hash": "d845e0cd298edddb49206d152d05591140ac28d321686b91c9adcf3a7e118306",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-new-workshops-intro-to-keyboarding-mousing-browsing-and-more-a8d001bd.html.gz",
-        "source_sha256": "758ccedab102f9f04f4851c00d73bc65d68c5ae52ab032a77f9881794b1b4146",
+        "source_sha256": "7102439269fe9c46432ee5c559b249e5b06dd39bd0880529810ebd95b24ef367",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Intro to Robotics!",
+          "url": "https://www.fortunedigitalequity.org/post/intro-to-robotics"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        },
+        {
+          "label": "Brand New Workshop: Microsoft Word - Styles!",
+          "url": "https://www.fortunedigitalequity.org/post/brand-new-workshop-called-microsoft-word-styles"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide",
@@ -3718,15 +5249,15 @@
         "Original Post: https://fortunesociety.org/media_center/nonprofit-helps-bridge-prison-digital-divide/",
         "Press",
         "Print Post",
-        "27",
-        "27 views",
+        "29",
+        "29 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
-        "37",
+        "40",
         "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
-        "30",
+        "33",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3747,15 +5278,37 @@
         "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
       ],
       "content_characters": 1673,
-      "content_hash": "4814ad0900555fbab1a7b7fa6877b17776ee7f7a39f262dd8c2af4b53168c1b4",
+      "content_hash": "f11ca836bf5c33db0cbd65e65c045ebfb78b47337e1003853a30272034eea8be",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-nonprofit-helps-bridge-prison-digital-divide-eaac1716.html.gz",
-        "source_sha256": "4a6c614efd99bc8a998c62445c6242ee6ddb83bbf2716d773e271a480ef07b46",
+        "source_sha256": "f5a0837526ee052eaeb28015adfbea1cac44eccc79f54bc7e7e915ffc8832a61",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Stacy-Ann Gooden",
+          "url": "https://pix11.com/author/stacy-ann-gooden/"
+        },
+        {
+          "label": "Pix11 News",
+          "url": "https://pix11.com/news/local-news/nonprofit-helps-bridge-prison-digital-divide/"
+        },
+        {
+          "label": "https://fortunesociety.org/media_center/nonprofit-helps-bridge-prison-digital-divide/",
+          "url": "https://fortunesociety.org/media_center/nonprofit-helps-bridge-prison-digital-divide/"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Digital Divide: New initiative allows formerly incarcerated who missed out on tech boom to catch up",
+          "url": "https://www.fortunedigitalequity.org/post/digital-divide-new-initiative-allows-formerly-incarcerated-who-missed-out-on-tech-boom-to-catch-up"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/reintroducting-the-fortune-society-lobby-reel",
@@ -3782,15 +5335,15 @@
         "So come by our office and check it out! We can't wait to see you!",
         "Updates",
         "Print Post",
-        "24",
-        "24 views",
+        "27",
+        "27 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Check Out Our Digital Resources!",
-        "27",
+        "30",
         "Digital Equity Coming to the Bronx!",
-        "28",
+        "31",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3811,15 +5364,25 @@
         "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
       ],
       "content_characters": 740,
-      "content_hash": "712372f3e5d8f7b1ec8670b275f76855b389e68ff35d361b0bcf45db166cfae2",
+      "content_hash": "52d6fcbc8b1d827b4f41e6b585943066e8659b7a1faf0db709eff1426649590c",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-reintroducting-the-fortune-society-lobby-reel-48a4e7d6.html.gz",
-        "source_sha256": "a632743e29076c9824fce95b7edda5bb477311e1ce97ad8f8310bdc3b28bce0b",
+        "source_sha256": "5c30818163e21a782aa8bb0ea299906b123f197a3839c91e355068f86f572b88",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Check Out Our Digital Resources!",
+          "url": "https://www.fortunedigitalequity.org/post/check-out-our-digital-resources"
+        },
+        {
+          "label": "Digital Equity Coming to the Bronx!",
+          "url": "https://www.fortunedigitalequity.org/post/digital-equity-coming-to-the-bronx"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/the-digital-equity-initiative-at-fortune-and-its-impact",
@@ -3861,15 +5424,15 @@
         "Original Post: https://fortunesociety.org/the-digital-equity-initiative-at-fortune-and-its-impact/",
         "General",
         "Print Post",
-        "25",
-        "25 views",
+        "28",
+        "28 views",
         "Like post",
         "Recent Posts",
         "See All",
         "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
-        "37",
+        "40",
         "Nonprofit Helps Bridge Prison Digital Divide",
-        "27",
+        "30",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3890,15 +5453,33 @@
         "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
       ],
       "content_characters": 4613,
-      "content_hash": "360a6640dd929541f59def4e1dbc35fa7cf6d21f6423f9d2e50a36b60b0ff626",
+      "content_hash": "d3bae8b3d5dc366f77f86455af240d70eae5b75d73a3f32b7b0f2e7b937c325f",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-the-digital-equity-initiative-at-fortune-and-its-impact-38bbf223.html.gz",
-        "source_sha256": "e37382438617224d57631ca6a113c86af8b8a3f69877fde08fb1dd9ec4922156",
+        "source_sha256": "32c7abfa65e13241494bae42bc922f9ed4eaeff793cb50abe892c40022ff5428",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "DONATE TODAY TO SUPPORT OUR DIGITAL EQUITY INITIATIVE",
+          "url": "https://donate.fortunesociety.org/give/186379/#!/donation/checkout"
+        },
+        {
+          "label": "https://fortunesociety.org/the-digital-equity-initiative-at-fortune-and-its-impact/",
+          "url": "https://fortunesociety.org/the-digital-equity-initiative-at-fortune-and-its-impact/"
+        },
+        {
+          "label": "Fortune Society offers lessons in technology for New Yorkers who were incarcerated during tech boom",
+          "url": "https://www.fortunedigitalequity.org/post/fortune-society-offers-lessons-in-technology-for-new-yorkers-who-were-incarcerated-during-tech-boom"
+        },
+        {
+          "label": "Nonprofit Helps Bridge Prison Digital Divide",
+          "url": "https://www.fortunedigitalequity.org/post/nonprofit-helps-bridge-prison-digital-divide"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/post/the-fortune-society-s-technology-fair",
@@ -3927,13 +5508,13 @@
         "Original Post: https://fortunesociety.org/event-show/the-fortune-societys-technology-fair/",
         "Events",
         "Print Post",
-        "21",
-        "21 views",
+        "24",
+        "24 views",
         "Like post",
         "Recent Posts",
         "See All",
         "2023 Technology Fair",
-        "33",
+        "36",
         "Contact Us",
         "Volunteer",
         "Donate",
@@ -3953,15 +5534,29 @@
         "https://www.fortunedigitalequity.org/post/2023-technology-fair"
       ],
       "content_characters": 819,
-      "content_hash": "cd32783187f4642e13a4af7f3d4ebcbd6221f251a34df08676f11e5d466d7f04",
+      "content_hash": "47c28ef5378c5a652638f25c4d6c7d35402fa90333400665ff2915ed688098ab",
       "source_owner": "Fortune Society Digital Equity staff (confirmation pending)",
       "approval_state": "pending Fortune staff review",
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/post-post-the-fortune-society-s-technology-fair-787f7e5a.html.gz",
-        "source_sha256": "0704d6fdcf76a6fd523ba22803d5027f57a6bf40c98c1d888c91af2e3735f067",
+        "source_sha256": "64404e3b9287e1a5e3c36d69d55a4133d6714ac6e3db61744490c94e0e2133b3",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "View Photos",
+          "url": "https://www.facebook.com/media/set/?vanity=fortunesociety&set=a.360303766124192"
+        },
+        {
+          "label": "https://fortunesociety.org/event-show/the-fortune-societys-technology-fair/",
+          "url": "https://fortunesociety.org/event-show/the-fortune-societys-technology-fair/"
+        },
+        {
+          "label": "2023 Technology Fair",
+          "url": "https://www.fortunedigitalequity.org/post/2023-technology-fair"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/practice",
@@ -4043,9 +5638,83 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-practice-e0d2da64.html.gz",
-        "source_sha256": "526bf61095f08d9964f2c17b0cd1fc7471ad160fafce6755eb3a56e4363281b3",
+        "source_sha256": "3b1679ae118c3ace1919adb0bfaaf1cbbb045f0dc51e4d3e349af3709c76fc12",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Mousing Program",
+          "url": "http://www.mouseprogram.com/practice.html"
+        },
+        {
+          "label": "Mouse icon",
+          "url": "http://www.mouseprogram.com/practice.html"
+        },
+        {
+          "label": "CFP Global Tutorial",
+          "url": "https://www.learnfree.org/episode/mouse-tutorial"
+        },
+        {
+          "label": "Mouse icon",
+          "url": "https://www.learnfree.org/episode/mouse-tutorial"
+        },
+        {
+          "label": "Mousercise!",
+          "url": "https://pbc.gov/mousercise/mousercise.htm"
+        },
+        {
+          "label": "Mouse icon",
+          "url": "https://pbc.gov/mousercise/mousercise.htm"
+        },
+        {
+          "label": "Typing Club",
+          "url": "https://www.typingclub.com/sportal/program-3.game"
+        },
+        {
+          "label": "keyboard icon",
+          "url": "https://www.typingclub.com/sportal/program-3.game"
+        },
+        {
+          "label": "Typing.com",
+          "url": "https://www.typing.com/student/lessons"
+        },
+        {
+          "label": "keyboard icon",
+          "url": "https://www.typing.com/student/lessons"
+        },
+        {
+          "label": "KeyBR",
+          "url": "https://www.keybr.com/"
+        },
+        {
+          "label": "keyboard icon",
+          "url": "https://www.keybr.com/"
+        },
+        {
+          "label": "Minesweeper",
+          "url": "https://minesweeper.online/"
+        },
+        {
+          "label": "minsweeper icon",
+          "url": "https://minesweeper.online/"
+        },
+        {
+          "label": "Solitaire",
+          "url": "https://www.solitr.com/"
+        },
+        {
+          "label": "solitaire icon",
+          "url": "https://www.solitr.com/"
+        },
+        {
+          "label": "Cubefield",
+          "url": "https://www.cubefield.org.uk/"
+        },
+        {
+          "label": "cubefield icon",
+          "url": "https://www.cubefield.org.uk/"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/projects",
@@ -4098,9 +5767,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-projects-324ebb4f.html.gz",
-        "source_sha256": "5ca7d45d6252d5feb87e2e6bb0044981eb0a42ab9aaa689f5059c920be8617e5",
+        "source_sha256": "8a0ecca092daddc2eafbd9584e323b6760e55446f457d44017009c497ddc818d",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/ai-awareness-month-kickoff",
@@ -4155,9 +5825,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-ai-awareness-month-kickoff-1daf8ba4.html.gz",
-        "source_sha256": "56e0bd2c489ddb74d476193b69467d9452df9535375ca74c1c005cb7708d560b",
+        "source_sha256": "9ed712ff9e48dd30c1ed2dd762c31fe093c75d1203ff5931ce7a76e71078e3e5",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs",
@@ -4212,9 +5883,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-ai-effects-tradeoffs-21a8a5ab.html.gz",
-        "source_sha256": "ca12cd4de256a9aee3df8a3e91435e08c9831bde7a19df38fe237ec85682e84e",
+        "source_sha256": "7982928317d1c9e73ed7cd6222bf48f3116014980f09091ad6403be467a4ace7",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems",
@@ -4269,9 +5941,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-ai-in-everyday-systems-d73a6cf4.html.gz",
-        "source_sha256": "4a5b17dfcd7baf87f1dba3acb63fc2982a26bdedd291d9e3dc81f29ab2884853",
+        "source_sha256": "f8f52f5e949c08b1f782d821f8bb9ba964cbc88f26980af7a1dc6980fbd7fbdc",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026",
@@ -4329,9 +6002,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-ai-safety-in-2026-94d528fe.html.gz",
-        "source_sha256": "9cc415eb84ee8317c0feb34cebe83d88b7ecab7edb7834d52396cb0cdf4c31bd",
+        "source_sha256": "93c083dbdaab85a94b60f15e46f235c0a03c907f5977e7169bddfedfa6b103bb",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/alfabetización-digital-básica-en-español",
@@ -4382,9 +6061,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-alfabetizaci-n-digital-b-sica-en-espa-ol-c9f72881.html.gz",
-        "source_sha256": "c475a6ed4fa4c163e9261809341979fa01d8c393480fd744dd829ac4c12c6132",
+        "source_sha256": "c183324bcc7ad8314a648d637670eee2095b0d85fe5eccfa6643fc4823cda79a",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools",
@@ -4439,9 +6119,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-alternative-open-local-ai-tools-144f774e.html.gz",
-        "source_sha256": "af35bf59ee93b181559db1c2d0f2e7a164679c786c5757498ae319ebc0c381a0",
+        "source_sha256": "21bdb78d577844e2aad61597899da11b7c1fb2a773f5442cd9107cbd1b7f7f9d",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication",
@@ -4496,9 +6177,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-app-essentials-contacts-communication-203c4751.html.gz",
-        "source_sha256": "6bc0ecd1b820d0554b63ddf990887af625704d09c47b5163d1321a537c596bb2",
+        "source_sha256": "f40b83be9eee9b6ac46af6521ff348be3c03496d57148626e64c53edb5f65f48",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time",
@@ -4553,9 +6235,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-app-essentials-managing-your-time-c244b76f.html.gz",
-        "source_sha256": "ba9b03d069c5156d42ce6aa6eb18ff203ee2d6f2d6970bc9b765a8abef561842",
+        "source_sha256": "b9a3d377d915ddfb8f4d611f86bec5607b5c48e91a70bebd6f249bf773c10c34",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely",
@@ -4610,9 +6293,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-app-essentials-navigating-safely-7c4d5662.html.gz",
-        "source_sha256": "4ebcd3ba3495a43ca616d1e07bcdd12bc132eaf7f459529167d6f76ceed4db44",
+        "source_sha256": "3c8867815e2c1539ddd24e281b2719c548eb8e90b568da41e15851022cc2999f",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features",
@@ -4667,9 +6351,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-app-essentials-smart-features-8b1cc263.html.gz",
-        "source_sha256": "ac6e373255b53a4121079929d456a5cc4f1e2f5ef2ebcc22810e9e952bf994e2",
+        "source_sha256": "1b6c5de75c6e890b38619675a514f0c045b4ad171a45d1afe83945de103c0dee",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access",
@@ -4724,9 +6409,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-app-essentials-transactions-access-01e4e077.html.gz",
-        "source_sha256": "e3e65e9d07d3e73cadbd4806b0f00c9dd91eb860ed95eaa6831254ae3c9b24ac",
+        "source_sha256": "42af42185c9f84ea6e939aa68dee39a11342be06e5d8f108d46c71adcfa86486",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/canva-content-workflows",
@@ -4781,9 +6467,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-canva-content-workflows-850ddc38.html.gz",
-        "source_sha256": "382474883c8761f425cc6622dc475011320e8c731c5a0ad5d38dd6eefcdff65c",
+        "source_sha256": "18088ace05315bb17e788fc09677c6a97138903490c5a92ecda680651143c076",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/canva-design-tools",
@@ -4838,9 +6525,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-canva-design-tools-61911b2b.html.gz",
-        "source_sha256": "d0301543adece4669e116ad66b292275ea52f4ceae531cd6b5c167672aaac549",
+        "source_sha256": "3e09b68ce73e720a65c60cd2ca1def3d55eca31c23ca8e149dc8f6f10fe5bafb",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-ai",
@@ -4898,9 +6586,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-capstone-activity-using-ai-5e98eaca.html.gz",
-        "source_sha256": "ca08655260de51cc2f309f780beb89809d9b10006b0ed70f1e19f0d2bf05a858",
+        "source_sha256": "eae3341425441f56364ab7b48137ac77ba0b987ea464186e561c5e88cfa79e9a",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-ai"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-no-ai",
@@ -4958,9 +6652,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-capstone-activity-using-no-ai-d58e5bbf.html.gz",
-        "source_sha256": "74131b09fd284910d4a441ee775ce4a998ef8667e0caf7bbf44c889bed090c75",
+        "source_sha256": "b83fa9b1e1f62e4b685f3470207f3fda8e7952ea022e754d3e4ec7f8a584ad08",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/capstone-activity-using-no-ai"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job",
@@ -5015,9 +6715,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-choosing-the-right-ai-tool-for-the-job-c3fe323e.html.gz",
-        "source_sha256": "d111646b4c432c48e92160ef1daa169c5ca1b45c99e2cbe98119f152730e5064",
+        "source_sha256": "97e1bc454bc3c6ea4dd0f88a0f12a60f4969b8b937729d48c72525b2f04667be",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai",
@@ -5072,9 +6773,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-communicating-with-ai-c95f3312.html.gz",
-        "source_sha256": "8f4a9dfde1f3f67a255f254967e593838317ae03dd25fbfcf7e478484a3773f5",
+        "source_sha256": "e0e07986d32e7bfd95e049e85e9a17dc74a1ab775d22e99ff537ac2c8bf0dbc2",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone",
@@ -5129,9 +6831,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-customizing-your-smartphone-dd1578ae.html.gz",
-        "source_sha256": "148d0891e62288373a13d297219962fb7e17ef879c6c7b63c11c30fd5bc909ab",
+        "source_sha256": "20e7932570c48b9c7151dc7216987f11c2cc7a80461a7a85ae63e3e18167036e",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-branding-capstone-day",
@@ -5186,9 +6889,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-branding-capstone-day-54957b19.html.gz",
-        "source_sha256": "7da475df54f8dcbce05a8161c84d53a9dc2df68a18a4eebabbbe48afdfa29b35",
+        "source_sha256": "d9febd646fc77329fe8b6d2e3c038bc27d4024944d16d6f71c06730b96153ee8",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-color-concepts-codes",
@@ -5243,9 +6947,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-color-concepts-codes-a409860d.html.gz",
-        "source_sha256": "b3e00a9ab11c99f69212a142aca73c351bfff9876f27d39556cf1a2cbd4b519d",
+        "source_sha256": "4eea0a508fa8629c8a2dea16e20a40cbc6c7b2011a77a8313bfd3ea054cef2ef",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-discussion-group",
@@ -5300,9 +7005,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-discussion-group-19f94f41.html.gz",
-        "source_sha256": "91a5bf5955ada55caa130c8429b41831c2c0885bf578ec8e368eedb06b05a3f6",
+        "source_sha256": "a272b88d7d0a0ad3b0fa4fbac21ff081307f280bdff79ea639c9822d061f9493",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-computers",
@@ -5357,9 +7063,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-safety-computers-0db61063.html.gz",
-        "source_sha256": "6afad23d49c6573228130fbc486a261626c71d2ff8502fd8eb566dd78ab0edbc",
+        "source_sha256": "164a6675c352aa429f0da84834bf9414f6a006f475c3ea16a552a2f2428bd46d",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-email",
@@ -5414,9 +7121,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-safety-email-6939b571.html.gz",
-        "source_sha256": "ee96ca40d4c8e66006f469c7984ef7c6d7d3dce64af49b8739827294f6d628aa",
+        "source_sha256": "0da06541c0017af209e719e92de31fd133989e328d7e68e9d4d2352809d2595c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-mobile-devices",
@@ -5471,9 +7179,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-safety-mobile-devices-38f003a7.html.gz",
-        "source_sha256": "3eedc83250deaef1cc59788cd4e23545a1e11c71f55b75f5c5677d28a7270951",
+        "source_sha256": "215e24339fb1ea47cb2b35169135550c46103215eb6a8113e8eb0da87aca64dd",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-online",
@@ -5528,9 +7237,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-digital-safety-online-7eff2f59.html.gz",
-        "source_sha256": "a178b7a1a8da7453648f89048f3eded8e2a7d3827c2dc06df5d4d97f39c1be75",
+        "source_sha256": "a53655a150fb7f8e8807d94cbf2e58e230cfa903a921f9ab07000acca45d6b12",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/excel-capstone-day",
@@ -5585,9 +7295,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-excel-capstone-day-9acf929e.html.gz",
-        "source_sha256": "b4eb24d563431662fa3b0cdaebe7a8b2fe01df31999f4b8a35eb734ecded4cbc",
+        "source_sha256": "8f7b9c97b56a0b232c8c85f7402d08f4b29563a9ede31ac124952366e8e3cc30",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/excel-formatting-data",
@@ -5642,9 +7353,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-excel-formatting-data-6b619834.html.gz",
-        "source_sha256": "4678d3c8f9d6d2b07961dc934462e75528b3235906b5b6fc5d40226d1b18662e",
+        "source_sha256": "eb784356e15e48eeac25134af3ebef3a96616b0bc628203331179b4f260a246e",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/excel-formulas-functions",
@@ -5699,9 +7411,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-excel-formulas-functions-ef3359ca.html.gz",
-        "source_sha256": "51b50daf1897ded392616c76e26ccaa32fbc3404a194d40212841fb0bc7e7f31",
+        "source_sha256": "9981ef993ac71e909d25af9331c3b8ef98adf9672d718d3dc95d29e960813780",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/excel-organizing-data",
@@ -5756,9 +7469,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-excel-organizing-data-29daccf5.html.gz",
-        "source_sha256": "42ec7a73fe0f5a14eac20c5095ee8aa23a91f1641b812b94b42b4935f5d3d695",
+        "source_sha256": "e29878af0dd97e7072075420e8211ffe24a6ec17149e88f382a73aae16166d4c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/excel-presenting-data",
@@ -5813,9 +7527,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-excel-presenting-data-7159ecaf.html.gz",
-        "source_sha256": "72e66ff602a47c96444d1f6359b4a342cd949d08d37c1e816ca160ad4de0d9e3",
+        "source_sha256": "75ff1c0b0f08c98997b1edf227eae25e57a1784859c4d69f0910e191fe30f108",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/exploring-events-in-sched",
@@ -5870,9 +7585,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-exploring-events-in-sched-7cb159c9.html.gz",
-        "source_sha256": "608dbe2924c32fa22425d834b33d947c555613fa40c64eae07463d65d88274d7",
+        "source_sha256": "f462e753a64c19481ad4c20019b2bd2c5dbad825d9eb12016522fe0973aaba51",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/google-docs-collaborating",
@@ -5927,9 +7643,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-google-docs-collaborating-d535386e.html.gz",
-        "source_sha256": "3cceabf5f6dbb16ca3f450a67bdf9ca48b4eb6b430a9b2cff4c7b38a3f721420",
+        "source_sha256": "1e89969e89f17ffcab1b8d8b82a655e6edd55f26954e6dbe3fbf3cdf21155d88",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/google-sheets-collaborating",
@@ -5984,9 +7701,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-google-sheets-collaborating-56ac1209.html.gz",
-        "source_sha256": "ea4e4a05a2f2ba076ea6169b3075efb7f8ab595310fd7c3055efd3df2079ea8d",
+        "source_sha256": "967a20f08bb18cebb5ab011780e67ad9d9c9cd0f0e02fb8a69590534353a55ff",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think",
@@ -6041,9 +7759,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-how-does-ai-think-f591e3b1.html.gz",
-        "source_sha256": "f28521a2d4a09fc1e0dcb8bea3dddbb81c52535abeb0cb1560bb22a86d212ad3",
+        "source_sha256": "52f1887a197470ca9625a76a3490e1e920d9b74e8c6e8988ca640e452f1990a4",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-ai-art",
@@ -6098,9 +7817,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-ai-art-605fc624.html.gz",
-        "source_sha256": "3af92fa75166b00110c99ac8b117076b6beccf14dc9f2e234b5a61c5b09505b6",
+        "source_sha256": "9da5cdb34dd3d26dfee9961911ebd8dce354713025849c311f55b360a3ca5275",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-ai-art-pt-2",
@@ -6155,9 +7875,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-ai-art-pt-2-5b540085.html.gz",
-        "source_sha256": "3e567e6a97e2adcf1fa5120e8be88c23debad0977a434f8eb7ec108a86201a42",
+        "source_sha256": "ae598c369c2cc9098d927bd974c9a2e16dcfae905da4ab9c41ca4a3c9086a44e",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-ai-pt-1",
@@ -6212,9 +7933,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-ai-pt-1-0358341b.html.gz",
-        "source_sha256": "ec109f1613053482546bda8546711ab71a08a5237a192fecaaa7219430deecd8",
+        "source_sha256": "f4dd4a2a7883dc94a5b7e3e12f958d404db69abb5398308c0be7055a995715e9",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-ai-pt-2",
@@ -6269,9 +7991,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-ai-pt-2-3b086c13.html.gz",
-        "source_sha256": "c130be5fdded18fc48c457126555611a2f362a2c60faf781827cc4cf179f036c",
+        "source_sha256": "aaa797c791b6e366cebe4f3b37b20a8ed51ec8cb75d6fee1d22e51f3680f2947",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-coursera",
@@ -6326,9 +8049,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-coursera-0499eeaf.html.gz",
-        "source_sha256": "ffe7c7231d3845450bce52dea70c112269eb459a2b07c39c52e3a193afd5c778",
+        "source_sha256": "9ae66b77845a8665989561e4498da911fd1e7edd4df32915fef403f23bfb3f9f",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-drones",
@@ -6379,9 +8103,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-drones-987bdf4d.html.gz",
-        "source_sha256": "1082c03013f5a0292e5bfa1739001d9a302e8c343af9311480023f9bb1da31f2",
+        "source_sha256": "97d2d74b58a3af0f52cedbea5e9390daa6c0d67e134f3fe781daa1ee329a7221",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email",
@@ -6436,9 +8161,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-email-19718065.html.gz",
-        "source_sha256": "60bb1904afcfd126f49f69d260ac4896cc8435b47662b9e69f7166de8ca7c782",
+        "source_sha256": "cc46f368897ccbc5993662c65ee6faf8570d331c54516c5618dcb4d61c3c786c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-fortune-digital-equity",
@@ -6493,9 +8219,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-fortune-digital-equity-081752a0.html.gz",
-        "source_sha256": "5ac3f5a4fa5f3bbd9ffd342faf041b327f91fd798969d39ed9882b9133e73024",
+        "source_sha256": "a9636546c8b609afcc162639eddab12652530443207510c091a6730d60a99509",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-google-meet-ms-teams",
@@ -6550,9 +8277,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-google-meet-ms-teams-fd4f6295.html.gz",
-        "source_sha256": "e7482706d69548c63d60f1101c0f6af5f81b0aeeebdcfa40812396a0f1599b14",
+        "source_sha256": "6a98f9ab65feaf92a3d24b386a55675f500a86325d3ff2f5c179f0cc5e37f9e6",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-google-sites",
@@ -6607,9 +8335,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-google-sites-c5ebf222.html.gz",
-        "source_sha256": "01fe5211550846193fda4bb061737d7aac04eed8672c270c801eb2d4a43f8dfa",
+        "source_sha256": "23177a1926c2d422a59fa150ddfe1d7fe84b9c126f7cdbfff1f33ce8d43f5aa1",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-microsoft-excel",
@@ -6664,9 +8393,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-microsoft-excel-6c582b12.html.gz",
-        "source_sha256": "44a051c8e66b78cbe6372fe6ac4c40887e0a217d9f3d15c2ddc1975ffdfc85aa",
+        "source_sha256": "adc8c6cab8198910c243aa4714074fffe5561cd8d131492c6083dca34e203605",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-microsoft-powerpoint-1",
@@ -6721,9 +8451,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-microsoft-powerpoint-1-791b5354.html.gz",
-        "source_sha256": "60883ac2a64518bf82edd5d060162a03c9185f29c25a2e4d7cdc58fcda7a6d16",
+        "source_sha256": "dab4942b3562697d8743332643398fb5c57f0978f9f52d49209e575bc1f99cae",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-microsoft-word",
@@ -6778,9 +8509,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-microsoft-word-ec40b478.html.gz",
-        "source_sha256": "322b4f36ad3afd99af0a975f1f3f392588f71ea122c5be49cb70839107ce285d",
+        "source_sha256": "a62841f9b5638f0d6c57cab61f6758d6de576ba9adfa932bbbc639248facde66",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-robotics-2",
@@ -6831,9 +8563,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-robotics-2-1083ec07.html.gz",
-        "source_sha256": "b7cb8cd3f9e5de56949a970ddb7eb6dcbb2f4f58abf86087705097988f60646a",
+        "source_sha256": "726dc97bf034a075b5d1888b3b40a9a951bd84ac7df83cf110b8c1da365496e0",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-the-google-suite",
@@ -6888,9 +8621,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-the-google-suite-e264ad87.html.gz",
-        "source_sha256": "4f441a9307312158b4c672285018565bc1279a109eaf281b104742c9929f641e",
+        "source_sha256": "90da4abffe0f80a7bcba598c7ed2be27310b06200da108c25952095c3f48d3be",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/intro-to-zoom-google-meet",
@@ -6945,9 +8679,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-intro-to-zoom-google-meet-fafeab1d.html.gz",
-        "source_sha256": "bf4d1d84dc7de953c1b11eea2c2cbcbc3187e7cec967cdbfc312f7910379cd5b",
+        "source_sha256": "fd990259d1d480c68c7886f5ee7a49aabf021d5205bc171ef2f07a4d104a66bd",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online",
@@ -7002,9 +8737,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-job-searching-online-d936362e.html.gz",
-        "source_sha256": "e6034d71e60649f8a929254bbaa206d7b5280acf85d11209d229167930eabc85",
+        "source_sha256": "932ffe036a895f39e2fd54f88bf04605c5644b10ca7b962feca8766c15b94c9c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/linkedin-networking-strategies",
@@ -7059,9 +8795,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-linkedin-networking-strategies-ad6f1852.html.gz",
-        "source_sha256": "6b2a5a668934f8ce48319269e35eea620d82f99d0e6ab25aca30cc8b2a78d7b2",
+        "source_sha256": "4cde8ed345e5e95e943704d70d0f85c1c055b24987582403ccadbcfc5c48fda5",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/linkedin-profile-foundations",
@@ -7116,9 +8853,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-linkedin-profile-foundations-8915a802.html.gz",
-        "source_sha256": "b5d741a21a72024ad1122a1ff36a2bc69ccba3e6d24d48ecd32c0851592c289d",
+        "source_sha256": "38a0e77dceb84fc5b195f80f116de8760b7cf6b3f5fa060dd59ec13b1f6e8637",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone",
@@ -7173,9 +8911,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-managing-your-smartphone-43d49ac5.html.gz",
-        "source_sha256": "2b5c2ab976e6f609bf909b72527dd7afbb3ea83f80bee1e5b4d3a3e19b725e9c",
+        "source_sha256": "85c8536d8c1f467acacdd8be2b6bffa373204b647e201b173758ec40a8b1dd72",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/mobile-computing-capstone-day",
@@ -7230,9 +8969,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-mobile-computing-capstone-day-f75461b0.html.gz",
-        "source_sha256": "211934421973afcaa26e1e7388a98a7e3e7923816187916226735db67da9051c",
+        "source_sha256": "0bfa33832fc89d2e638ff41d9d0f1660727693a392a981f78a78f81ab71f932d",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers",
@@ -7287,9 +9027,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-navigating-internet-browsers-85520cbc.html.gz",
-        "source_sha256": "edef017b8b8a6ba78839a1e6ebe91b48fadb2b8d0030a44419e943c485f66c37",
+        "source_sha256": "496c0b9f7884ece1eea52117ca0bf321e7fccacfb1e93f1b406f5a031246437c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud",
@@ -7344,9 +9085,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-navigating-the-cloud-74013a7e.html.gz",
-        "source_sha256": "6cf501ca99226a49b35b9b6a8262bb8138f103f44c02c758b15f0b6739d78386",
+        "source_sha256": "734fee6f17f13e82d06993c9657483b79f7abe23f4ad4626c0e789926ed829dc",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop",
@@ -7401,9 +9143,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-navigating-windows-desktop-215bb947.html.gz",
-        "source_sha256": "634662034e148ddf017d2b1b007c44254f2e5a5ac3c5a94ac8f4719c43805e7f",
+        "source_sha256": "72def763452585fb74a6b5ce6fda171e93411f23ac16b46f6abcf277acca1e98",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone",
@@ -7458,9 +9201,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-navigating-your-smartphone-5b27947f.html.gz",
-        "source_sha256": "b0eea6d393db71b3b86507f9725c4d841815c759470454f1005a346e23e14f22",
+        "source_sha256": "6e2a74b8dd268eb1fc6da2b8542518bfb89cd05245981caed83f97d8415dc50c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/open-computer-lab-session",
@@ -7548,9 +9292,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-open-computer-lab-session-198811fd.html.gz",
-        "source_sha256": "d5167154a0afed4b2de3943a3e4ab4d317c082e110d2316f3089168fff81e01f",
+        "source_sha256": "71b94244f496660f5805b37b823569b44bd7ce7e07d5296c1b2fa05028a332cd",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/open-computer-lab-session"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/personalizing-events-in-sched",
@@ -7605,9 +9355,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-personalizing-events-in-sched-a707b9f9.html.gz",
-        "source_sha256": "a4bc24699fe381d4d0565e0c6e061f211b0e824dca6bd2cf18ea611957fa3bca",
+        "source_sha256": "1ed7c21de8388b5a2c05f34decc47010d3463acd20443858dc8c69023f6ea706",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/powerpoint-capstone-day",
@@ -7662,9 +9413,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-powerpoint-capstone-day-3523a791.html.gz",
-        "source_sha256": "0b2d42153c01c2e1edce9cb99feb9d95c24774815af867eb6672c254bce1bbb8",
+        "source_sha256": "fb952ad6b4d6245c7b299f987abfa21b94d45150be98363e57b2d877261b63e6",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/powerpoint-laying-out-themes",
@@ -7719,9 +9471,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-powerpoint-laying-out-themes-35a9f059.html.gz",
-        "source_sha256": "6eb8e9dcd6221e4eb8ac4924449982a2e11d3dc147297d3ce9134c8bf208e7f4",
+        "source_sha256": "a255af2de7e04a2e6ce7de9fb92e9a8d706cd35a8207c6a01729cb0f7cb0720b",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/powerpoint-objects-images",
@@ -7776,9 +9529,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-powerpoint-objects-images-e51753d6.html.gz",
-        "source_sha256": "389128fc72231ca7c7dc965b8df241184be560829d509c2beb58b0eba0262b64",
+        "source_sha256": "61947cbf929d6ffe76dcbccef354cc8dec57cef66686562388b3d8e858008fd5",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/powerpoint-transitions-animations",
@@ -7833,9 +9587,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-powerpoint-transitions-animations-c885afc0.html.gz",
-        "source_sha256": "00c7c15625b706f25ae2f78bd811cc8cca7b6bc012c7de09bc5e5890746ef2a2",
+        "source_sha256": "6676badfa801d3177df7a87e2990729707bc4d5d19c341c5893c688f2d469959",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/powerpoint-working-with-words",
@@ -7890,9 +9645,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-powerpoint-working-with-words-58fa288a.html.gz",
-        "source_sha256": "b8344912531f97cfcbfad35d7946ca71e730ee6979ddb89f363ad92832591c2f",
+        "source_sha256": "c09232cb7a859ea64dbaf931a2dbb6b517ddb162a4da03807186c7bb1b0ba1e6",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/robot-coders-101",
@@ -7943,9 +9699,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-robot-coders-101-221c33e0.html.gz",
-        "source_sha256": "4ba9f6bdf62350dc8a1828b2e2b878d370e9487330d1159f83e92bf0c0a92cf8",
+        "source_sha256": "f2ebf98f92c4ccc425e7f63873c3796e79d0c3582ce474ed38fcb7ed5dba8899",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-essentials",
@@ -8000,9 +9757,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-smartphone-photography-essentials-0d2fab89.html.gz",
-        "source_sha256": "3e9f3250df6cd9f2aeeb043baf369568fa940a8f8fb2c3c8ee53e0339b34375d",
+        "source_sha256": "0b3c0bbc6b018fa662f7ddc5febc05949b90d57469ed70be507a4b6b3162a99c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-techniques",
@@ -8057,9 +9815,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-smartphone-photography-techniques-aeb83ab9.html.gz",
-        "source_sha256": "f3e46c4e57ed1f9695924ae4de8ff4a61a7453ea2fb4cb02b1cfc65f3c4d088c",
+        "source_sha256": "e3ec3bb257426c294317a4cee700a1a5fbd3879333647a7756f26792c3e57c4a",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism",
@@ -8114,9 +9873,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-smartphone-professionalism-4365e1e9.html.gz",
-        "source_sha256": "e4b9f0d823aff931e45e72a5272dd43f30e4e226c937dcea957ed13469ac4fbe",
+        "source_sha256": "850b3681d1ae00dbf39c9e256f8e100e08076218a0c637a24ff2093de068d97a",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/tech-fair-capstone-day",
@@ -8171,9 +9931,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-tech-fair-capstone-day-9265c0c8.html.gz",
-        "source_sha256": "9244f963c1d33cc529ca3c93751a4f00f5b53d025d51056e60fbf152704c8b24",
+        "source_sha256": "d39c766e98d4889062fa044419663bdf365e586f6948ea5c940131acc4633d4e",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/tech-time-focused",
@@ -8223,9 +9984,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-tech-time-focused-d3213819.html.gz",
-        "source_sha256": "9ee055486f04444344e734a474acbff938e5a6254cbfd3b6415e473319778503",
+        "source_sha256": "b964076a66e2abd0b9bd97949d8d3f59ed2fcd092dec726d6c547b89da3d438c",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/tech-time-focused"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/tech-time-foundations-1",
@@ -8313,9 +10080,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-tech-time-foundations-1-1e1b8286.html.gz",
-        "source_sha256": "e98489d8d6f2b5449e7a1792c5e98eb2b42b13dc15668b0ed2b9d1a4dea890b5",
+        "source_sha256": "953aebb90e0a1c614eebd9ad9ebb79fb9ecde5465b47b407f7b4984a4222f353",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "REGISTER",
+          "url": "https://www.fortunedigitalequity.org/service-page/tech-time-foundations-1"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-canva-presentations-alternative",
@@ -8370,9 +10143,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-canva-presentations-alternative-1b8b4a52.html.gz",
-        "source_sha256": "454899be803d4a1cccb5d9f8a2d94a29baf5de0a094b5f28f34e44ebc5dfda52",
+        "source_sha256": "78c31c447e174f8cec4d3bf37b2087f933509c8d433630d455c03752422f62ba",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake",
@@ -8427,9 +10201,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-digital-handshake-a4ca3b01.html.gz",
-        "source_sha256": "f7e6d3879d50db8a444fc26978d0cf23b5dca80de1d36b2f631ff59175e4a10a",
+        "source_sha256": "c26107a4894f3219a71eace1fe563167d51eb708e0e570562cf44b58250d5360",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-google-docs-alternative",
@@ -8484,9 +10259,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-google-docs-alternative-0fdc7b41.html.gz",
-        "source_sha256": "ae4874d2da114deaa6feb6aa67ae96dcb585d1db9288f70ecf8378f8a9e25612",
+        "source_sha256": "c53132cee2e7c026ec2aee55c7bb94479f366175ddfbe05a8d390c87e73b1b06",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-google-sheets-alternative",
@@ -8541,9 +10317,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-google-sheets-alternative-e84032e0.html.gz",
-        "source_sha256": "0d5c274441fbfff19d4bc9f23168a670a3d670b23c4b7c89add0d5ca872cf9e6",
+        "source_sha256": "8772a5e4f3de4fea7039fab6fd9e0ea5f2d1336663e726126d5e005da5d3b7ca",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-google-slides-alternative",
@@ -8598,9 +10375,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-google-slides-alternative-f42e7e91.html.gz",
-        "source_sha256": "d32107248f89aba6c7aaaf0c00ced48b0dc1166ce6d10be843e662fe70fa5422",
+        "source_sha256": "dbf50a966fc28b78bd4499ccddf71b552eaee5b6ee313b290f93aeac880b38e2",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit",
@@ -8655,9 +10433,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-the-tech-fair-toolkit-adbc1c12.html.gz",
-        "source_sha256": "d008f4afa547dc9d841b8a94330030994a8b8a52fb9d9c26d097de584e4753a8",
+        "source_sha256": "f5b906f89afa90a6ffc89cfbcd283d10a3d6087fb7fce6c7e436fe35118bee2b",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers",
@@ -8712,9 +10491,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-understanding-computers-7e81e953.html.gz",
-        "source_sha256": "595611c7881500d339432c75b2c60144b8055e86ba1e0c2138aebcefed130291",
+        "source_sha256": "4780b6075b0c2ea494f07fcf08131c67cb54ec1e51d2de6a8c1affb56815b813",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management",
@@ -8769,9 +10549,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-understanding-file-management-500ea80c.html.gz",
-        "source_sha256": "a1d62e115e16fa60b0c0f5415b32544d6d1d8277877d699c952a65e5cfc530c0",
+        "source_sha256": "5f01c2380221ce73aae91df05179b484d3be0cb6bab3eb2ad6430b61ee938d4f",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing",
@@ -8826,9 +10607,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-understanding-keyboarding-mousing-da2371f9.html.gz",
-        "source_sha256": "4585f48c5c170e3158777baeef6a84bbcd5c51c35bec79ed8c1458fb277dec15",
+        "source_sha256": "3f1efd3df62e91873c0373ae67f3a4012b9d175897f39eaf73eacfe8313948cf",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai",
@@ -8883,9 +10665,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-what-is-ai-83a82854.html.gz",
-        "source_sha256": "a27d66d6bf16cbd929428cd2dcf4c412aa84fa17740f44833974cb4da503ef44",
+        "source_sha256": "bc9881a9e5a4dc51d863fa695eeb07c7d1ae9d931272cf0ba4adc1c9f71cb28c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/word-capstone-day",
@@ -8940,9 +10723,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-word-capstone-day-74e48e95.html.gz",
-        "source_sha256": "680b4210129717ad4f51d6f53f3609292c83de7f2586eade08517fa02f4fad5a",
+        "source_sha256": "922992828cc5da73a073766a0b40b7b7c2267d72a5bdcede651532a4a488409b",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/word-finalizing-a-draft",
@@ -8997,9 +10781,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-word-finalizing-a-draft-03747d9c.html.gz",
-        "source_sha256": "35aec6379f95f174408368190aea5fd9baee495a34c6b2dd01a28083c4591b74",
+        "source_sha256": "4851ac559acaabf9b992c3e04ce1773432fd3c9f0d0fbf2272172a6a37de4848",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/word-objects-images",
@@ -9054,9 +10839,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-word-objects-images-0fca8c0c.html.gz",
-        "source_sha256": "40eba865ef99eb06b89d04cdb785db583e5a722c2a2c384672d3e78ea0ad20d8",
+        "source_sha256": "e01d2756fbf44e71aaccf674cbde7fefcd1e8e51587e691a254d21f3f4e7a45b",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/word-structuring-text",
@@ -9111,9 +10897,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-word-structuring-text-f0adef9e.html.gz",
-        "source_sha256": "de25073f3c15651d3e69f5ce287a2bc274d17ef12235593476c4d1562b69aa28",
+        "source_sha256": "87f8251c819cff83d6b0d36069b83330533854416ab2fac425c13b8800ede12c",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/service-page/word-working-with-text",
@@ -9168,9 +10955,10 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/service-service-page-word-working-with-text-c9d5a239.html.gz",
-        "source_sha256": "941b60d23bc4942016a13445d02b81ad0bb4ca4f617fcd0a28fe86bbd9cda435",
+        "source_sha256": "65006af3775b88a02aef3fddee36455a4b8642e38dad700489748acb03c95b27",
         "site_revision": 2090
-      }
+      },
+      "source_links": []
     },
     {
       "url": "https://www.fortunedigitalequity.org/support",
@@ -9255,9 +11043,43 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-support-0863dc84.html.gz",
-        "source_sha256": "f6366f8f34e74ee0174131a9c7821c55a17c08ef26c74248fe27328a60875adf",
+        "source_sha256": "61834f5d6b77f058388eb2e9175a936b2adddbceb720319a05ee57ccd25b8ad1",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "1-on-1 Tutoring",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Schedule a session",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "regular training schedule",
+          "url": "https://www.fortunedigitalequity.org/workshops"
+        },
+        {
+          "label": "Technical Support",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Join us for office hours",
+          "url": "https://www.fortunedigitalequity.org/support"
+        },
+        {
+          "label": "contact us",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "Open Computer Lab",
+          "url": "https://www.fortunedigitalequity.org/calendar"
+        },
+        {
+          "label": "Scheduled Support Hours",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair",
@@ -9338,7 +11160,6 @@
         "©2026 by Fortune Society Digital Equity Program"
       ],
       "internal_links": [
-        "https://www.fortunedigitalequity.org/",
         "https://www.fortunedigitalequity.org/(212) 691-7554",
         "https://www.fortunedigitalequity.org/contact",
         "https://www.fortunedigitalequity.org/fstrain@fortunesociety.org",
@@ -9358,9 +11179,127 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-54fef774.html.gz",
-        "source_sha256": "7d3869197e4ac6bb596e67c16e526deac8efb6ec001e3d0c93f0568d7f7b2b8a",
+        "source_sha256": "48109f4d2f259ec9b651b47b200de2e2ccee8cfb51d814856a349379dddf3950",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Tech Fair 2026",
+          "url": "https://techfair2026.sched.com/"
+        },
+        {
+          "label": "Tech Fair 2026 Logo",
+          "url": "https://techfair2026.sched.com/"
+        },
+        {
+          "label": "Trent Griffin-Braaf Founder of Success Map Initiative",
+          "url": "https://techfair2026.sched.com/event/2HjiY/keynote-trent-griffin-braaf-founder-of-success-map-initiative"
+        },
+        {
+          "label": "PROGRAM SCHEDULE",
+          "url": "https://techfair2026.sched.com/list/simple"
+        },
+        {
+          "label": "SHARE YOUR PHOTOS",
+          "url": "https://www.fortunedigitalequity.org/techfair/photos"
+        },
+        {
+          "label": "VIEW PHOTOS",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "VIEW JOURNAL",
+          "url": "https://www.fortunedigitalequity.org/techfair"
+        },
+        {
+          "label": "Raising a Generation of Digital Learners",
+          "url": "https://techfair2026.sched.com/event/2HmsC/panel-discussion-raising-a-generation-of-digital-learners"
+        },
+        {
+          "label": "Prescribing Access To Digital Healthcare",
+          "url": "https://techfair2026.sched.com/event/5f9b3f7f3e324733ebbbdbde7f17abd8"
+        },
+        {
+          "label": "Cultivating Justice In Modern Food Systems",
+          "url": "https://techfair2026.sched.com/event/2HjoP/panel-discussion-cultivating-justice-in-modern-food-systems"
+        },
+        {
+          "label": "Decoding Pathways to Today's Job Market",
+          "url": "https://techfair2026.sched.com/event/2Hjtg/panel-discussion-decoding-pathways-to-todays-job-market"
+        },
+        {
+          "label": "Making Music in the Age of the Algorithm",
+          "url": "https://techfair2026.sched.com/event/2HmsU/panel-discussion-making-music-in-the-age-of-the-algorithm"
+        },
+        {
+          "label": "Where",
+          "url": "https://www.fortunedigitalequity.org/contact"
+        },
+        {
+          "label": "NYC Office of Technology & Innovation Logo",
+          "url": "https://www.nyc.gov/content/oti/pages/"
+        },
+        {
+          "label": "Tech NYC Logo",
+          "url": "https://www.technyc.org/"
+        },
+        {
+          "label": "NYSDEN Logo",
+          "url": "https://nysden.org/"
+        },
+        {
+          "label": "Telecom Institute Logo",
+          "url": "https://www.tinynyedu.com/"
+        },
+        {
+          "label": "New York City Alliance for Digital Equity Logo",
+          "url": "https://www.nyccaliteracy.org/nycade.html"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2025 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2024",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2024 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2023",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2023 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2022",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "Tech Fair 2022 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "The Fortune Society's First Annual Tech Fair",
+          "url": "https://www.youtube.com/embed/j63VRG1t-Fg?autoplay=0&mute=1&controls=1&loop=1&origin=https%3A%2F%2Fwww.fortunedigitalequity.org&playsinline=1&playlist=j63VRG1t-Fg&enablejsapi=1&widgetid=1&forigin=https%3A%2F%2Fwww.fortunedigitalequity.org%2Ftechfair&aoriginsup=1&vf=6"
+        },
+        {
+          "label": "The Fortune Society's Third Annual Tech Fair",
+          "url": "https://www.youtube.com/embed/m60tu1I1M60?autoplay=0&mute=1&controls=1&loop=1&origin=https%3A%2F%2Fwww.fortunedigitalequity.org&playsinline=1&playlist=m60tu1I1M60&enablejsapi=1&widgetid=3&forigin=https%3A%2F%2Fwww.fortunedigitalequity.org%2Ftechfair&aoriginsup=1&vf=6"
+        },
+        {
+          "label": "The Fortune Society’s 1st Annual Technology Fair",
+          "url": "https://www.youtube.com/embed/CK1TpMbqyl0?autoplay=0&mute=1&controls=1&loop=1&origin=https%3A%2F%2Fwww.fortunedigitalequity.org&playsinline=1&playlist=CK1TpMbqyl0&enablejsapi=1&widgetid=5&forigin=https%3A%2F%2Fwww.fortunedigitalequity.org%2Ftechfair&aoriginsup=1&vf=6"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/contest",
@@ -9412,9 +11351,19 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-contest-cc4650e9.html.gz",
-        "source_sha256": "d4645340ed93a7bef5f98b3e5336d2c0da7858bcc86958491f41d09ba10901a4",
+        "source_sha256": "f9021ed98782863ca4b2ee7cf678afcf57426947e7159a5a52277733702513a8",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Download Guidelines",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_159f19fc53f14c2693ed9f228fdd84fc.pdf"
+        },
+        {
+          "label": "SUBMIT",
+          "url": "https://www.fortunedigitalequity.org/techfair/contest"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/photos",
@@ -9457,9 +11406,19 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-photos-8d79fffd.html.gz",
-        "source_sha256": "4c808d87d76e2c0e28c7b4227dc9823dd99feafebfba79ceb8c67d6be5897605",
+        "source_sha256": "03cb1206572e66a223f3a4b3e277d01c98c3f62d45f1b1089479c75166bf717f",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "SHARE",
+          "url": "https://www.fortunedigitalequity.org/techfair/photos"
+        },
+        {
+          "label": "VIEW PHOTOS",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/qa",
@@ -9494,9 +11453,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-qa-4d40569c.html.gz",
-        "source_sha256": "68302c39d3c1b216b7d229e6fce4d18796d026ff5a2c2d24807b4dfba62a8f94",
+        "source_sha256": "6071a630ffcef22a32a5309e5018a5ebb3b8e2658041a2a66b7263374b341fd8",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "Submit",
+          "url": "https://www.fortunedigitalequity.org/techfair/qa"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/raffle",
@@ -9526,9 +11491,15 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-raffle-d95a56e5.html.gz",
-        "source_sha256": "3269bb472d9c4792a897d5c4c31fcbd657988d5a6bb15be29489f12329710e6a",
+        "source_sha256": "dc0b96625f68fb37653d560205fb94fa954d272dac35700d5b24d6e8c79ba3ff",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "SUBMIT",
+          "url": "https://www.fortunedigitalequity.org/techfair/raffle"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/techfair22",
@@ -9595,9 +11566,47 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-techfair22-01034e95.html.gz",
-        "source_sha256": "82d521e739815af6c6026cad4c9e0a33386dfcfd93b3b0e2656fdb4c1d4b929f",
+        "source_sha256": "fe3315ce8087f370de45fca430288eff2bd4ba29c73e323a84ab4a554d31ee24",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "MORE",
+          "url": "https://www.facebook.com/media/set/?set=a.360303766124192&type=3"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2026 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2025 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2024",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2024 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2023",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2023 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/techfair23",
@@ -9671,9 +11680,51 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-techfair23-6d746157.html.gz",
-        "source_sha256": "42fc202ed8a5f0fc008dcabfc1c2409eaa6861a830650750269197c7c2b43632",
+        "source_sha256": "30b2b921ae918875e90e6ba1dc3d32632d1984a202720eef1ce880ae6772001d",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "PROGRAM",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_b9f139c6243d4f06b0432354b4b08f50.pdf"
+        },
+        {
+          "label": "MORE",
+          "url": "https://www.facebook.com/media/set/?set=a.603092535178646&type=3"
+        },
+        {
+          "label": "Tech Fair 2026",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2026 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2025 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2024",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2024 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2022",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "Tech Fair 2022 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/techfair24",
@@ -9745,9 +11796,51 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-techfair24-9df03a5a.html.gz",
-        "source_sha256": "9f2621f73c7659478d250d22ff8a47c8dfa3d02f402ac8c4c0322aa27c1f185e",
+        "source_sha256": "e202d564f4b140c93a28b89f1e3748f7d551a3e3076ce96fbc0b798b34bc4403",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "PROGRAM",
+          "url": "https://www.fortunedigitalequity.org/_files/ugd/e58568_74c7f13d43d84f638d3bacdd49b56026.pdf"
+        },
+        {
+          "label": "MORE",
+          "url": "https://www.facebook.com/media/set/?set=a.820490546772176&type=3"
+        },
+        {
+          "label": "Tech Fair 2026",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2026 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2025 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2023",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2023 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2022",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "Tech Fair 2022 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/techfair25",
@@ -9813,9 +11906,47 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-techfair25-e7232199.html.gz",
-        "source_sha256": "9ec8e7e0c13ec60f599ffba4469e74c71f9a22fbe517b4d6773be8e405116585",
+        "source_sha256": "b24d3c5a6554036361106942f228b2d8ed5b0759abaec8178f8f065b97b31664",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "PROGRAM",
+          "url": "https://fortunetechfair2025.sched.com/list/descriptions"
+        },
+        {
+          "label": "Tech Fair 2026",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2026 logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair26"
+        },
+        {
+          "label": "Tech Fair 2024",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2024 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2023",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2023 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2022",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "Tech Fair 2022 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/techfair/techfair26",
@@ -9879,9 +12010,47 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-techfair-techfair26-ca3aab5d.html.gz",
-        "source_sha256": "0d47519093e7fbda5c3f72b5a185cab91da82d3c853bffb2cf889d36c4bb7f6d",
+        "source_sha256": "76819451fac8f42463971eddef9313dce4efd464d46beb0444d8d40fd54b5e89",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "SHARE YOUR PHOTOS",
+          "url": "https://www.fortunedigitalequity.org/techfair/photos"
+        },
+        {
+          "label": "Tech Fair 2025",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2025 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair25"
+        },
+        {
+          "label": "Tech Fair 2024",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2024 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair24"
+        },
+        {
+          "label": "Tech Fair 2023",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2023 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair23"
+        },
+        {
+          "label": "Tech Fair 2022",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        },
+        {
+          "label": "Tech Fair 2022 Logo",
+          "url": "https://www.fortunedigitalequity.org/techfair/techfair22"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/workshops",
@@ -10139,9 +12308,331 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-workshops-e0a7ad05.html.gz",
-        "source_sha256": "b783edb3acc79c5ccbfaa847ff1831cfd68e33aef2b65b4b9a4caafdcb5457be",
+        "source_sha256": "57954fb5d699fe4268ff03f7b619122833bab2710d8e010c572efcf1bf4bdcc7",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "An icon representing AI",
+          "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+        },
+        {
+          "label": "What Is AI?",
+          "url": "https://www.fortunedigitalequity.org/service-page/what-is-ai"
+        },
+        {
+          "label": "The original AI computing machine",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+        },
+        {
+          "label": "AI In Everyday Systems",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-in-everyday-systems"
+        },
+        {
+          "label": "Prompting icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+        },
+        {
+          "label": "Communicating With AI",
+          "url": "https://www.fortunedigitalequity.org/service-page/communicating-with-ai"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job"
+        },
+        {
+          "label": "Choosing The Right Tool AI For The Job",
+          "url": "https://www.fortunedigitalequity.org/service-page/choosing-the-right-ai-tool-for-the-job"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think"
+        },
+        {
+          "label": "How Does AI Think?",
+          "url": "https://www.fortunedigitalequity.org/service-page/how-does-ai-think"
+        },
+        {
+          "label": "A collage of AI tool logos",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs"
+        },
+        {
+          "label": "AI Effects & Tradeoffs",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-effects-tradeoffs"
+        },
+        {
+          "label": "Logo for Alt AI organization Offline Base",
+          "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools"
+        },
+        {
+          "label": "Alternative, Open & Local AI Tools",
+          "url": "https://www.fortunedigitalequity.org/service-page/alternative-open-local-ai-tools"
+        },
+        {
+          "label": "An illustration of an AI hacker",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        },
+        {
+          "label": "AI Safety In 2026",
+          "url": "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026"
+        },
+        {
+          "label": "A keyboard icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing"
+        },
+        {
+          "label": "Understanding Keyboarding & Mousing",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-keyboarding-mousing"
+        },
+        {
+          "label": "A desktop computer icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers"
+        },
+        {
+          "label": "Understanding Computers",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-computers"
+        },
+        {
+          "label": "The windows logo",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop"
+        },
+        {
+          "label": "Navigating Windows Desktop",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-windows-desktop"
+        },
+        {
+          "label": "A computer folder icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management"
+        },
+        {
+          "label": "Understanding File Management",
+          "url": "https://www.fortunedigitalequity.org/service-page/understanding-file-management"
+        },
+        {
+          "label": "A web browser icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers"
+        },
+        {
+          "label": "Navigating Internet Browsers",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-internet-browsers"
+        },
+        {
+          "label": "A cloud icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud"
+        },
+        {
+          "label": "Navigating the Cloud",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-the-cloud"
+        },
+        {
+          "label": "A resume icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online"
+        },
+        {
+          "label": "Job Searching Online",
+          "url": "https://www.fortunedigitalequity.org/service-page/job-searching-online"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone"
+        },
+        {
+          "label": "Navigating Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/navigating-your-smartphone"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone"
+        },
+        {
+          "label": "Managing Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/managing-your-smartphone"
+        },
+        {
+          "label": "A smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone"
+        },
+        {
+          "label": "Customizing Your Smartphone",
+          "url": "https://www.fortunedigitalequity.org/service-page/customizing-your-smartphone"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features"
+        },
+        {
+          "label": "App Essentials: Smart Features",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-smart-features"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time"
+        },
+        {
+          "label": "App Essentials: Managing Your Time",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-managing-your-time"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication"
+        },
+        {
+          "label": "App Essentials: Contacts & Communication",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-contacts-communication"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely"
+        },
+        {
+          "label": "App Essentials: Navigating Safely",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-navigating-safely"
+        },
+        {
+          "label": "a series of phone app icons",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access"
+        },
+        {
+          "label": "App Essentials: Transactions & Access",
+          "url": "https://www.fortunedigitalequity.org/service-page/app-essentials-transactions-access"
+        },
+        {
+          "label": "a smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism"
+        },
+        {
+          "label": "Smartphone Professionalism",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-professionalism"
+        },
+        {
+          "label": "a smartphone icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake"
+        },
+        {
+          "label": "The Digital Handshake",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-digital-handshake"
+        },
+        {
+          "label": "the 2026 tech fair logo",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit"
+        },
+        {
+          "label": "The Tech Fair Toolkit",
+          "url": "https://www.fortunedigitalequity.org/service-page/the-tech-fair-toolkit"
+        },
+        {
+          "label": "an animation of a smartphone taking a photo",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-essentials"
+        },
+        {
+          "label": "Smartphone Photography Essentials",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-essentials"
+        },
+        {
+          "label": "an animation of a smartphone taking a photo",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-techniques"
+        },
+        {
+          "label": "Smartphone Photography Techniques",
+          "url": "https://www.fortunedigitalequity.org/service-page/smartphone-photography-techniques"
+        },
+        {
+          "label": "the outlook email icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+        },
+        {
+          "label": "Intro to Email",
+          "url": "https://www.fortunedigitalequity.org/service-page/intro-to-email"
+        },
+        {
+          "label": "an icon representing mobile device security",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-mobile-devices"
+        },
+        {
+          "label": "Digital Safety - Mobile Devices",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-mobile-devices"
+        },
+        {
+          "label": "the windows defender icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-computers"
+        },
+        {
+          "label": "Digital Safety - Computers",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-computers"
+        },
+        {
+          "label": "an icon representing online safety",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-online"
+        },
+        {
+          "label": "Digital Safety - Online",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-online"
+        },
+        {
+          "label": "an icon representing email safety",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-email"
+        },
+        {
+          "label": "Digital Safety - Email",
+          "url": "https://www.fortunedigitalequity.org/service-page/digital-safety-email"
+        },
+        {
+          "label": "the microsoft excel icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/intro-to-microsoft-excel"
+        },
+        {
+          "label": "Intro to Microsoft Excel",
+          "url": "https://www.fortunedigitalequity.org/service-page/intro-to-microsoft-excel"
+        },
+        {
+          "label": "the microsoft excel icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-formatting-data"
+        },
+        {
+          "label": "Excel - Formatting Data",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-formatting-data"
+        },
+        {
+          "label": "the microsoft excel icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-organizing-data"
+        },
+        {
+          "label": "Excel - Organizing Data",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-organizing-data"
+        },
+        {
+          "label": "the microsoft excel icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-formulas-functions"
+        },
+        {
+          "label": "Excel - Formulas & Functions",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-formulas-functions"
+        },
+        {
+          "label": "the microsoft excel icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-presenting-data"
+        },
+        {
+          "label": "Excel - Presenting Data",
+          "url": "https://www.fortunedigitalequity.org/service-page/excel-presenting-data"
+        },
+        {
+          "label": "the microsoft word icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/word-structuring-text"
+        },
+        {
+          "label": "Word - Structuring Text",
+          "url": "https://www.fortunedigitalequity.org/service-page/word-structuring-text"
+        },
+        {
+          "label": "the microsoft word icon",
+          "url": "https://www.fortunedigitalequity.org/service-page/word-working-with-text"
+        },
+        {
+          "label": "Word - Working With Text",
+          "url": "https://www.fortunedigitalequity.org/service-page/word-working-with-text"
+        }
+      ]
     },
     {
       "url": "https://www.fortunedigitalequity.org/workshops/staff",
@@ -10175,9 +12666,31 @@
       "reviewed_on": null,
       "rendered_snapshot": {
         "file": "replica-snapshots/page-workshops-staff-bbad03d7.html.gz",
-        "source_sha256": "af6eb1abf138dec9721e0f14bf5ece545b379d410637853e10bf15e3ac566793",
+        "source_sha256": "f0b4efe929133de8cc342f05f852c39afb045ea7af04ec0ae794ec94fe2b7e71",
         "site_revision": 2090
-      }
+      },
+      "source_links": [
+        {
+          "label": "FSTrain@FortuneSociety.org",
+          "url": "mailto:FSTrain@FortuneSociety.org"
+        },
+        {
+          "label": "contact the help desk",
+          "url": "https://jira.fortunesociety.org/servicedesk/customer/portal/4/"
+        },
+        {
+          "label": "click here",
+          "url": "https://thefortunesociety.sharepoint.com/:w:/r/_layouts/15/guestaccess.aspx?guestaccesstoken=hYBJW1ZHqL5BuW0OWgHcE5hObYms1ARXCV3XcuFwmVQ%3D&docid=2_0d3f9f35b55ff426c845db6303d3591a8&rev=1&e=ChvYL6&CID=3e9de689-3ac1-ed91-dfe1-dbfd52e92944"
+        },
+        {
+          "label": "click here",
+          "url": "https://thefortunesociety.sharepoint.com/:w:/r/_layouts/15/Doc.aspx?sourcedoc=%7B1212141B-7EFA-434D-A2EA-0F7A832F9C0E%7D&file=IT%20Training%20Schedule.docx&action=default&mobileredirect=true"
+        },
+        {
+          "label": "submit a support ticket.",
+          "url": "https://jira.fortunesociety.org/servicedesk/customer/portal/4/"
+        }
+      ]
     }
   ]
 }

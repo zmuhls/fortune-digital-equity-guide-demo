@@ -73,7 +73,7 @@ class EvaluationSchemaTests(unittest.TestCase):
     def test_evaluation_schema_version_tracks_shared_prompt_and_review_history(self):
         self.assertEqual(
             evaluation_store.EVALUATION_SCHEMA_VERSION,
-            "014_prompt_activation",
+            "015_single_system_prompt",
         )
         self.assertEqual(evaluation_store.COOKIE_NAME, "__Host-fs_eval")
 
@@ -507,7 +507,7 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn("versionLabel(detail)", javascript)
         self.assertIn('class="conversation-version"', javascript)
         self.assertIn('class="message-version"', javascript)
-        self.assertIn("20260922-ux-v36", html)
+        self.assertIn("20260924-review-v37", html)
         self.assertIn('id="queue-summary"', html)
         self.assertIn('class="conversation-counts${failed', javascript)
         self.assertIn("failed_turn_count", javascript)
@@ -522,11 +522,8 @@ class EvaluationFrontendContractTests(unittest.TestCase):
 
         self.assertIn('--font-sans: -apple-system, BlinkMacSystemFont', css)
         self.assertIn("font-synthesis: none", css)
-        self.assertIn(
-            "grid-template-columns: max-content minmax(128px, 1fr)",
-            css,
-        )
-        self.assertIn(".open-transcript { min-height: 32px", css)
+        self.assertIn(".card-actions { display: grid", css)
+        self.assertIn(".open-transcript { min-height: 44px", css)
         self.assertIn(".card-move {", css)
         self.assertIn("min-height: 32px", css)
 
@@ -570,15 +567,15 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         self.assertIn('id="prompt-lab-tab"', html)
         self.assertIn('id="prompt-lab-panel"', html)
         self.assertIn('tabindex="-1">Prompts</button>', html)
-        self.assertIn("Saved team instructions apply to the next guide message.", html)
+        self.assertIn("Save &amp; apply replaces it for subsequent messages.", html)
         self.assertNotIn(">Prompt Lab<", html)
-        self.assertIn("Full active prompt and boundaries", html)
-        self.assertIn("20260922-ux-v36", html)
+        self.assertIn("Prompt currently sent to the model", html)
+        self.assertIn("20260924-review-v37", html)
         self.assertIn("Describe what changed concisely", html)
         self.assertIn("data-archive-bucket", javascript)
         self.assertIn("async function archiveBucket", javascript)
         self.assertIn("window.confirm", javascript)
-        self.assertIn('version: "2026-08-31-v33"', javascript)
+        self.assertIn('version: "2026-09-23-v37"', javascript)
         self.assertIn(
             'behavior_release: "digital-equity-conversation-grounding"', javascript
         )
@@ -588,11 +585,11 @@ class EvaluationFrontendContractTests(unittest.TestCase):
         )
         self.assertIn('current_variant: "advance_or_name_limit"', javascript)
         self.assertIn('current_variant: "freshest_specific_sitewide"', javascript)
-        self.assertIn("Saved team instructions apply to the next guide message.", html)
+        self.assertIn("Previous module proposals", html)
         self.assertIn("module-diff-columns", css)
         self.assertIn("Current ·", javascript)
         self.assertIn('class="compiled-prompt-card"', javascript)
-        self.assertIn("Live prompt · read only", javascript)
+        self.assertIn("Exact saved text used for guide messages.", javascript)
         self.assertIn('id="shared-prompt-form"', html)
         self.assertIn('api("/api/evaluation/prompt-draft"', javascript)
         self.assertIn("Save &amp; apply</button>", html)

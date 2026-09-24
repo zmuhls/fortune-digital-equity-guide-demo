@@ -268,13 +268,11 @@
   }
 
   function distinctDestination(data) {
-    const currentUrl = window.FortuneMockSite.canonicalUrl(currentPage()?.url);
     const sourceRows = Array.isArray(data?.sources) ? data.sources : [];
     const relatedRows = Array.isArray(data?.related) ? data.related : [];
-    const rows = ["site", "staff"].includes(data?.retrieval_scope)
-      ? [...sourceRows, ...relatedRows]
-      : [...relatedRows, ...sourceRows];
-    const found = rows.find(row => row?.url && window.FortuneMockSite.canonicalUrl(row.url) !== currentUrl && window.FortuneMockSite.isKnown(row.url));
+    // Keep the model's selected source, even when it is the current page.
+    // Page-scoped answers must not substitute a loosely related destination.
+    const found = [...sourceRows, ...relatedRows].find(row => row?.url && window.FortuneMockSite.isKnown(row.url));
     if (found) {
       const title = Core.destinationLabel(found.title);
       return { url: found.url, title };

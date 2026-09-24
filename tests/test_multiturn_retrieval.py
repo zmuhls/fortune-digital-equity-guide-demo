@@ -14,6 +14,22 @@ HOME = {"url": "https://www.fortunedigitalequity.org/"}
 
 
 class MultiTurnRetrievalTests(unittest.TestCase):
+    def test_followup_can_read_the_actual_class_page_named_by_the_guide(self):
+        history = [
+            {"role": "user", "content": "How can I register?"},
+            {"role": "assistant", "content": "Choose a class on the calendar."},
+            {"role": "user", "content": "How about tomorrow?"},
+            {"role": "assistant", "content": "Tomorrow is Capstone Activity Using AI, at 2 PM."},
+        ]
+        _, sources = server.retrieval_plan("whaat's that about", HOME, history)
+        capstone = server.source_id_for_path("/service-page/capstone-activity-using-ai")
+        self.assertIn(capstone, [source["id"] for source in sources])
+        prompt = server.retrieval_prompt("whaat's that about", sources, conversation_history=history)
+        self.assertIn("team-based challenge", prompt.lower())
+        self.assertIn("evaluate their results", prompt.lower())
+        # Prior assistant text only locates a real page; it is not source prose.
+        self.assertNotIn("Tomorrow is Capstone", " ".join(source.get("blocks", [""])[0] for source in sources))
+
     def test_frozen_suite_has_episode_and_context_coverage(self):
         document = run_website_guide_eval.load_json(
             ROOT / "evals" / "website-guide" / "multiturn-cases.json"

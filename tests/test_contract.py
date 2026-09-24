@@ -803,6 +803,12 @@ class StagedRetrievalTests(unittest.TestCase):
                 )
                 for grounded_line in records[0]["content"].splitlines():
                     source_text = server.searchable_text(source)
+                    if source["id"] == "calendar" and " [time_status=" in grounded_line:
+                        grounded_line, status = grounded_line.rsplit(" [time_status=", 1)
+                        event = next(row for row in source["calendar_events"]
+                                     if row["label"] == grounded_line)
+                        reference_time = server.datetime.fromisoformat(records[0]["session_time_status_as_of"])
+                        self.assertEqual(status, server.calendar_event_timing(event, reference_time)["status"] + "]")
                     if grounded_line.endswith("…"):
                         self.assertIn(grounded_line[:-1].rstrip(), source_text)
                     else:
@@ -1855,12 +1861,13 @@ class ResponseContractTests(unittest.TestCase):
             r"\.chat-copy\s*\{[^}]*white-space:\s*pre-wrap",
         )
 
-    def test_every_answer_has_source_related_route_handoff_and_continuation(self):
+    def test_every_answer_keeps_selected_source_and_only_source_based_related_links(self):
         retrieved = server.retrieve_sources("free laptop")
         raw = model_response(retrieved[0], "free laptop")
         result = server.parse_model_selection(raw, "free laptop", retrieved)
         self.assertTrue(result["sources"])
-        self.assertTrue(result["related"])
+        captured_links = {link["url"] for link in retrieved[0].get("source_links", [])}
+        self.assertTrue(all(row["url"] in captured_links for row in result["related"]))
         self.assertEqual(result["handoff_url"], server.CONTACT_URL)
         self.assertEqual(result["continuation"]["label"], "Ask the live guide")
 
@@ -2512,8 +2519,65 @@ class ResponseContractTests(unittest.TestCase):
     def test_related_routes_use_only_trusted_urls(self):
         for query in ("class", "laptop", "tutoring", "practice", "something else"):
             related = server.related_links(query, server.retrieve_sources(query))
-            self.assertTrue(related)
             self.assertTrue(all(server.canonical_url(item["url"]) for item in related))
+
+    def test_related_routes_never_invent_registration_or_fallback_destinations(self):
+        self.assertEqual(server.related_links("classes registration", []), [])
+        source = {**server.SOURCE_BY_ID["calendar"], "source_links": []}
+        self.assertEqual(server.related_links("classes registration", [source]), [])
+        source["source_links"] = [{"label": "Class Locations", "url": server.CONTACT_URL}]
+        self.assertEqual(server.related_links("classes registration", [source]), [
+            {"title": "Class Locations", "url": server.CONTACT_URL},
+        ])
+
+    def test_calendar_source_pick_is_not_replaced_by_contact_action(self):
+        calendar = server.SOURCE_BY_ID["calendar"]
+        response = server.parse_model_selection(
+            json.dumps({"pick": "calendar", "answer": "Select a date on the calendar to see its classes."}),
+            "Where and when are current classes?",
+            [calendar, server.SOURCE_BY_ID["contact"]],
+            retrieval_scope="page",
+        )
+        self.assertEqual([row["url"] for row in response["sources"]], [server.CALENDAR_URL])
+        self.assertFalse(any(row["title"] == "Registration details" for row in response["related"]))
+
+    def test_provider_evidence_keeps_actual_signup_link_with_its_label(self):
+        contact = {**server.SOURCE_BY_ID["contact"], "source_links": [
+            {"label": "REGISTER HERE", "url": server.CALENDAR_URL},
+            {"label": "invalid", "url": "javascript:alert(1)"},
+        ]}
+        records = json.loads(server.retrieval_prompt(
+            "How do I register?", [contact]
+        ).split("\nCANDIDATE RECORDS:\n", 1)[1])
+        self.assertEqual(records[0]["links"], [
+            {"label": "REGISTER HERE", "url": server.CALENDAR_URL},
+        ])
+
+    def test_calendar_evidence_preserves_signup_and_locations_with_schedule(self):
+        calendar = {**server.SOURCE_BY_ID["calendar"], "calendar_events": []}
+        text = server.source_excerpt(calendar, "How do I register for those?", limit=6000)
+        self.assertIn("Class Signup", text)
+        self.assertIn("click a date to see available classes", text)
+        self.assertIn("Long Island City (Main Office)", text)
+        self.assertIn("29-76 Northern Boulevard", text)
+
+    def test_registration_follow_up_reaches_model_with_calendar_action_evidence(self):
+        harness = StagedRetrievalTests()
+        history = [
+            {"role": "user", "content": "Where and when are current classes?"},
+            {"role": "assistant", "content": "The calendar lists the current classes."},
+        ]
+        response, calls = harness.dispatch_chat(
+            "How can I register for those?", server.CALENDAR_URL,
+            history=history, model_source_id="calendar",
+            model_answer="Select the class date on the calendar, then use its Register button.",
+        )
+        self.assertEqual(response["status"], 200)
+        self.assertEqual([row["id"] for row in response["payload"]["sources"]], ["calendar"])
+        records = harness.retrieval_records(calls)
+        calendar = next(record for record in records if record["id"] == "calendar")
+        self.assertIn("Class Signup", calendar["content"])
+        self.assertIn({"label": "REGISTER", "url": server.CALENDAR_URL}, calendar["links"])
 
     def test_em_dash_normalization_does_not_leave_space_before_comma(self):
         self.assertEqual(server.clip_words("Great — a good starting point.", 20), "Great, a good starting point.")

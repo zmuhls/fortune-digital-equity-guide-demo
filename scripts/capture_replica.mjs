@@ -1328,7 +1328,12 @@ export function sanitizeDocument() {
     }
     if (source && (source.protocol === "https:" || source.protocol === "http:")) {
       const link = document.createElement("a");
-      link.href = source.href;
+      const needsParentRuntime = source.hostname === "members.wixapps.net" || (
+        source.hostname === "static.parastorage.com" &&
+        source.pathname.startsWith("/services/editor-elements-library/")
+      );
+      link.href = needsParentRuntime ? liveSourceHref : source.href;
+      if (needsParentRuntime) link.setAttribute("data-replica-live-action", "true");
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       const label = frame.title

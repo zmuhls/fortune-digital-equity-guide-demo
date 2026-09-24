@@ -1031,13 +1031,8 @@
     distinctDestination(payload) {
       const sources = Array.isArray(payload?.sources) ? payload.sources : [];
       const related = Array.isArray(payload?.related) ? payload.related : [];
-      const rows = ["site", "staff"].includes(payload?.retrieval_scope)
-        ? [...sources, ...related]
-        : [...related, ...sources];
-      const current = comparableUrl(window.location.href);
-      return rows.find((item) => item?.title
-        && isFortuneLink(item.url)
-        && comparableUrl(item.url) !== current) || null;
+      return [...sources, ...related].find((item) => item?.title
+        && isFortuneLink(item.url)) || null;
     }
 
     addAssistantContent(container, turn) {

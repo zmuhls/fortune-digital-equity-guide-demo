@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "hash_kind": "sha256-of-artifact-bytes",
-  "current_policy_id": "2026-09-22-v36",
+  "current_policy_id": "2026-09-23-v37",
   "current_policy_source": "../prompt_policy.py",
-  "current_policy_source_sha256": "e538812bd3bf5617d74408ef5c6350467f34d0d6cbc2a348724dd7e18dc211ef",
-  "current_compiled_prompt_sha256": "2caee476f6da80de8ad90093a2d99fc7c1edc3e2b656dd9907d43bdadff0ccfe",
+  "current_policy_source_sha256": "30491805ac7ff326419859eac6700f801e808f0d1488fee0ed00f42fe07c9f58",
+  "current_compiled_prompt_sha256": "053024fdfde12b8513214671e01f25b3d26db3e7588e01e654f30387c34bfe9e",
   "versions": [
     {
       "policy_id": "2026-07-24-v1-reconstructed",
@@ -396,6 +396,16 @@
       "source_state": "Authored from user-requested September 22 UX and response-path audit",
       "artifact": "versions/2026-09-22-v36.md",
       "artifact_sha256": "445f76323800714992c87f9c24bc0a6f33f9d6226d99722de35f4d6118ed3ec2",
+      "reconstructed": false
+    },
+    {
+      "policy_id": "2026-09-23-v37",
+      "label": "One complete shared system prompt",
+      "source_state": "User-requested correction of conflicting complete prompts and calendar actions: activate one reviewed prompt, follow captured signup links, select supporting candidate IDs, and preserve prior team revisions in history",
+      "source_date": "2026-09-23",
+      "behavior_release": "digital-equity-conversation-grounding",
+      "artifact": "versions/2026-09-23-v37.md",
+      "artifact_sha256": "59e38bc18045f31aba236be690e9e3ec76fa684f855c8a2d062f9b9de9526e49",
       "reconstructed": false
     }
   ]

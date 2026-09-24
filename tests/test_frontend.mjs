@@ -250,7 +250,7 @@ async function waitFor(predicate, message = "frontend state did not settle") {
   assert.fail(message);
 }
 
-async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false, captureMode = "none" } = {}) {
+async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false, captureMode = "none", pageUrl = "https://www.fortunedigitalequity.org/" } = {}) {
   const document = new FakeDocument();
   const panel = document.register("#guide-panel", new FakeElement("section", document));
   const toggle = document.register("#guide-toggle", new FakeElement("button", document));
@@ -298,7 +298,7 @@ async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelE
   const currentPage = {
     id: "home",
     title: "Digital Equity home",
-    url: "https://www.fortunedigitalequity.org/",
+    url: pageUrl,
     authority: "answer",
     status: 200,
   };
@@ -382,7 +382,7 @@ class FakeShadowRoot extends FakeElement {
   }
 }
 
-async function wixHarness({ chatPayload, chatError, chatResponses = [], captureMode = "none" } = {}) {
+async function wixHarness({ chatPayload, chatError, chatResponses = [], captureMode = "none", pageUrl = "https://www.fortunedigitalequity.org/" } = {}) {
   const document = new FakeDocument();
   const storage = new FakeStorage();
   const chatRequests = [];
@@ -409,8 +409,8 @@ async function wixHarness({ chatPayload, chatError, chatResponses = [], captureM
   };
   const window = {
     location: {
-      href: "https://www.fortunedigitalequity.org/",
-      pathname: "/",
+      href: pageUrl,
+      pathname: new URL(pageUrl).pathname,
     },
     sessionStorage: storage,
     crypto: { randomUUID: () => "00000000-0000-4000-8000-000000000002" },
@@ -742,6 +742,36 @@ const validModelAnswer = Object.freeze({
   sources: [],
   related: [],
   choices: [],
+});
+
+test("Pages and Wix link the selected calendar, including page-scoped and same-page answers", async () => {
+  const calendar = "https://www.fortunedigitalequity.org/calendar";
+  for (const retrieval_scope of ["page", "site"]) {
+    for (const pageUrl of ["https://www.fortunedigitalequity.org/", calendar]) {
+      const chatPayload = {
+        ...validModelAnswer, retrieval_scope,
+        sources: [{url: calendar, title: "Calendar"}],
+        related: [{url: "https://www.fortunedigitalequity.org/contact", title: "Registration details"}],
+      };
+      const pages = await pagesHarness({chatPayload, pageUrl});
+      pages.input.value = "Where and when are current classes?";
+      pages.input.dispatchEvent(keyEvent("Enter"));
+      await waitFor(() => pages.chatRequests.length === 1 && !pages.window.FortuneGuide.state().answering);
+      const pageLinks = descendants(pages.transcript).filter(item => item.classList.contains("chat-destination"));
+      assert.equal(pageLinks.length, 1);
+      assert.equal(new URL(pageLinks[0].href).pathname, "/calendar");
+      assert.equal(pageLinks[0].textContent, "Go to Calendar");
+
+      const wix = await wixHarness({chatPayload, pageUrl});
+      wix.input.value = "Where and when are current classes?";
+      wix.input.dispatchEvent(keyEvent("Enter"));
+      await waitFor(() => wix.chatRequests.length === 1 && !wix.guide.answering);
+      const wixLinks = descendants(wix.transcript).filter(item => item.classList.contains("destination"));
+      assert.equal(wixLinks.length, 1);
+      assert.equal(wixLinks[0].href, calendar);
+      assert.equal(wixLinks[0].textContent, "Go to Calendar");
+    }
+  }
 });
 
 test("Pages and Wix accept one Return submission and preserve model provenance", async () => {

@@ -43,8 +43,20 @@ SHARED_ASSETS = (
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
-REPLICA_WIDGET_CSS_VERSION = "20260923-responsive-menu-v1"
-REPLICA_SHELL_JS_VERSION = "20260923-responsive-menu-v1"
+REPLICA_WIDGET_CSS_VERSION = "20260924-navigation-v2"
+REPLICA_SHELL_JS_VERSION = "20260924-navigation-v2"
+# Wix stores these public anchor destinations outside the rendered link href.
+# Keep the verified native fragment when publishing its inert capture. Targets
+# are ids retained in the reviewed snapshots (and checked in the link audit).
+SOURCE_ANCHOR_TARGETS = {
+    ("/", "anchors-mshp66hi2"): "comp-mbzt50my",
+    ("/", "anchors-mshp66hv1"): "comp-mscrj860",
+    ("/", "anchors-mshp66j83"): "comp-mshp66eu",
+    ("/contact", "dataItem-msmg1al0"): "faqs",
+    ("/calendar", "dataItem-ltg15sf7"): "locations",
+    ("/support", "anchors-mse2i87m4"): "locations",
+}
+SOURCE_FRAGMENT_ALIASES = {("/calendar", "class-locations"): "locations"}
 FORBIDDEN_SNAPSHOT_PATTERNS = (
     re.compile(r"<\s*script\b", re.IGNORECASE),
     re.compile(r"<\s*(?:object|embed|iframe|form|template)\b", re.IGNORECASE),
@@ -1844,7 +1856,7 @@ def render_visual_snapshot_page(
     page_id = route["pageId"]
     route_by_path = {candidate["path"]: candidate for candidate in routes}
 
-    def rewrite_internal_href(match: re.Match[str]) -> str:
+    def rewrite_internal_href(match: re.Match[str], anchor_id: str = "") -> str:
         prefix, value, suffix = match.groups()
         parsed = urllib.parse.urlsplit(html.unescape(value))
         path = re.sub(r"/+", "/", parsed.path or "/")
@@ -1855,13 +1867,46 @@ def render_visual_snapshot_page(
         destination = static_href(asset_base, path)
         if parsed.query:
             destination += "?" + parsed.query
-        if parsed.fragment:
-            destination += "#" + parsed.fragment
+        fragment = SOURCE_ANCHOR_TARGETS.get((path, anchor_id), parsed.fragment)
+        fragment = SOURCE_FRAGMENT_ALIASES.get((path, fragment), fragment)
+        if fragment:
+            destination += "#" + fragment
         return f"{prefix}{html.escape(destination, quote=True)}{suffix}"
 
+    def rewrite_navigation_tag(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        # These controls intentionally leave the inert mirror for registration,
+        # forms, and other Wix interactions. Rewriting them to a mirrored route
+        # turns a real action into a silent reload of the same static page.
+        if re.search(r"\bdata-(?:replica-)?live-action\s*=", tag, re.IGNORECASE):
+            return tag
+        href = re.search(r'''\bhref\s*=\s*(["'])(.*?)\1''', tag, re.IGNORECASE)
+        if href:
+            parsed = urllib.parse.urlsplit(html.unescape(href.group(2)))
+            # Wix's frame endpoints depend on the parent page's runtime (and
+            # often an expiring instance). A standalone map/carousel/member
+            # frame is not a public destination; use its exact source page.
+            runtime_frame = (
+                parsed.hostname == "members.wixapps.net"
+                or parsed.hostname == "static.parastorage.com"
+                and parsed.path.startswith("/services/editor-elements-library/")
+            )
+            if runtime_frame:
+                replacement = html.escape(source_url, quote=True)
+                tag = tag[:href.start(2)] + replacement + tag[href.end(2):]
+                return tag[:-1] + ' data-replica-live-action="true">'
+        anchor = re.search(r'''\bdata-anchor\s*=\s*(["'])(.*?)\1''', tag, re.IGNORECASE)
+        anchor_id = html.unescape(anchor.group(2)) if anchor else ""
+        return re.sub(
+            r'''(href\s*=\s*["'])(https://(?:www\.)?fortunedigitalequity\.org[^"']*)(["'])''',
+            lambda href_match: rewrite_internal_href(href_match, anchor_id),
+            tag,
+            flags=re.IGNORECASE,
+        )
+
     rendered = re.sub(
-        r'''(href\s*=\s*["'])(https://(?:www\.)?fortunedigitalequity\.org[^"']*)(["'])''',
-        rewrite_internal_href,
+        r'''<a\b(?:[^>"']|"[^"]*"|'[^']*')*>''',
+        rewrite_navigation_tag,
         snapshot_html,
         flags=re.IGNORECASE,
     )
@@ -1885,6 +1930,18 @@ def render_visual_snapshot_page(
         flags=re.IGNORECASE,
     )
 
+    # Captures originally forced static menus into document flow. The mirror's
+    # native disclosures now use positioned dropdowns, so leaving this inline
+    # !important declaration expands the nav row and pushes CONTACT offscreen.
+    rendered = re.sub(
+        r"<(?:li|ul)\b(?=[^>]*data-replica-static-menu-(?:item|content))[^>]*>",
+        lambda match: re.sub(
+            r"\bposition:\s*static\s*!important;?", "", match.group(0), flags=re.IGNORECASE
+        ),
+        rendered,
+        flags=re.IGNORECASE,
+    )
+
     def close_static_disclosure(match: re.Match[str]) -> str:
         tag = match.group(0)
         return re.sub(
@@ -1900,6 +1957,24 @@ def render_visual_snapshot_page(
         rendered,
         flags=re.IGNORECASE,
     )
+    if route["path"] == CALENDAR_ROUTE_PATH:
+        captured_on = str((route.get("page") or {}).get("source_captured_at", "")).split("T")[0]
+        dated_note = f"Schedule captured {html.escape(captured_on)}. " if captured_on else "Captured schedule. "
+        handoff = (
+            '<p data-replica-live-calendar-note="true" '
+            'style="margin:0;padding:12px 16px;font:16px/1.4 Arial,sans-serif;background:#eef6fa;color:#281a39">'
+            + dated_note
+            + f'<a href="{CALENDAR_SOURCE_URL}" target="_blank" rel="noopener noreferrer" '
+            'data-replica-live-action="true" style="color:inherit;font-weight:700;text-decoration:underline">'
+            "Open Fortune’s calendar for current availability and registration.</a></p>"
+        )
+        rendered = re.sub(
+            r'''<div\b(?=[^>]*data-hook=["']DailyAgenda-wrapper["'])[^>]*>''',
+            lambda match: match.group(0) + handoff,
+            rendered,
+            count=1,
+            flags=re.IGNORECASE,
+        )
     rendered = re.sub(
         r"<html\b([^>]*)>",
         rf'<html\1 {REPLICA_MARKER} data-fortune-visual-mirror="true">',
@@ -1942,6 +2017,62 @@ def expected_files(routes: list[dict[str, str]]) -> set[pathlib.PurePosixPath]:
         else:
             expected.add(pathlib.PurePosixPath(route["path"].strip("/")) / "index.html")
     return expected
+
+
+class _PublishedLinkParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.ids: set[str] = set()
+        self.destinations: list[tuple[str, bool, bool]] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if values.get("id"):
+            self.ids.add(str(values["id"]))
+        attribute = "href" if tag in {"a", "link"} else "src" if tag in {"img", "script"} else ""
+        if attribute and values.get(attribute):
+            live_action = any(key in values for key in ("data-live-action", "data-replica-live-action"))
+            self.destinations.append((str(values[attribute]), tag == "a", live_action))
+
+
+def validate_navigation(site_root: pathlib.Path) -> dict[str, int]:
+    """Verify actual generated destinations, including cross-page fragments.
+
+    A successful HTTP response alone misses links that just reload an inert
+    form or target a nonexistent anchor. Check those before publishing too.
+    """
+
+    site_root = site_root.resolve()
+    documents: dict[pathlib.Path, _PublishedLinkParser] = {}
+    for path in site_root.rglob("index.html"):
+        parser = _PublishedLinkParser()
+        parser.feed(path.read_text(encoding="utf-8"))
+        documents[path.resolve()] = parser
+    checked = live_actions = 0
+    for path, document in documents.items():
+        for href, is_anchor, live_action in document.destinations:
+            parsed = urllib.parse.urlsplit(href)
+            if live_action:
+                live_actions += 1
+                if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                    raise BuildError(f"live action points back into static mirror: {path.relative_to(site_root)}: {href}")
+            if parsed.scheme or parsed.netloc:
+                continue
+            target = (
+                site_root / urllib.parse.unquote(parsed.path).lstrip("/")
+                if parsed.path.startswith("/")
+                else path.parent / urllib.parse.unquote(parsed.path)
+            ).resolve() if parsed.path else path
+            if target.is_dir():
+                target /= "index.html"
+            if not target.is_relative_to(site_root.resolve()) or not target.is_file():
+                raise BuildError(f"missing local navigation/resource target: {path.relative_to(site_root)}: {href}")
+            if is_anchor and parsed.fragment and target in documents:
+                fragment = urllib.parse.unquote(parsed.fragment)
+                if fragment not in documents[target].ids:
+                    raise BuildError(f"missing navigation fragment: {path.relative_to(site_root)}: {href}")
+            checked += 1
+    return {"validated_local_links": checked, "validated_live_actions": live_actions}
 
 
 def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> dict[str, int]:
@@ -1987,6 +2118,7 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
         "shared_assets": len(SHARED_ASSETS),
         "allowlisted_root_files": len(SHARED_ASSETS) + 1 + (1 if routes else 0),
         "total_files": len(actual),
+        **validate_navigation(site_root),
     }
 
 

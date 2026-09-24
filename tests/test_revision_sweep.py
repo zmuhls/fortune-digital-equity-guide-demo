@@ -49,6 +49,39 @@ class RevisionSweepTests(unittest.TestCase):
         self.assertIn("current event", content)
         self.assertNotIn("obsolete event", content)
 
+    def test_calendar_excludes_ended_today_from_upcoming_but_retains_requested_history(self):
+        source = {**server.SOURCE_BY_ID["calendar"], "calendar_events": [
+            {"date": "2026-09-23", "label": "September 23: Completed class · 2:00 pm (1 hr 30 min)"},
+            {"date": "2026-09-24", "label": "September 24: Future class · 2:00 PM - 3:30 PM"},
+        ]}
+        now = datetime(2026, 9, 23, 22, 59, tzinfo=server.SITE_TIMEZONE)
+        current = "\n".join(server.calendar_evidence_blocks(source, "Where and when are current classes?", now=now))
+        self.assertNotIn("Completed class", current)
+        self.assertIn("Future class", current)
+        self.assertIn("time_status=future", current)
+        for question in ("What classes were today?", "Show the full September calendar", "What was on September 23?"):
+            with self.subTest(question=question):
+                requested = "\n".join(server.calendar_evidence_blocks(source, question, now=now))
+                self.assertIn("Completed class", requested)
+                self.assertIn("time_status=ended", requested)
+        records = json.loads(server.retrieval_prompt(
+            "Where and when are current classes?", [source], current_time=now.isoformat()
+        ).split("\nCANDIDATE RECORDS:\n", 1)[1])
+        self.assertNotIn("Completed class", records[0]["content"])
+        self.assertEqual(records[0]["session_time_status_as_of"], "2026-09-23T22:59-04:00")
+
+    def test_calendar_time_status_preserves_unknown_duration_and_source_ranges(self):
+        event = {"date": "2026-09-23", "label": "Workshop · 2:00 PM - 3:30 PM"}
+        before = datetime(2026, 9, 23, 13, 59, tzinfo=server.SITE_TIMEZONE)
+        during = datetime(2026, 9, 23, 14, 30, tzinfo=server.SITE_TIMEZONE)
+        after = datetime(2026, 9, 23, 15, 30, tzinfo=server.SITE_TIMEZONE)
+        self.assertEqual(server.calendar_event_timing(event, before)["status"], "future")
+        self.assertEqual(server.calendar_event_timing(event, during)["status"], "in_progress")
+        self.assertEqual(server.calendar_event_timing(event, after)["status"], "ended")
+        unknown_end = server.calendar_event_timing({**event, "label": "Workshop · Starts 2:00 PM"}, after)
+        self.assertEqual(unknown_end["status"], "started_end_unknown")
+        self.assertIsNone(unknown_end["ends_at"])
+
     def test_calendar_status_is_stale_after_ttl(self):
         cache = LiveCalendarCache(ttl_seconds=60, fetcher=lambda _: {"id": "calendar"})
         with patch("live_calendar.time.monotonic", return_value=100):
@@ -64,21 +97,28 @@ class RevisionSweepTests(unittest.TestCase):
         self.assertLess(excerpt.index("Contact the team"), excerpt.index("Volunteers"))
         self.assertLess(excerpt.index("Volunteers"), excerpt.index("Apply here"))
 
-    def test_gateway_uses_candidate_enum_and_one_request(self):
+    def test_gateway_requests_json_object_with_history_in_one_request(self):
         prompt = server.retrieval_prompt("Courses", [server.SOURCE_BY_ID["page-opportunities-34b5847f"]])
         reply = {"model": "z-ai/glm-5.3-flash", "choices": [{
             "message": {"content": '{"pick":"page-opportunities-34b5847f","answer":"A source-backed answer."}'},
             "finish_reason": "stop"}], "usage": {}}
+        messages = [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": "Where and when are current classes?"},
+            {"role": "assistant", "content": "The calendar lists current classes."},
+            {"role": "user", "content": "How can I register?"},
+        ]
         with patch.object(server, "CAIL_KEY", "synthetic-key"), \
              patch.object(server.urllib.request, "urlopen", return_value=io.BytesIO(json.dumps(reply).encode())) as call:
-            result = server.model_completion([{"role": "system", "content": prompt}])
+            result = server.model_completion(messages)
         self.assertEqual(result["provider"], "cail")
         self.assertEqual(call.call_count, 1)
         payload = json.loads(call.call_args.args[0].data)
         self.assertEqual(payload["model"], "glm-5.3-flash")
         self.assertEqual(payload["reasoning"]["effort"], "low")
         self.assertFalse(payload["provider"]["allow_fallbacks"])
-        self.assertNotIn("response_format", payload)
+        self.assertEqual(payload["response_format"], {"type": "json_object"})
+        self.assertEqual(payload["messages"], messages)
 
     def test_gateway_failure_never_starts_a_second_generation(self):
         with patch.object(server, "CAIL_KEY", "synthetic-key"), \

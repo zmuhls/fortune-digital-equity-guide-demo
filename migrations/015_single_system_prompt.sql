@@ -1,15 +1,25 @@
-# Current prompt policy: 2026-09-23-v37
+-- Correct the former base-plus-complete-draft composition once. The current
+-- reviewed prompt replaces that composition as a new, active shared revision.
+-- Existing prompt bodies and all conversation/evaluation records are preserved.
+LOCK TABLE shared_prompt_drafts IN SHARE ROW EXCLUSIVE MODE;
 
-Display version: **v1.37**.
+-- Retain the exact previous body even if an older deployment missed its initial
+-- history row. Existing append-only entries are never updated or deleted.
+INSERT INTO shared_prompt_draft_revisions (
+    scope_key, release_number, edit_number, body, change_note,
+    actor_slot, recorded_at
+)
+SELECT scope_key, release_number, edit_number, body, change_note,
+       updated_by, updated_at
+FROM shared_prompt_drafts
+WHERE scope_key = 'shared'
+ON CONFLICT (scope_key, release_number, edit_number) DO NOTHING;
 
-## Change log
-
-Use one complete system prompt for each model request. The reviewed first half of v1.36 is the baseline, with source-linked actions and explicit supporting-candidate selection added after the calendar registration audit. Migration 015 preserves the previous shared prompt in append-only history and activates this text as a new revision. Subsequent Save & apply actions replace the complete prompt; they never append another policy. The Prompts preview and model request use the same compilation function.
-
-## Compiled prompt
-
-```text
-You are the AI Website Guide for the Digital Equity site, not a staff member, counselor, case manager, or tutor. If asked who you are, say that in one short sentence. Never call this the Fortune Society site.
+WITH activated AS (
+    UPDATE shared_prompt_drafts
+    SET release_number = 1,
+        edit_number = GREATEST(edit_number + 1, 37),
+        body = $system_prompt$You are the AI Website Guide for the Digital Equity site, not a staff member, counselor, case manager, or tutor. If asked who you are, say that in one short sentence. Never call this the Fortune Society site.
 
 Help people understand and navigate current public information about Digital Equity classes, the calendar, devices, individual support, FAQs, and contact routes. You may explain supplied instructions, but cannot enroll or book, access accounts, process requests, decide eligibility, or provide case management. When human action is needed, give the source-backed next step.
 
@@ -31,5 +41,20 @@ Use the best current candidate from anywhere on the site. The active page matter
 
 Answer in the participant's language when you can do so reliably. Keep official program names unchanged.
 
-Return only JSON: {"pick":"<candidate ID or ASK>","answer":"<direct response>"}. With no candidate records, use ASK and put the direct conversational response in answer.
-```
+Return only JSON: {"pick":"<candidate ID or ASK>","answer":"<direct response>"}. With no candidate records, use ASK and put the direct conversational response in answer.$system_prompt$,
+        change_note = 'v1.37 deployment: use one reviewed system prompt with source-linked actions; retain previous team edits in history.',
+        version = version + 1,
+        activated_version = version + 1,
+        updated_by = 'admin',
+        updated_at = NOW()
+    WHERE scope_key = 'shared'
+    RETURNING scope_key, release_number, edit_number, body, change_note,
+              updated_by, updated_at
+)
+INSERT INTO shared_prompt_draft_revisions (
+    scope_key, release_number, edit_number, body, change_note,
+    actor_slot, recorded_at
+)
+SELECT scope_key, release_number, edit_number, body, change_note,
+       updated_by, updated_at
+FROM activated;

@@ -424,13 +424,11 @@ def openrouter_completion(messages):
 
 
 def cail_completion(messages):
-    """One gateway generation using the model's supported text interface."""
-    prompt = messages[0]["content"]
-    records = json.loads(prompt.rsplit("\nCANDIDATE RECORDS:\n", 1)[1])
-    candidate_ids = [SELECTOR_ASK, *[r["id"] for r in records]]
+    """Request a JSON object so every turn retains its model-selected source."""
     payload = {
         "model": CAIL_MODEL, "messages": messages, "stream": False,
         "temperature": 0, "max_tokens": max(4096, MODEL_NUM_PREDICT),
+        "response_format": {"type": "json_object"},
         "reasoning": {"effort": "low", "exclude": True},
         "provider": {"allow_fallbacks": False, "sort": "throughput"},
     }
@@ -453,12 +451,8 @@ def cail_completion(messages):
     content = (choice.get("message") or {}).get("content") or ""
     if not str(content).strip():
         raise RuntimeError("CAIL gateway returned no content")
-    # GLM-5.3-Flash supports text generation and reasoning through CAIL, but
-    # does not advertise structured-output capability. The prompt still asks
-    # for JSON and the normal response parser validates the selected ID.
-    # Keeping the allowed IDs here makes that transport boundary explicit.
-    if not candidate_ids:
-        raise RuntimeError("CAIL gateway received no candidate IDs")
+    # JSON-object mode is supported independently of strict JSON Schema. The
+    # existing parser validates the selected ID without another generation.
     usage = data.get("usage") or {}
     return {
         "provider": "cail", "model": str(data.get("model") or CAIL_MODEL)[:120],
@@ -568,6 +562,7 @@ def build_sources():
                 source["blocks"] = page_blocks
                 source["facts"] = []
             source["internal_links"] = page.get("internal_links", [])
+            source["source_links"] = page.get("source_links", [])
             source["lastmod"] = page.get("lastmod", "")
             source["site_index_id"] = page.get("id")
             continue
@@ -1580,11 +1575,30 @@ def retrieve_conversation_sources(question, history=None, limit=MAX_RETRIEVED):
             previous = ranked.get(source["url"])
             if previous is None or candidate[:3] > previous[:3]:
                 ranked[source["url"]] = candidate
-    return [
+    result = [
         row[3]
         for row in sorted(ranked.values(), key=lambda row: (-row[0], -row[1], -row[2]))
         [:limit]
     ]
+    # A visitor can refer to the class the guide just named without repeating
+    # its title. Resolve only exact titles of actual indexed pages; never add
+    # model-authored claims to the evidence or let them outrank the new request.
+    previous_answer = next((str(item.get("content") or "") for item in reversed(list(history or []))
+                            if item.get("role") == "assistant"), "")
+    answer_words = " " + " ".join(tokens(previous_answer, keep_stopwords=True)) + " "
+    mentioned = []
+    for source in ANSWER_SOURCES:
+        title_words = tokens(clean_source_title(source), keep_stopwords=True)
+        if len(title_words) >= 2 and " " + " ".join(title_words) + " " in answer_words:
+            mentioned.append(source)
+    for source in mentioned[:3]:
+        if any(row["id"] == source["id"] for row in result):
+            continue
+        if len(result) >= limit and len(result) > 1:
+            result.pop()
+        if len(result) < limit:
+            result.append(source)
+    return result
 
 
 def conversation_evidence_query(question, history=None):
@@ -1615,13 +1629,61 @@ _CALENDAR_MONTH_NAMES = {
 }
 
 
-def calendar_evidence_blocks(source, query, today=None):
+def calendar_event_timing(event, now):
+    """Compute session status only from its recorded date, times, and duration."""
+
+    try:
+        event_date = date.fromisoformat(str(event.get("date") or ""))
+    except ValueError:
+        return {"status": "unknown"}
+    label = str(event.get("label") or "")
+    clocks = list(re.finditer(r"\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*([ap])m\b", label, re.I))
+    if not clocks:
+        return {"status": "past_date" if event_date < now.date() else "time_unknown"}
+
+    def timestamp(match):
+        hour = int(match.group(1)) % 12 + (12 if match.group(3).lower() == "p" else 0)
+        return datetime(event_date.year, event_date.month, event_date.day,
+                        hour, int(match.group(2) or 0), tzinfo=SITE_TIMEZONE)
+
+    start = timestamp(clocks[0])
+    end = None
+    if len(clocks) > 1 and re.search(r"[-–—]|\bto\b", label[clocks[0].end():clocks[1].start()], re.I):
+        end = timestamp(clocks[1])
+        if end < start:
+            end += timedelta(days=1)
+    else:
+        duration = re.search(r"\((?:(\d+)\s*h(?:ou)?rs?\s*)?(?:(\d+)\s*min(?:ute)?s?\s*)?\)", label, re.I)
+        if duration and (duration.group(1) or duration.group(2)):
+            end = start + timedelta(hours=int(duration.group(1) or 0), minutes=int(duration.group(2) or 0))
+    if now < start:
+        status = "future"
+    elif end is None:
+        status = "started_end_unknown"
+    elif now >= end:
+        status = "ended"
+    else:
+        status = "in_progress"
+    return {"status": status, "starts_at": start.isoformat(),
+            "ends_at": end.isoformat() if end else None}
+
+
+def calendar_evidence_blocks(source, query, today=None, now=None):
     """Prefer live schedule blocks or intact upcoming snapshot event rows."""
 
     if source.get("id") != "calendar":
         return []
-    current = today or site_today()
-    blocks = []
+    reference_time = now or (datetime.now(SITE_TIMEZONE) if today is None else None)
+    current = today or (reference_time.date() if reference_time else site_today())
+    live_count = max(0, int(source.get("calendar_live_block_count") or 0))
+    page_blocks = list(source.get("blocks", []))
+    if source.get("calendar_source") == "live_downloadable_calendar":
+        page_blocks = page_blocks[live_count:] if live_count else []
+    # Preserve the page's signup instructions and labeled locations alongside
+    # the dated schedule. Selecting only date-like lines discarded the action
+    # context and separated location names from their hours.
+    blocks = [clean_evidence_fragment(block) for block in page_blocks]
+    blocks = [block for block in blocks if block]
     if source.get("calendar_source") == "live_downloadable_calendar":
         schedule = source.get("calendar_schedule") or {}
         location = schedule.get("location") or {}
@@ -1638,20 +1700,9 @@ def calendar_evidence_blocks(source, query, today=None):
             if value
         )
         if not source.get("calendar_events"):
-            live_count = max(0, int(source.get("calendar_live_block_count") or 0))
-            return list(source.get("blocks", []))[:live_count]
-    else:
-        blocks = [
-            str(block).strip()
-            for block in source.get("blocks", [])
-            if re.search(
-                r"(?:available classes|training schedule|tue, wed|\b2:00 pm to 3:30 pm\b|"
-                r"by request only)",
-                str(block or ""),
-                flags=re.I,
-            )
-        ]
+            return blocks + list(source.get("blocks", []))[:live_count]
     events = []
+    timings = {}
     for event in source.get("calendar_events", []):
         if not isinstance(event, dict):
             continue
@@ -1662,7 +1713,17 @@ def calendar_evidence_blocks(source, query, today=None):
         label = str(event.get("label") or "").strip()
         if label:
             events.append((event_date, label))
+            if reference_time is not None:
+                timings[label] = calendar_event_timing(event, reference_time)
     events.sort(key=lambda row: (row[0], row[1]))
+
+    def upcoming(row):
+        return row[0] >= current and timings.get(row[1], {}).get("status") != "ended"
+
+    def timed_label(row):
+        label = row[1]
+        timing = timings.get(label)
+        return f"{label} [time_status={timing['status']}]" if timing else label
 
     query_value = fold_text(semantic_question(query))
     if "tomorrow" in query_value:
@@ -1676,7 +1737,7 @@ def calendar_evidence_blocks(source, query, today=None):
         events = [row for row in events if start <= row[0] <= end]
     elif "this week" in query_value:
         end = current + timedelta(days=6 - current.weekday())
-        events = [row for row in events if current <= row[0] <= end]
+        events = [row for row in events if upcoming(row) and row[0] <= end]
     else:
         exact_date = None
         for name, number in _CALENDAR_MONTH_NAMES.items():
@@ -1708,7 +1769,7 @@ def calendar_evidence_blocks(source, query, today=None):
                 events = [row for row in events if row[0] >= exact_date]
             else:
                 events = [row for row in events if row[0] == exact_date]
-            blocks.extend(label for _, label in events)
+            blocks.extend(timed_label(row) for row in events)
             return blocks
         requested_months = {
             number
@@ -1718,7 +1779,7 @@ def calendar_evidence_blocks(source, query, today=None):
         if requested_months:
             events = [row for row in events if row[0].month in requested_months]
             if re.search(r"\b(?:upcoming|remaining|next)\b", query_value):
-                events = [row for row in events if row[0] >= current]
+                events = [row for row in events if upcoming(row)]
         else:
             weekday_names = {
                 name.lower(): index
@@ -1735,7 +1796,7 @@ def calendar_evidence_blocks(source, query, today=None):
                 events = [row for row in events if row[0].weekday() in requested_weekdays]
             full_calendar = bool(re.search(r"\b(?:all|full|entire|whole|complete)\b", query_value))
             if not full_calendar:
-                events = [row for row in events if row[0] >= current]
+                events = [row for row in events if upcoming(row)]
             query_terms = expanded_query_terms(query).difference({
                 "calendar", "class", "classes", "date", "dates", "event", "events",
                 "next", "schedule", "scheduled", "today", "tomorrow", "upcoming",
@@ -1747,11 +1808,11 @@ def calendar_evidence_blocks(source, query, today=None):
             ]
             if matching and not full_calendar:
                 events = matching
-    blocks.extend(label for _, label in events)
+    blocks.extend(timed_label(row) for row in events)
     return blocks
 
 
-def source_excerpt(source, query, limit=1800, today=None):
+def source_excerpt(source, query, limit=1800, today=None, now=None):
     query_terms = expanded_query_terms(query)
     query_value = fold_text(semantic_question(query))
     if re.search(
@@ -1766,7 +1827,7 @@ def source_excerpt(source, query, limit=1800, today=None):
         r"tomorrow|when)\b",
         query_value,
     ))
-    calendar_blocks = calendar_evidence_blocks(source, query, today=today)
+    calendar_blocks = calendar_evidence_blocks(source, query, today=today, now=now)
     if source.get("id") == "calendar" and calendar_blocks:
         # Keep complete schedule rows in source order. Do not mix the current
         # downloadable calendar with dated rows from the old rendered snapshot.
@@ -2182,14 +2243,26 @@ def source_payload(sources):
     return result
 
 
-def link_record(url, label=None):
-    url = canonical_url(url)
-    if not url:
-        return None
-    source_id = SOURCE_ID_BY_URL.get(url)
-    source = SOURCE_BY_ID.get(source_id, {})
-    title = label or source.get("title") or urllib.parse.urlsplit(url).path.rsplit("/", 1)[-1].replace("-", " ").title()
-    return {"title": title, "url": url}
+def source_navigation_links(source, limit=20):
+    """Expose labels and destinations captured on the source page itself."""
+
+    links = []
+    seen = set()
+    for link in source.get("source_links", []):
+        if not isinstance(link, dict):
+            continue
+        label = re.sub(r"\s+", " ", str(link.get("label") or "")).strip()[:160]
+        url = str(link.get("url") or "").strip()
+        parsed = urllib.parse.urlsplit(url)
+        if not label or parsed.scheme not in {"https", "http"} or not parsed.hostname:
+            continue
+        if len(url) > 1500 or (label, url) in seen:
+            continue
+        links.append({"label": label, "url": url})
+        seen.add((label, url))
+        if len(links) >= limit:
+            break
+    return links
 
 
 def sanitize_page_context(value):
@@ -2383,40 +2456,25 @@ def retrieval_plan(question, page_context=None, history=None):
 
 
 def related_links(question, sources, limit=3):
-    lowered = fold_text(question)
-    candidates = []
-    if any(word in lowered for word in ("device", "laptop", "phone", "computer to keep", "lifeline")):
-        candidates.extend([(DEVICES_URL, "Review device programs"), (CONTACT_URL, "Confirm eligibility with staff"), (SUPPORT_URL, "Find device help")])
-    elif any(word in lowered for word in ("class", "workshop", "training", "learn", "course", "register", "sign up")):
-        candidates.extend([(CALENDAR_URL, "View the current calendar"), (CONTACT_URL, "Registration details"), (WORKSHOPS_URL, "Browse workshops")])
-    elif any(word in lowered for word in ("support", "tutor", "appointment", "lab", "fix", "troubleshoot")):
-        candidates.extend([(SUPPORT_URL, "See individual support"), (CALENDAR_URL, "Check current hours"), (CONTACT_URL, "Ask Digital Equity staff")])
-    elif any(word in lowered for word in ("practice", "exercise", "quiz", "assessment")):
-        candidates.extend([(PRACTICE_URL, "Open skills practice"), (WORKSHOPS_URL, "Browse workshops"), (CONTACT_URL, "Ask for guidance")])
-    else:
-        candidates.extend([(WORKSHOPS_URL, "Browse workshops"), (PRACTICE_URL, "Practice digital skills"), (CONTACT_URL, "Ask Digital Equity staff")])
+    """Keep only actual page links; never guess a destination from query words."""
 
-    source_urls = {source["url"] for source in sources}
-    for source in sources[:2]:
-        for url in source.get("internal_links", []):
-            canonical = canonical_url(url)
-            linked = SOURCE_BY_ID.get(SOURCE_ID_BY_URL.get(canonical, ""), {})
-            if linked.get("authority") in {"answer", "navigation"}:
-                candidates.append((canonical, linked.get("title")))
-
+    if limit <= 0:
+        return []
     result = []
-    seen = set(source_urls)
-    for url, label in candidates:
-        record = link_record(url, label)
-        if not record or record["url"] in seen:
-            continue
-        result.append(record)
-        seen.add(record["url"])
-        if len(result) == limit:
-            break
-    if not result:
-        result = [link_record(CONTACT_URL, "Ask Digital Equity staff")]
-    return [record for record in result if record]
+    seen = {source["url"] for source in sources}
+    for source in sources:
+        for link in source_navigation_links(source):
+            canonical = canonical_url(link["url"])
+            linked = SOURCE_BY_ID.get(SOURCE_ID_BY_URL.get(canonical, ""), {})
+            if (not canonical or canonical in seen
+                    or linked.get("authority") not in {"answer", "navigation"}
+                    or linked.get("status", 200) != 200):
+                continue
+            result.append({"title": link["label"], "url": canonical})
+            seen.add(canonical)
+            if len(result) >= limit:
+                return result
+    return result
 
 
 def response_contract(
@@ -2472,8 +2530,11 @@ def retrieval_prompt(
     current_date="",
     conversation_history=None,
     team_prompt="",
+    current_time="",
 ):
-    today = date.fromisoformat(current_date) if current_date else site_today()
+    now = (datetime.fromisoformat(current_time).astimezone(SITE_TIMEZONE)
+           if current_time else None if current_date else datetime.now(SITE_TIMEZONE))
+    today = date.fromisoformat(current_date) if current_date else now.date()
     records = []
     for source in sources:
         record = {
@@ -2482,11 +2543,13 @@ def retrieval_prompt(
             "url": source["url"],
             "reviewed_on": source.get("lastmod") or KNOWLEDGE["reviewed_on"],
             "volatile": bool(source.get("volatile")),
+            "links": source_navigation_links(source),
             "content": source_excerpt(
                 source,
                 query,
                 limit=(6000 if source.get("id") == "calendar" else MAX_MODEL_EXCERPT_CHARS),
                 today=today,
+                now=now,
             ),
         }
         if source.get("id") == "calendar":
@@ -2496,6 +2559,7 @@ def retrieval_prompt(
                 "source_captured_at": source.get("source_captured_at"),
                 "calendar_freshness": source.get("calendar_freshness", "snapshot"),
                 "calendar_document_url": source.get("calendar_document_url"),
+                "session_time_status_as_of": now.isoformat(timespec="minutes") if now else None,
             })
         records.append(record)
     current = approved_current_page_source(page_context)
@@ -2504,7 +2568,7 @@ def retrieval_prompt(
         current_page_id=current["id"] if current else "",
         previous_answer=re.sub(r"\s+", " ", str(previous_answer or "")).strip(),
         current_date=today.isoformat(),
-        current_time="" if current_date else datetime.now(SITE_TIMEZONE).isoformat(timespec="minutes"),
+        current_time=now.isoformat(timespec="minutes") if now else "",
         conversation_history=list(conversation_history or []),
         team_prompt=team_prompt,
     )
@@ -3530,7 +3594,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             active_prompt = EVALUATION_STORE.get_active_prompt() if EVALUATION_STORE.ready else None
             if active_prompt:
-                interaction["prompt_policy_version"] = f"{PROMPT_POLICY_VERSION}+team-{active_prompt['version']}"
+                interaction["prompt_policy_version"] = f"{PROMPT_POLICY_VERSION}+prompt-{active_prompt['version']}"
             sensitive_request = needs_human_handoff(question)
             if sensitive_request:
                 retrieval_scope = "staff"
