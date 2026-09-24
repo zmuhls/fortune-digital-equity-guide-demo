@@ -950,6 +950,7 @@
       const updated = (await api("/api/evaluation/prompt-lab")).prompt_lab;
       if (sharedPromptForm.querySelector('button[type="submit"]').disabled) return;
       if (Number(updated?.shared_draft?.version) < Number(state.promptLab?.shared_draft?.version)) return;
+      if (JSON.stringify(updated) === JSON.stringify(state.promptLab)) return;
       state.promptLab = updated;
       renderPromptLab();
     } catch (error) {
