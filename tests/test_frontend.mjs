@@ -250,7 +250,7 @@ async function waitFor(predicate, message = "frontend state did not settle") {
   assert.fail(message);
 }
 
-async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false, captureMode = "none", pageUrl = "https://www.fortunedigitalequity.org/" } = {}) {
+async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelEnabled = false, captureMode = "none", pageUrl = "https://www.fortunedigitalequity.org/", restoredSession = null } = {}) {
   const document = new FakeDocument();
   const panel = document.register("#guide-panel", new FakeElement("section", document));
   const toggle = document.register("#guide-toggle", new FakeElement("button", document));
@@ -274,6 +274,7 @@ async function pagesHarness({ chatPayload, chatError, chatResponses = [], modelE
   panel.hidden = false;
 
   const storage = new FakeStorage();
+  if (restoredSession) storage.setItem("fortune-website-guide:replica:v20", JSON.stringify(restoredSession));
   const chatRequests = [];
   const pendingChatResponses = [...chatResponses];
   let healthRequests = 0;
@@ -520,6 +521,36 @@ test("evaluation conversations are ordered newest first before pagination", () =
     { Date, Intl, JSON, Number, String },
   );
   assert.deepEqual(JSON.parse(orderedJson), ["newest", "same-a", "same-b", "older", "invalid"]);
+});
+
+function evaluationConversationLoader(api) {
+  const start = evaluationSource.indexOf("async function loadAllConversations()");
+  const end = evaluationSource.indexOf("function previewSave()", start);
+  assert.ok(start >= 0 && end > start, "paginated conversation loader is present");
+  return runInNewContext(`${evaluationSource.slice(start, end)}; loadAllConversations()`, { api, Map, Number, Error });
+}
+
+test("evaluation loads every API page rather than silently stopping at 500 conversations", async () => {
+  const requested = [];
+  const result = await evaluationConversationLoader(async path => {
+    requested.push(path);
+    const offset = Number(new URL(path, "http://fixture.test").searchParams.get("offset"));
+    return offset === 0
+      ? { conversations: Array.from({ length: 500 }, (_, index) => ({ id: `fixture-${index}` })), next_offset: 500 }
+      : { conversations: [{ id: "fixture-500" }, { id: "fixture-501" }], next_offset: null };
+  });
+  assert.equal(result.conversations.length, 502);
+  assert.equal(result.conversations.at(-1).id, "fixture-501");
+  assert.deepEqual(requested, ["/api/evaluation/conversations?limit=500&offset=0", "/api/evaluation/conversations?limit=500&offset=500"]);
+});
+
+test("evaluation refresh deduplicates shifted rows and rejects broken page cursors", async () => {
+  const result = await evaluationConversationLoader(async path => path.endsWith("offset=0")
+    ? { conversations: [{ id: "new", turn_count: 2 }, { id: "overlap", turn_count: 4 }], next_offset: 2 }
+    : { conversations: [{ id: "overlap", turn_count: 3 }, { id: "older" }], next_offset: null });
+  assert.equal(result.conversations.length, 3);
+  assert.equal(result.conversations[1].turn_count, 4);
+  await assert.rejects(evaluationConversationLoader(async () => ({ conversations: [], next_offset: 0 })), /did not advance/);
 });
 
 test("Pages and Wix do not expose backend capture mode in the participant UI", async () => {
@@ -1006,6 +1037,46 @@ test("Pages and Wix distinguish bounded HTTP failures without adding Guide turns
       assert.equal(descendants(wix.transcript).filter(element => element.classList.contains("assistant")).length, 0);
     });
   }
+});
+
+test("Pages preserves a failed first conversation identity for retry and navigation", async () => {
+  const conversationId = "a1111111-1111-4111-8111-111111111111";
+  const conversationToken = "b".repeat(64);
+  const pages = await pagesHarness({ modelEnabled: true, chatResponses: [
+    { status: 502, payload: { error: "Provider unavailable.", model_called: true,
+      conversation_id: conversationId, conversation_token: conversationToken } },
+    { status: 200, payload: { ...validModelAnswer,
+      conversation_id: conversationId, conversation_token: conversationToken } },
+  ] });
+  let attemptId = 0;
+  pages.window.crypto.randomUUID = () => `00000000-0000-4000-8000-${String(++attemptId).padStart(12, "0")}`;
+  pages.input.value = "Help me";
+  pages.input.dispatchEvent(keyEvent("Enter"));
+  await waitFor(() => pages.chatRequests.length === 1 && !pages.window.FortuneGuide.state().answering,
+    "failed first question did not settle");
+  const saved = JSON.parse([...pages.storage.values.values()][0]);
+  assert.equal(saved.conversationId, conversationId);
+  assert.equal(saved.conversationToken, conversationToken);
+  assert.deepEqual(saved.turns, []);
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 0);
+  const nextPage = await pagesHarness({ modelEnabled: true, restoredSession: saved,
+    pageUrl: "https://www.fortunedigitalequity.org/about", chatPayload: validModelAnswer });
+  assert.equal(nextPage.window.FortuneGuide.state().conversationId, conversationId);
+  assert.equal(nextPage.document.querySelector("#guide-reset").hidden, false);
+  nextPage.input.value = "Where are classes?";
+  nextPage.input.dispatchEvent(keyEvent("Enter"));
+  await waitFor(() => nextPage.chatRequests.length === 1 && !nextPage.window.FortuneGuide.state().answering,
+    "restored failed conversation did not submit");
+  assert.equal(nextPage.chatRequests[0].conversation_id, conversationId);
+  assert.equal(nextPage.chatRequests[0].conversation_token, conversationToken);
+  assert.deepEqual(nextPage.chatRequests[0].history, []);
+  pages.input.dispatchEvent(keyEvent("Enter"));
+  await waitFor(() => pages.chatRequests.length === 2 && !pages.window.FortuneGuide.state().answering,
+    "retry did not settle");
+  assert.equal(pages.chatRequests[1].conversation_id, conversationId);
+  assert.equal(pages.chatRequests[1].conversation_token, conversationToken);
+  assert.notEqual(pages.chatRequests[1].client_event_id, pages.chatRequests[0].client_event_id);
+  assert.equal(pages.window.FortuneGuide.state().turnCount, 1);
 });
 
 test("Pages and Wix keep transport failures out of the Guide transcript", async () => {

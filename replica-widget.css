@@ -23,6 +23,99 @@ body[data-replica-viewport-fit="true"] #site-root {
   display: none;
 }
 
+/* Use Wix's captured mobile layout, not a shrunken desktop reconstruction. */
+html[data-replica-layout="mobile"] body { min-width: 0 !important; }
+html[data-replica-layout="mobile"] #SITE_CONTAINER { transform-origin: top left; }
+[data-replica-static-background] {
+  position: absolute !important;
+  inset: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+[data-replica-static-background-image] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+}
+[data-replica-static-background-image] img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+[data-replica-mobile-toggle] { cursor: pointer; z-index: 10002 !important; }
+[data-replica-mobile-toggle][aria-expanded="true"] { display: none !important; }
+[data-replica-mobile-menu]:not([data-replica-open="true"]) { display: none !important; }
+[data-replica-mobile-menu][data-replica-open="true"] {
+  z-index: 10001 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  box-sizing: border-box !important;
+  max-height: var(--replica-mobile-menu-height, 100dvh) !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+}
+[data-replica-mobile-submenu] > summary {
+  list-style: none;
+  cursor: pointer;
+  grid-template-columns: var(--template-columns, 1fr 52px) !important;
+  grid-template-areas: var(--template-areas, "label arrow") !important;
+}
+[data-replica-mobile-submenu] > summary > [data-testid="linkWrapper"] { grid-area: label; }
+[data-replica-mobile-submenu] > summary > [aria-hidden="true"] {
+  grid-area: arrow;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+[data-replica-mobile-submenu] > summary::-webkit-details-marker { display: none; }
+[data-replica-mobile-submenu]:not([open]) > ul { display: none !important; }
+[data-replica-mobile-submenu][open] > ul { display: block !important; }
+[data-replica-mobile-submenu][open] > summary svg { transform: rotate(180deg); }
+[data-replica-mobile-close] {
+  position: fixed;
+  top: 28px;
+  right: 20px;
+  z-index: 10003;
+  width: 50px;
+  height: 50px;
+  padding: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgb(var(--color_15, 40, 26, 57));
+  cursor: pointer;
+}
+[data-replica-mobile-close] svg { display: block; width: 100%; height: 100%; }
+[data-hook="post-main-actions-desktop"] .eFSltK,
+[data-hook="post-main-actions-desktop"] .Zt1NVN {
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+[data-hook="post-main-actions-desktop"] .Zt1NVN { gap: 8px; }
+[data-replica-post-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+[data-replica-post-icon] svg { display: block; flex-shrink: 0; }
+[data-replica-post-icon]:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+[data-replica-mobile-toggle]:focus-visible,
+[data-replica-mobile-close]:focus-visible,
+[data-replica-mobile-submenu] > summary:focus-visible { outline: 3px solid #0074bd; outline-offset: 2px; }
+
 .fortune-calendar-restored [data-replica-calendar-controls] {
   width: 100%;
   box-sizing: border-box;
@@ -139,17 +232,17 @@ html[data-replica-viewport-fit="true"] #fortune-responsive-header {
 }
 
 .fortune-responsive-header__toggle {
-  min-width: 92px;
-  min-height: 50px;
+  min-width: 52px;
+  min-height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 0 16px;
-  border: 2px solid #281a39;
+  padding: 0 14px;
+  border: 0;
   border-radius: 0;
   color: #281a39;
-  background: #fff;
+  background: transparent;
   font: 700 14px/1 Arial, Helvetica, sans-serif;
   letter-spacing: .02em;
   cursor: pointer;
@@ -163,8 +256,7 @@ html[data-replica-viewport-fit="true"] #fortune-responsive-header {
 }
 
 .fortune-responsive-header__toggle:focus-visible,
-.fortune-responsive-navigation :focus-visible,
-.fortune-responsive-actions :focus-visible {
+.fortune-responsive-navigation :focus-visible {
   outline: 3px solid #0b78c8;
   outline-offset: 3px;
 }
@@ -265,43 +357,11 @@ html[data-replica-viewport-fit="true"] #fortune-responsive-header {
 }
 .fortune-responsive-navigation > details > div > a:hover { text-decoration: underline; text-underline-offset: 4px; }
 
-.fortune-responsive-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px clamp(14px, 4vw, 32px) 18px;
-  background: #b8e9fb;
-}
-
-.fortune-responsive-actions a {
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  color: #b8e9fb;
-  border: 2px solid #b8e9fb;
-  outline: 1px solid #281a39;
-  background: #281a39;
-  font-size: clamp(14px, 2.4vw, 17px);
-  font-weight: 500;
-  line-height: 1.2;
-  text-align: center;
-  text-decoration: none;
-}
-
-.fortune-responsive-actions a:hover {
-  color: #281a39;
-  border-color: #281a39;
-  background: #fff;
-}
-
 @media (max-width: 560px) {
   .fortune-responsive-header__bar { min-height: 78px; }
   .fortune-responsive-header__brand { height: 62px; }
-  .fortune-responsive-header__toggle { min-width: 82px; min-height: 48px; padding-inline: 12px; }
+  .fortune-responsive-header__toggle { min-width: 52px; min-height: 52px; padding-inline: 14px; }
   .fortune-responsive-navigation { grid-template-columns: 1fr; }
-  .fortune-responsive-actions { grid-template-columns: 1fr; gap: 9px; }
 }
 
 #fortune-sidecar-host[data-expanded="true"] {
@@ -316,6 +376,28 @@ html[data-replica-viewport-fit="true"] #fortune-responsive-header {
   border: 0;
   background: transparent;
   pointer-events: auto;
+}
+
+#fortune-sidecar-host[data-expanded="false"] #fortune-sidecar-frame { pointer-events: none; }
+#fortune-sidecar-launcher {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+#fortune-sidecar-launcher:focus-visible { outline: 3px solid #0b78c8; outline-offset: 3px; }
+#fortune-sidecar-launcher[hidden] { display: none; }
+#fortune-guide-footer-clearance {
+  clear: both;
+  height: calc(78px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
 section[id] {
@@ -521,4 +603,50 @@ img[data-replica-slideshow-preview="true"] {
 
 @media print {
   #fortune-sidecar-host { display: none; }
+}
+
+/* Original Wix gallery arrow presentation. Some desktop captures dropped these
+   rules after sanitizing the buttons; keep the exact source geometry for the
+   live-gallery handoffs rather than adding text to a fixed-height slideshow. */
+[data-replica-gallery-action="true"] {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  block-size: 39px;
+  border: 0;
+  border-radius: 0;
+  color: #000;
+  cursor: pointer;
+  display: inline-flex;
+  inline-size: 23px;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+}
+[data-replica-gallery-action="true"].p1cFF {
+  inset-inline-start: var(--ricos-internal-gallery-arrow-inset, 12px);
+}
+[data-replica-gallery-action="true"].EG8ST {
+  inset-inline-end: var(--ricos-internal-gallery-arrow-inset, 12px);
+}
+[data-replica-gallery-action="true"] > svg {
+  fill: currentColor;
+  block-size: 39px;
+  display: block;
+  filter: drop-shadow(0 1px .15px #b2b2b2);
+  inline-size: 46px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  position: absolute;
+}
+[data-replica-gallery-action="true"] > svg.wDTUX {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+[data-replica-gallery-action="true"]:focus-visible {
+  outline: 2px solid #3899ec;
+  outline-offset: 2px;
 }

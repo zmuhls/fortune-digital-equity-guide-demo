@@ -143,7 +143,7 @@
   function persistConversation() {
     const storage = conversationStorage();
     if (!storage) return;
-    if (!turns.length) {
+    if (!turns.length && !(conversationId && conversationToken)) {
       clearPersistedConversation();
       return;
     }
@@ -318,7 +318,7 @@
     if (turns.length) panel.classList.add("is-expanded");
     else panel.classList.remove("is-expanded");
     if (turns.length) suggestions.replaceChildren();
-    resetButton.hidden = !turns.length;
+    resetButton.hidden = !turns.length && !conversationId;
   }
 
   function restoreConversation() {
@@ -328,7 +328,7 @@
       const saved = JSON.parse(storage.getItem(CONVERSATION_STORAGE_KEY) || "null");
       if (saved?.version !== 1 || !Array.isArray(saved.turns)) return false;
       const restored = saved.turns.slice(-MAX_CONTEXT_EXCHANGES).map(storedTurn);
-      if (!restored.length || restored.some(turn => !turn)) {
+      if (restored.some(turn => !turn)) {
         clearPersistedConversation();
         return false;
       }
@@ -343,6 +343,10 @@
       conversationToken = /^[A-Za-z0-9_-]{32,128}$/.test(String(saved.conversationToken || ""))
         ? String(saved.conversationToken)
         : "";
+      if (!restored.length && !(conversationId && conversationToken)) {
+        clearPersistedConversation();
+        return false;
+      }
       renderConversation();
       updateContextWindow();
       return true;
@@ -623,6 +627,15 @@
       persistConversation();
     } catch (error) {
       pendingArticle?.remove();
+      // A failed first request still has a recorded conversation. Reuse its
+      // server-issued identity on retry instead of orphaning it in the dashboard.
+      // Edits intentionally start a separate conversation only after success.
+      if (!editing && error?.payload?.conversation_id && error?.payload?.conversation_token) {
+        conversationId = String(error.payload.conversation_id);
+        conversationToken = String(error.payload.conversation_token);
+        resetButton.hidden = false;
+        persistConversation();
+      }
       questionField.value = value;
       resizeQuestionField();
       const retryInProgress = Number(error?.status || 0) === 409

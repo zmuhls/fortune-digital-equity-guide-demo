@@ -1,0 +1,212 @@
+/* Match the captured Wix desktop agenda, without changing its local filters,
+   captured-session dates, or links to Fortune's live registration calendar. */
+@media (min-width: 980px) {
+  .fortune-calendar-restored [data-replica-live-calendar-note] {
+    margin: 0 !important;
+    padding: 0 20px 8px !important;
+    background: transparent !important;
+    color: #f5f5f5 !important;
+    font: 12px/1.4 Arial, Helvetica, sans-serif !important;
+  }
+
+  .fortune-calendar-restored [data-replica-live-calendar-note] a {
+    color: inherit !important;
+    font-weight: 400 !important;
+    text-underline-offset: 2px;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-container"] {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    column-gap: 24px !important;
+    row-gap: 8px !important;
+  }
+
+  .fortune-calendar-restored [data-hook="weekly-datepicker-container"] {
+    flex: 0 1 650px !important;
+    width: 650px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: max-content 44px minmax(0, 1fr) 44px !important;
+    align-items: center;
+    gap: 0 !important;
+    padding: 0 !important;
+    color: #f5f5f5 !important;
+    font: 14px/1.4 Arial, Helvetica, sans-serif !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child {
+    display: contents !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] strong {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0 !important;
+    padding-right: 8px;
+    font: inherit !important;
+    white-space: nowrap;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] button {
+    position: relative;
+    z-index: 0;
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+    font: inherit !important;
+    white-space: normal !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button {
+    grid-row: 1;
+    overflow: hidden;
+    font-size: 0 !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(2) {
+    grid-column: 2;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(4) {
+    grid-column: 4;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(2)::after,
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(4)::after {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 18px;
+    width: 9px;
+    height: 9px;
+    border: solid currentColor;
+    border-width: 0 1px 1px 0;
+    transform: rotate(135deg);
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(4)::after {
+    left: 15px;
+    transform: rotate(-45deg);
+  }
+
+  /* Wix's desktop picker has previous/next arrows, not an extra reset row. */
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:first-child > button:nth-child(3) {
+    display: none !important;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] > div:nth-child(2) {
+    grid-column: 3;
+    grid-row: 1;
+    gap: 2px !important;
+    min-width: 0;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] button[aria-current="date"]::before,
+  .fortune-calendar-restored [data-replica-calendar-controls] button[aria-pressed="true"]::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 4px 0;
+    border-radius: 24px;
+    background: #80c33c;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls]:has([aria-pressed="true"]) button[aria-current="date"]:not([aria-pressed="true"])::before {
+    background: transparent;
+    border: 1px solid #80c33c;
+  }
+
+  .fortune-calendar-restored [data-replica-calendar-controls] button:not([aria-current]):not([aria-pressed="true"]):hover::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 4px 0;
+    border-radius: 24px;
+    background: rgb(255 255 255 / 12%);
+  }
+
+  /* Keep the changing date range announced, as on the original Wix picker. */
+  .fortune-calendar-restored [data-replica-calendar-controls] > [aria-live] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-wrapper"] {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] {
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    padding: 0 !important;
+    align-items: center;
+    color: #f5f5f5;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] label {
+    display: flex !important;
+    align-items: center;
+    flex: 0 1 auto !important;
+    gap: 0 !important;
+    min-width: 0 !important;
+    font: 14px/1.4 Arial, Helvetica, sans-serif !important;
+    white-space: nowrap;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] select {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    padding: 0 22px 0 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: inherit !important;
+    background-color: transparent !important;
+    font: inherit !important;
+    cursor: pointer;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] select:has(option[value=""]:checked) {
+    color: transparent !important;
+    background-image: linear-gradient(45deg, transparent 50%, #f5f5f5 50%), linear-gradient(135deg, #f5f5f5 50%, transparent 50%) !important;
+    background-position: calc(50% - 3px) 20px, calc(50% + 3px) 20px !important;
+    background-size: 6px 6px !important;
+    background-repeat: no-repeat !important;
+    appearance: none;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] label:has(option:not([value=""]):checked) {
+    font-size: 0 !important;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] select:has(option:not([value=""]):checked) {
+    width: 150px !important;
+    font-size: 14px !important;
+  }
+
+  .fortune-calendar-restored [data-hook="filters-root"] option {
+    color: #281a39;
+    background: #fff;
+    font-size: 14px;
+  }
+}

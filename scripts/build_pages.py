@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 import gzip
 import hashlib
 import html
@@ -15,13 +16,19 @@ import tempfile
 import urllib.parse
 from typing import Any
 from html.parser import HTMLParser
+from zoneinfo import ZoneInfo
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 INDEX_PATH = ROOT / "site-index.json"
 MANIFEST_PATH = ROOT / "replica-manifest.json"
 SNAPSHOT_ROOT = ROOT / "replica-snapshots"
+MOBILE_CAPTURE_ROOT = ROOT / "replica-mobile"
 CALENDAR_SOURCE_PATH = ROOT / "calendar-source.json"
+POST_CONTROL_PRESENTATION = json.loads((ROOT / "replica-post-controls.json").read_text())
+POST_CONTROL_ICONS = POST_CONTROL_PRESENTATION["controls"]
+POST_GALLERY_CONTROLS = POST_CONTROL_PRESENTATION["gallery_controls"]
+POST_GALLERIES = json.loads((ROOT / "replica-galleries.json").read_text())["pages"]
 SIDECAR_TEMPLATE_PATH = ROOT / "index.html"
 OUTPUT_PATH = ROOT / "_site"
 ALLOWED_HOSTS = {"fortunedigitalequity.org", "www.fortunedigitalequity.org"}
@@ -37,14 +44,19 @@ SHARED_ASSETS = (
     "replica-manifest.json",
     "replica-shell.css",
     "replica-widget.css",
+    "replica-calendar.css",
+    "replica-notice.css",
     "replica-shell.js",
+    "replica-services.js",
     "embed-frame.js",
 )
 SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
-REPLICA_WIDGET_CSS_VERSION = "20260924-navigation-v2"
-REPLICA_SHELL_JS_VERSION = "20260924-navigation-v2"
+REPLICA_WIDGET_CSS_VERSION = "20260924-native-menu-launcher-v3"
+REPLICA_SHELL_JS_VERSION = "20260924-native-menu-launcher-v3"
+REPLICA_CALENDAR_CSS_VERSION = "20260924-calendar-source-v1"
+REPLICA_NOTICE_CSS_VERSION = "20260924-pilot-v1"
 # Wix stores these public anchor destinations outside the rendered link href.
 # Keep the verified native fragment when publishing its inert capture. Targets
 # are ids retained in the reviewed snapshots (and checked in the link audit).
@@ -694,21 +706,23 @@ def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def _safe_snapshot_path(value: str) -> pathlib.Path:
+def _safe_snapshot_path(value: str, capture_root: pathlib.Path | None = None) -> pathlib.Path:
     pure = pathlib.PurePosixPath(value)
     if pure.is_absolute() or ".." in pure.parts or pure.suffixes[-2:] != [".html", ".gz"]:
         raise BuildError(f"unsafe snapshot file: {value!r}")
-    path = ROOT / pathlib.Path(pure.as_posix())
+    path = (capture_root or ROOT) / pathlib.Path(pure.as_posix())
+    snapshot_root = capture_root / "replica-snapshots" if capture_root else SNAPSHOT_ROOT
     try:
-        path.relative_to(SNAPSHOT_ROOT)
+        path.relative_to(snapshot_root)
     except ValueError as error:
         raise BuildError(f"snapshot is outside {SNAPSHOT_ROOT.name}: {value!r}") from error
     return path
 
 
-def load_snapshots(routes: list[dict[str, str]]) -> dict[str, dict]:
+def load_snapshots(routes: list[dict[str, str]], capture_root: pathlib.Path | None = None) -> dict[str, dict]:
+    manifest_path = capture_root / "replica-manifest.json" if capture_root else MANIFEST_PATH
     try:
-        document = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        document = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise BuildError(f"cannot read {MANIFEST_PATH}: {error}") from error
 
@@ -737,7 +751,7 @@ def load_snapshots(routes: list[dict[str, str]]) -> dict[str, dict]:
             raise BuildError(f"snapshot is missing a numeric Wix revision: {url}")
         revisions.add(revision)
 
-        snapshot_path = _safe_snapshot_path(str(page.get("file") or ""))
+        snapshot_path = _safe_snapshot_path(str(page.get("file") or ""), capture_root)
         try:
             compressed = snapshot_path.read_bytes()
             expanded = gzip.decompress(compressed)
@@ -758,7 +772,11 @@ def load_snapshots(routes: list[dict[str, str]]) -> dict[str, dict]:
             raise BuildError(f"snapshot is missing a complete HTML document: {url}")
         if page_id and page_id not in snapshot_path.name:
             raise BuildError(f"snapshot filename does not include its page id: {url}")
-        by_url[url] = {**page, "html": snapshot_html}
+        by_url[url] = {
+            **page,
+            "html": snapshot_html,
+            "captured_at": page.get("captured_at") or document.get("captured_at") or "",
+        }
 
     if len(revisions) != 1:
         raise BuildError(f"replica spans multiple Wix revisions: {sorted(revisions)}")
@@ -1843,6 +1861,10 @@ def render_visual_snapshot_page(
     asset_base: str,
     routes: list[dict],
     snapshot_html: str,
+    *,
+    has_mobile_variant: bool = False,
+    mobile_layout: bool = False,
+    captured_at: str = "",
 ) -> str:
     """Publish the reviewed inert Wix capture with its original visual design.
 
@@ -1957,8 +1979,113 @@ def render_visual_snapshot_page(
         rendered,
         flags=re.IGNORECASE,
     )
+    # Verified Wix speaker controls expand question forms, not biographies.
+    # Retain the source button styling while handing the form to its real page.
+    if route["path"] in {"/deiqa", "/events/ai-qa", "/techfair/qa"}:
+        def restore_question_form_link(match: re.Match[str]) -> str:
+            label = html.escape(html.unescape(match.group("label")), quote=True)
+            style = re.search(r"#" + re.escape(match.group("component")) + r"\s+\.(style-[\w-]+__root)\s*\{", rendered)
+            question_form_style = style.group(1) if style else ""
+            return (
+                match.group("wrapper")
+                + f'<a class="StylableButton2545352419__root {question_form_style} wixui-button" '
+                f'href="{html.escape(source_url, quote=True)}" target="_blank" rel="noopener noreferrer" '
+                f'aria-label="{label}" title="Open question form on Fortune’s site" '
+                'data-replica-live-action="true" data-replica-question-form="true">'
+                '<span class="StylableButton2545352419__container">'
+                '<span class="StylableButton2545352419__label wixui-button__label" '
+                f'data-testid="stylablebutton-label">{label}</span></span></a>'
+            )
+
+        rendered = re.sub(
+            r'(?P<wrapper><div\b(?=[^>]*\bid=["\'](?P<component>[^"\']+)["\'])(?=[^>]*data-semantic-classname=["\']button["\'])[^>]*>)\s*'
+            r'<(?:p|span)\b[^>]*data-replica-static-control-label=["\']true["\'][^>]*>(?P<label>(?:Speaker|Panel):\s*[^<]+)</(?:p|span)>',
+            restore_question_form_link,
+            rendered,
+        )
+    if route["path"].startswith("/post/"):
+        gallery = POST_GALLERIES.get(route["path"], {}).get("native" if mobile_layout else "desktop")
+        if gallery:
+            if gallery["source_url"] != source_url:
+                raise ValueError("Gallery fragment does not belong to this source page")
+            # Earlier sanitization discarded photos inside Expand image buttons.
+            # Restore the actual captured gallery, not newly selected imagery.
+            rendered, restored = re.subn(
+                r'<section\b(?=[^>]*data-hook=["\']gallery-horizontal-track["\'])[^>]*>[\s\S]*?</section>',
+                lambda _: gallery["html"], rendered, count=1, flags=re.IGNORECASE,
+            )
+            if restored:
+                rendered = rendered.replace(
+                    "</head>",
+                    '<meta name="fortune-replica-gallery-captured-at" content="'
+                    + html.escape(gallery["captured_at"], quote=True) + '">\n'
+                    + '<style data-replica-source-gallery="true">' + gallery["css"] + '</style>\n</head>',
+                    1,
+                )
+
+        def restore_post_share_icon(match: re.Match[str]) -> str:
+            opening = match.group("opening")
+            accessible = re.search(r'aria-label=["\']([^"\']+)["\']', opening)
+            if not accessible:
+                return match.group(0)
+            label = html.unescape(accessible.group(1)).removesuffix(" on the live Digital Equity page")
+            icon = POST_CONTROL_ICONS.get(label)
+            if not icon:
+                return match.group(0)
+            return (
+                opening[:-1] + f' title="{html.escape(label, quote=True)} on Fortune’s site" data-replica-post-icon="true">'
+                + icon + "</a>"
+            )
+        rendered = re.sub(
+            r'(?P<opening><a\b(?=[^>]*data-replica-live-action=["\']true["\'])[^>]*>)[^<]*</a>',
+            restore_post_share_icon,
+            rendered,
+        )
+
+        def restore_live_post_control(match: re.Match[str]) -> str:
+            label = match.group("label")
+            title = "Print this post on Fortune’s site" if label == "Print Post" else "View the live photo gallery on Fortune’s site"
+            icon = POST_CONTROL_ICONS.get(label)
+            if label in POST_GALLERY_CONTROLS:
+                # Retain the original positioned arrow and SVG. Text rows in
+                # this fixed-height gallery overlap the following post block.
+                # This is a live-gallery handoff, not a local pagination state.
+                gallery = POST_GALLERY_CONTROLS[label]
+                presentation = f'class="{gallery["class"]}" data-hook="{gallery["data_hook"]}" data-replica-gallery-action="true"'
+                icon = gallery["icon"]
+            else:
+                presentation = 'class="qXlEOR" data-replica-post-icon="true"'
+            return (
+                f'<a href="{html.escape(source_url, quote=True)}" target="_blank" rel="noopener noreferrer" '
+                f'aria-label="{label}" title="{title}" data-replica-live-action="true" data-replica-post-action="true" '
+                + presentation + ">" + (icon or label) + "</a>"
+            )
+        rendered = re.sub(
+            r'<(?:p|span)\b[^>]*data-replica-static-control-label=["\']true["\'][^>]*>(?P<label>Print Post|Previous gallery item|Next gallery item)</(?:p|span)>',
+            restore_live_post_control,
+            rendered,
+        )
+    if route["path"] in {"/catalog", "/workshops"}:
+        # The native Wix category picker filters live service records in place;
+        # its options are not public category routes. Do not invent membership
+        # or URLs from class titles in the static all-services capture.
+        rendered = re.sub(
+            r'<(?:p|span)\b[^>]*data-replica-static-control-label=["\']true["\'][^>]*>Categories filter</(?:p|span)>',
+            f'<a href="{html.escape(source_url, quote=True)}" target="_blank" rel="noopener noreferrer" '
+            'aria-label="Categories filter" title="Filter classes on Fortune’s site" '
+            'data-replica-live-action="true" data-replica-class-filter="true" '
+            'style="display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;min-height:44px;padding:12px 16px;box-sizing:border-box;border:1px solid currentColor;color:inherit;font:inherit;text-decoration:none">'
+            'All Services<span aria-hidden="true">⌄</span></a>',
+            rendered,
+        )
     if route["path"] == CALENDAR_ROUTE_PATH:
-        captured_on = str((route.get("page") or {}).get("source_captured_at", "")).split("T")[0]
+        capture_timestamp = captured_at or str((route.get("page") or {}).get("source_captured_at", ""))
+        try:
+            captured_on = datetime.fromisoformat(capture_timestamp.replace("Z", "+00:00")).astimezone(
+                ZoneInfo("America/New_York")
+            ).date().isoformat()
+        except ValueError:
+            captured_on = ""
         dated_note = f"Schedule captured {html.escape(captured_on)}. " if captured_on else "Captured schedule. "
         handoff = (
             '<p data-replica-live-calendar-note="true" '
@@ -1977,14 +2104,17 @@ def render_visual_snapshot_page(
         )
     rendered = re.sub(
         r"<html\b([^>]*)>",
-        rf'<html\1 {REPLICA_MARKER} data-fortune-visual-mirror="true">',
+        rf'<html\1 {REPLICA_MARKER} data-fortune-visual-mirror="true" data-replica-layout="{"mobile" if mobile_layout else "desktop"}">',
         rendered,
         count=1,
         flags=re.IGNORECASE,
     )
     head_addition = (
         f'\n<meta name="fortune-replica-source" content="{html.escape(source_url, quote=True)}">'
+        f'\n<meta name="fortune-replica-captured-at" content="{html.escape(captured_at, quote=True)}">'
         f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-widget.css?v=" + REPLICA_WIDGET_CSS_VERSION, quote=True)}">'
+        f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-calendar.css?v=" + REPLICA_CALENDAR_CSS_VERSION, quote=True)}">'
+        f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-notice.css?v=" + REPLICA_NOTICE_CSS_VERSION, quote=True)}">'
     )
     rendered = re.sub(
         r"</head>",
@@ -1993,10 +2123,27 @@ def render_visual_snapshot_page(
         count=1,
         flags=re.IGNORECASE,
     )
+    # This disclosure belongs to the pilot, not to Fortune's source content.
+    # Insert it after rewriting source links so the official-site link stays external.
+    notice = (
+        '<aside id="fortune-pilot-notice" aria-label="Demo notice">'
+        '<strong>Demo / Pilot</strong><span>This is a test version of the website.</span>'
+        '<a href="https://www.fortunedigitalequity.org/" target="_blank" '
+        'rel="noopener noreferrer" data-replica-live-action="true">Visit Fortune’s official site</a>'
+        '</aside>'
+    )
+    rendered = re.sub(r"(<body\b[^>]*>)", lambda match: match.group(0) + notice,
+                      rendered, count=1, flags=re.IGNORECASE)
+    mobile_src = ""
+    if has_mobile_variant:
+        route_prefix = route["path"].strip("/")
+        mobile_src = asset_base + (route_prefix + "/" if route_prefix else "") + "replica-mobile.html"
     script = (
         f'<script src="{html.escape(asset_base + "replica-shell.js?v=" + REPLICA_SHELL_JS_VERSION, quote=True)}" '
         f'data-source-url="{html.escape(source_url, quote=True)}" '
-        f'data-page-id="{html.escape(page_id, quote=True)}"></script>'
+        f'data-page-id="{html.escape(page_id, quote=True)}" '
+        f'data-captured-at="{html.escape(captured_at, quote=True)}" '
+        f'data-mobile-src="{html.escape(mobile_src, quote=True)}"></script>'
     )
     rendered = re.sub(
         r"</body>",
@@ -2008,10 +2155,12 @@ def render_visual_snapshot_page(
     return rendered
 
 
-def expected_files(routes: list[dict[str, str]]) -> set[pathlib.PurePosixPath]:
+def expected_files(routes: list[dict[str, str]], with_mobile: bool = False) -> set[pathlib.PurePosixPath]:
     expected = {pathlib.PurePosixPath(asset) for asset in SHARED_ASSETS}
     expected.add(pathlib.PurePosixPath(SIDECAR_OUTPUT))
     for route in routes:
+        if with_mobile:
+            expected.add(pathlib.PurePosixPath(route["path"].strip("/")) / "replica-mobile.html")
         if route["path"] == "/":
             expected.add(pathlib.PurePosixPath("index.html"))
         else:
@@ -2044,7 +2193,9 @@ def validate_navigation(site_root: pathlib.Path) -> dict[str, int]:
 
     site_root = site_root.resolve()
     documents: dict[pathlib.Path, _PublishedLinkParser] = {}
-    for path in site_root.rglob("index.html"):
+    for path in site_root.rglob("*.html"):
+        if path.name == SIDECAR_OUTPUT:
+            continue
         parser = _PublishedLinkParser()
         parser.feed(path.read_text(encoding="utf-8"))
         documents[path.resolve()] = parser
@@ -2075,7 +2226,7 @@ def validate_navigation(site_root: pathlib.Path) -> dict[str, int]:
     return {"validated_local_links": checked, "validated_live_actions": live_actions}
 
 
-def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> dict[str, int]:
+def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]], with_mobile: bool = False) -> dict[str, int]:
     actual: set[pathlib.PurePosixPath] = set()
     for candidate in site_root.rglob("*"):
         if candidate.is_symlink():
@@ -2083,7 +2234,7 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
         if candidate.is_file():
             actual.add(pathlib.PurePosixPath(candidate.relative_to(site_root).as_posix()))
 
-    expected = expected_files(routes)
+    expected = expected_files(routes, with_mobile)
     unexpected = sorted(actual - expected)
     missing = sorted(expected - actual)
     if unexpected:
@@ -2100,12 +2251,14 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
     route_shells = [path for path in actual if path.name == "index.html"]
     if len(route_shells) != len(routes):
         raise BuildError(f"expected {len(routes)} replica routes but found {len(route_shells)}")
-    for shell_path in route_shells:
+    for shell_path in route_shells + [path for path in actual if path.name == "replica-mobile.html"]:
         shell = (site_root / pathlib.Path(shell_path.as_posix())).read_text(encoding="utf-8")
         if REPLICA_MARKER not in shell:
             raise BuildError(f"replica marker is missing from {shell_path}")
         if 'data-fortune-visual-mirror="true"' not in shell:
             raise BuildError(f"visual-mirror marker is missing from {shell_path}")
+        if shell.count('id="fortune-pilot-notice"') != 1:
+            raise BuildError(f"pilot disclosure must appear once in {shell_path}")
         if shell.lower().count("<script") != 1 or "replica-shell.js" not in shell:
             raise BuildError(f"unexpected executable scripts in {shell_path}")
         for forbidden in ("wix-viewer-model", "X-XSRF-TOKEN", "OLLAMA_API_KEY"):
@@ -2122,7 +2275,11 @@ def validate_output(site_root: pathlib.Path, routes: list[dict[str, str]]) -> di
     }
 
 
-def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str, int]:
+def build(routes: list[dict[str, str]], snapshots: dict[str, dict], mobile_snapshots: dict[str, dict] | None = None) -> dict[str, int]:
+    if mobile_snapshots is None and (MOBILE_CAPTURE_ROOT / "replica-manifest.json").is_file():
+        mobile_snapshots = load_snapshots(routes, MOBILE_CAPTURE_ROOT)
+        if {page["site_revision"] for page in mobile_snapshots.values()} != {page["site_revision"] for page in snapshots.values()}:
+            raise BuildError("mobile and desktop captures must use the same published Wix revision")
     required = (
         SIDECAR_TEMPLATE_PATH,
         *tuple(ROOT / asset for asset in SHARED_ASSETS),
@@ -2155,9 +2312,22 @@ def build(routes: list[dict[str, str]], snapshots: dict[str, dict]) -> dict[str,
                 prefix,
                 routes,
                 snapshots[route["sourceUrl"]]["html"],
+                has_mobile_variant=mobile_snapshots is not None,
+                captured_at=snapshots[route["sourceUrl"]].get("captured_at", ""),
             )
             destination.write_text(rendered, encoding="utf-8")
-        counts = validate_output(temporary, routes)
+            if mobile_snapshots is not None:
+                mobile = mobile_snapshots.get(route["sourceUrl"])
+                if not mobile or "device-mobile-optimized" not in mobile["html"]:
+                    raise BuildError(f"missing native mobile layout for {route['sourceUrl']}")
+                destination.with_name("replica-mobile.html").write_text(
+                    render_visual_snapshot_page(
+                        route, prefix, routes, mobile["html"], mobile_layout=True,
+                        captured_at=mobile.get("captured_at", ""),
+                    ),
+                    encoding="utf-8",
+                )
+        counts = validate_output(temporary, routes, mobile_snapshots is not None)
         if OUTPUT_PATH.exists():
             if OUTPUT_PATH.is_symlink() or not OUTPUT_PATH.is_dir():
                 raise BuildError(f"refusing to replace unsafe output path: {OUTPUT_PATH}")

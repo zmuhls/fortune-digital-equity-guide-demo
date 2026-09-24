@@ -38,6 +38,34 @@ class DeploySnapshotBundleTests(unittest.TestCase):
         # Fixture-only tests miss a stale deployment archive after a recapture.
         pack.verify_bundle(pack.BUNDLE_PATH, pack.load_manifest(pack.MANIFEST_PATH))
 
+    def test_checked_in_native_mobile_bundle_matches_reviewed_manifest(self):
+        root = DEMO / "replica-mobile"
+        pack.verify_bundle(root / "replica-snapshots.raw.tar.xz",
+                           pack.load_manifest(root / "replica-manifest.json"))
+
+    def test_mobile_restore_is_independent_and_idempotent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            source = root / "source"
+            source.mkdir()
+            expected, _ = self.write_fixture(source)
+            bundle = source / "replica-snapshots.raw.tar.xz"
+            self.build(source, bundle)
+            mobile = root / "deploy" / "replica-mobile"
+            mobile.mkdir(parents=True)
+            shutil.copy2(source / "replica-manifest.json", mobile)
+            shutil.copy2(bundle, mobile / bundle.name)
+            unpack.restore_capture(mobile)
+            restored = {path.name: path.read_bytes()
+                        for path in (mobile / "replica-snapshots").glob("*.gz")}
+            unpack.restore_capture(mobile)
+            self.assertEqual(restored, {path.name: path.read_bytes()
+                             for path in (mobile / "replica-snapshots").glob("*.gz")})
+            for filename, value in restored.items():
+                self.assertEqual(gzip.decompress(value),
+                                 expected["replica-snapshots/" + filename.removesuffix(".gz")])
+            self.assertFalse((root / "deploy" / "replica-snapshots").exists())
+
     def write_fixture(self, root: pathlib.Path) -> tuple[dict, bytes]:
         snapshots = root / "replica-snapshots"
         snapshots.mkdir()

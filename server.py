@@ -3324,10 +3324,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 limit = int(query.get("limit", ["100"])[0])
             except ValueError:
                 limit = 100
+            limit = min(500, max(1, limit))
+            try:
+                offset = max(0, int(query.get("offset", ["0"])[0]))
+            except ValueError:
+                offset = 0
+            conversations = EVALUATION_STORE.list_conversations(
+                account["slot_key"], limit, offset=offset
+            )
             self._json(200, {
-                "conversations": EVALUATION_STORE.list_conversations(
-                    account["slot_key"], limit
-                ),
+                "conversations": conversations,
+                "next_offset": offset + len(conversations) if len(conversations) == limit else None,
             })
             return
         if parsed.path == "/api/evaluation/evaluators":
@@ -4244,7 +4251,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     ):
         """Return an operational error without fabricating an assistant turn."""
 
+        identity = {}
         if turn is not None:
+            identity = {
+                "conversation_id": turn.conversation_id,
+                "conversation_token": CONVERSATION_RECORDER.conversation_token(turn.conversation_id),
+            }
             try:
                 CONVERSATION_RECORDER.fail_turn(
                     turn,
@@ -4263,6 +4275,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     {
                         "error": "The guide could not safely record this question. Please try again shortly.",
                         "model_called": bool(model_called),
+                        **identity,
                     },
                 )
                 return
@@ -4271,6 +4284,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             {
                 "error": message,
                 "model_called": bool(model_called),
+                **identity,
             },
             headers=headers,
         )

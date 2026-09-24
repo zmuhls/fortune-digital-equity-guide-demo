@@ -14,6 +14,7 @@ import {
   MAX_PROGRESSIVE_COLLECTION_EXPANSIONS,
   MAX_TRANSIENT_NAVIGATION_ATTEMPTS,
   SOURCE_ORIGIN,
+  MOBILE_VIEWPORT,
   assertSanitized,
   assertStaticContentMaterialized,
   collectionMetricAdvanced,
@@ -46,6 +47,16 @@ const ABOUT = {
   url: `${SOURCE_ORIGIN}/about`,
   id: "page-about-59ff9683",
 };
+
+test("native mobile capture has explicit profile and cannot replace desktop captures", () => {
+  const options = parseArgs(["--profile", "mobile"]);
+  assert.equal(options.profile, "mobile");
+  assert.throws(() => selectRoutes(validateIndex(indexDocument([HOME])), options), /separate --output-dir/);
+  assert.throws(() => parseArgs(["--profile", "tiny"]), /desktop or mobile/);
+  const manifest = buildManifest({ timestamp: "2026-09-24T00:00:00Z", browserVersion: "153", pages: [], profile: "mobile" });
+  assert.deepEqual(manifest.capture.viewport, MOBILE_VIEWPORT);
+  assert.equal(manifest.capture.profile, "mobile");
+});
 
 
 test("the current index contains the declared number of unique safe routes", async () => {

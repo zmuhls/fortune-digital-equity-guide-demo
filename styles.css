@@ -329,12 +329,14 @@ a:hover { text-decoration-thickness: 2px; }
   70% { opacity: .7; transform: rotate(var(--ray-rotation)) scaleX(.92); }
 }
 .guide-toggle:hover,
-.guide-toggle:focus-visible {
+.guide-toggle:focus-visible,
+.guide-toggle.is-proxy-hovered {
   color: var(--guide-ink);
   background: var(--guide-paper);
 }
 .guide-toggle:hover .guide-rays > span,
-.guide-toggle:focus-visible .guide-rays > span {
+.guide-toggle:focus-visible .guide-rays > span,
+.guide-toggle.is-proxy-hovered .guide-rays > span {
   animation: guide-ray-interaction .72s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 1 both;
 }
 

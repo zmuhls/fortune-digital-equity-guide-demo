@@ -1,0 +1,35 @@
+/* Pilot disclosure is outside the captured/scaled Wix content. */
+#fortune-pilot-notice {
+  position: relative;
+  z-index: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+  background: #281a39;
+  color: #fff;
+  font: 400 14px/1.5 Arial, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+#fortune-pilot-notice strong { font-weight: 700; }
+#fortune-pilot-notice a {
+  color: #bcecff;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#fortune-pilot-notice a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+@media (max-width: 600px) {
+  #fortune-pilot-notice { font-size: 13px; }
+  #fortune-pilot-notice a { flex-basis: 100%; }
+}

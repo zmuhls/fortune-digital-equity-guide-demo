@@ -249,6 +249,19 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertEqual(rendered.lower().count("<script"), 1)
         self.assertIn("replica-shell.js", rendered)
 
+    def test_pilot_notice_is_visible_before_source_and_keeps_official_link_external(self):
+        for mobile in (False, True):
+            with self.subTest(mobile=mobile):
+                rendered = build_pages.render_visual_snapshot_page(
+                    HOME_ROUTE, "../../", [HOME_ROUTE], snapshot_document(),
+                    mobile_layout=mobile,
+                )
+                self.assertEqual(rendered.count('id="fortune-pilot-notice"'), 1)
+                self.assertIn('<strong>Demo / Pilot</strong>', rendered)
+                self.assertLess(rendered.index('id="fortune-pilot-notice"'), rendered.index('<main'))
+                self.assertIn('href="https://www.fortunedigitalequity.org/" target="_blank"', rendered)
+                self.assertIn('../../replica-notice.css?v=', rendered)
+
     def test_text_shell_css_is_small_and_contains_no_visual_assets(self):
         shell_css = (DEMO / "replica-shell.css").read_text(encoding="utf-8")
 
@@ -852,6 +865,7 @@ class ArtifactTests(unittest.TestCase):
                 build_pages,
                 ROOT=root,
                 OUTPUT_PATH=output,
+                MOBILE_CAPTURE_ROOT=root / "replica-mobile",
                 SIDECAR_TEMPLATE_PATH=root / "index.html",
             ):
                 counts = build_pages.build(routes, snapshots)

@@ -5,11 +5,16 @@
   if (search.get("embed") !== "1" || window.parent === window) return;
 
   const panel = document.querySelector("#guide-panel");
+  const launcher = document.querySelector("#guide-toggle");
   const parentOrigin = window.location.origin;
 
   function notifyState() {
     const expanded = Boolean(panel && !panel.hidden);
-    window.parent.postMessage({ type: "fortune-sidecar-state", expanded }, parentOrigin);
+    const bounds = !expanded && launcher ? launcher.getBoundingClientRect() : null;
+    window.parent.postMessage({
+      type: "fortune-sidecar-state", expanded,
+      launcher: bounds ? { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height } : null,
+    }, parentOrigin);
   }
 
   function sourceDestination(anchor) {
@@ -43,6 +48,12 @@
   if (panel) observer.observe(panel, { attributes: true, attributeFilter: ["class", "hidden"] });
   window.addEventListener("load", notifyState);
   window.addEventListener("resize", notifyState);
+  document.fonts?.ready?.then(notifyState).catch(() => {});
+  window.addEventListener("message", event => {
+    if (event.source !== window.parent || event.origin !== parentOrigin) return;
+    if (event.data?.type === "fortune-sidecar-open" && panel?.hidden) launcher?.click();
+    if (event.data?.type === "fortune-sidecar-launcher-hover") launcher?.classList.toggle("is-proxy-hovered", Boolean(event.data.active));
+  });
   notifyState();
 
   document.addEventListener("click", (event) => {
