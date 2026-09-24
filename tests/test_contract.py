@@ -2824,6 +2824,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
+        self.assertIn('styles.css?v=20260923-responsive-menu-v1', html)
         for source in (styles, wix):
             self.assertIn("@keyframes guide-ray-intro", source)
             self.assertIn("@keyframes guide-ray-interaction", source)
