@@ -56,7 +56,7 @@ REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
 REPLICA_WIDGET_CSS_VERSION = "20260924-native-menu-launcher-v3"
 REPLICA_SHELL_JS_VERSION = "20260924-webkit-launcher-v4"
 REPLICA_CALENDAR_CSS_VERSION = "20260924-calendar-source-v1"
-REPLICA_NOTICE_CSS_VERSION = "20260924-pilot-v1"
+REPLICA_NOTICE_CSS_VERSION = "20260924-pilot-viewport-v2"
 # Wix stores these public anchor destinations outside the rendered link href.
 # Keep the verified native fragment when publishing its inert capture. Targets
 # are ids retained in the reviewed snapshots (and checked in the link audit).
@@ -2109,7 +2109,14 @@ def render_visual_snapshot_page(
         count=1,
         flags=re.IGNORECASE,
     )
+    if mobile_layout:
+        # Keep Wix's 320px design width on the canvas, not the browser viewport.
+        rendered = re.sub(
+            r'''<meta\b(?=[^>]*\bname\s*=\s*["']viewport["'])[^>]*>''',
+            "", rendered, flags=re.IGNORECASE,
+        )
     head_addition = (
+        ('\n<meta name="viewport" content="width=device-width, initial-scale=1">' if mobile_layout else "") +
         f'\n<meta name="fortune-replica-source" content="{html.escape(source_url, quote=True)}">'
         f'\n<meta name="fortune-replica-captured-at" content="{html.escape(captured_at, quote=True)}">'
         f'\n<link rel="stylesheet" href="{html.escape(asset_base + "replica-widget.css?v=" + REPLICA_WIDGET_CSS_VERSION, quote=True)}">'
@@ -2129,7 +2136,7 @@ def render_visual_snapshot_page(
         '<aside id="fortune-pilot-notice" aria-label="Demo notice">'
         '<strong>Demo / Pilot</strong><span>This is a test version of the website.</span>'
         '<a href="https://www.fortunedigitalequity.org/" target="_blank" '
-        'rel="noopener noreferrer" data-replica-live-action="true">Visit Fortune’s official site</a>'
+        'rel="noopener noreferrer" data-replica-live-action="true">Visit the official Digital Equity site</a>'
         '</aside>'
     )
     rendered = re.sub(r"(<body\b[^>]*>)", lambda match: match.group(0) + notice,

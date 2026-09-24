@@ -258,6 +258,7 @@ class SnapshotRenderingTests(unittest.TestCase):
                 )
                 self.assertEqual(rendered.count('id="fortune-pilot-notice"'), 1)
                 self.assertIn('<strong>Demo / Pilot</strong>', rendered)
+                self.assertIn('Visit the official Digital Equity site</a>', rendered)
                 self.assertLess(rendered.index('id="fortune-pilot-notice"'), rendered.index('<main'))
                 self.assertIn('href="https://www.fortunedigitalequity.org/" target="_blank"', rendered)
                 self.assertIn('../../replica-notice.css?v=', rendered)
