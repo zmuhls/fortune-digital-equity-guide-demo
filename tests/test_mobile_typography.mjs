@@ -109,6 +109,8 @@ for (const name of names) for (const width of [375, 390, 430, 768, 1440]) {
     const notice = await page.locator('#fortune-pilot-notice').boundingBox();
     const sourceHeader = await page.locator(width < 768 || width >= 980 ? '#SITE_HEADER' : '#fortune-responsive-header').boundingBox();
     assert.equal(notice.y, 0, 'Demo disclosure is at the top');
+    assert.equal(await page.locator('#fortune-pilot-notice a').innerText(), 'Visit the official Digital Equity site');
+    assert.equal(await page.locator('#fortune-pilot-notice a').getAttribute('href'), 'https://www.fortunedigitalequity.org/');
     assert.ok(sourceHeader.y >= notice.y + notice.height - 1, 'Disclosure must not overlap the source header');
     for (const block of metrics.blocks) {
       for (let index = 1; index < block.rows.length; index++) {
@@ -117,6 +119,18 @@ for (const name of names) for (const width of [375, 390, 430, 768, 1440]) {
       }
     }
     if (width < 768) {
+      assert.match(metrics.viewport, /width=device-width/);
+      // Wix's native phone canvas can keep the body at its 320px design width.
+      // Our notice is outside that canvas and must still reach the screen edge.
+      const previousBodyWidth = await page.evaluate(() => {
+        const previous = document.body.style.width;
+        document.body.style.width = '320px';
+        return previous;
+      });
+      const fullWidthNotice = await page.locator('#fortune-pilot-notice').boundingBox();
+      assert.ok(Math.abs(fullWidthNotice.x) <= 1 && Math.abs(fullWidthNotice.width - width) <= 1,
+        `Pilot notice must span the viewport even with the source fixed-width body: ${JSON.stringify(fullWidthNotice)}`);
+      await page.evaluate(previous => { document.body.style.width = previous; }, previousBodyWidth);
       assert.equal(metrics.blocks.find(block => block.text.includes('WELCOME')).size, 30, 'Use the source phone heading, not the 56px desktop heading');
       for (const label of ['FIND A WORKSHOP', 'GET A DEVICE', 'GET SUPPORT', 'VIEW CALENDAR', 'INTERNSHIP', 'EXPLORE TOOLS']) {
         const link = page.getByRole('link', { name: label, exact: true });

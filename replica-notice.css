@@ -29,6 +29,12 @@
   outline: 2px solid currentColor;
   outline-offset: 4px;
 }
+/* The native Wix phone body can remain 320px wide while its canvas scales.
+   This notice sits outside that canvas and must reach the viewport edge. */
+@media (max-width: 767px) {
+  /* Override Wix's body-child max-width:100%!important only for our notice. */
+  #fortune-pilot-notice { width: 100vw; max-width: none !important; }
+}
 @media (max-width: 600px) {
   #fortune-pilot-notice { font-size: 13px; }
   #fortune-pilot-notice a { flex-basis: 100%; }
