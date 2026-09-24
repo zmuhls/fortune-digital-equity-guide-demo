@@ -30,6 +30,7 @@ if [[ "${1:-}" == "test" ]]; then
   fi
   "$NODE_EXE" --test "$DEMO_DIR/tests/test_replica_navigation.mjs" "$DEMO_DIR/tests/test_replica_services.mjs"
   "$NODE_EXE" --test "$DEMO_DIR/tests/test_mobile_typography.mjs"
+  "$NODE_EXE" --test "$DEMO_DIR/tests/test_prompt_sync.mjs"
   exit 0
 fi
 
