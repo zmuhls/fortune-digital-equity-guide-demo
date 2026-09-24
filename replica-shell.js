@@ -19,6 +19,102 @@
   const liveOnlyPaths = new Set(["/file-share", "/groups", "/members", "/pdf2-upload"]);
   let knownRoutes = null;
 
+  const responsiveNavigationGroups = [
+    {
+      label: "SERVICES",
+      links: [
+        ["Regular Workshops", "workshops/"],
+        ["Individual Support", "support/"],
+        ["Special Events & Sessions", "events/"],
+        ["Professional Digital Foundations", "pdf/"],
+        ["Microsoft Certifications", "certifications/"],
+        ["Tech Fair", "techfair/"],
+      ],
+    },
+    {
+      label: "RESOURCES",
+      links: [
+        ["Practice Your Skills", "practice/"],
+        ["Device Distribution", "devices/"],
+        ["Find Opportunities", "opportunities/"],
+        ["Other Digital Resources", "other/"],
+      ],
+    },
+  ];
+
+  function localUrl(path) {
+    return new URL(path, assetRoot).href;
+  }
+
+  function buildResponsiveNavigation() {
+    if (document.querySelector("#fortune-responsive-header")) return;
+    const sourceHeader = document.querySelector("#SITE_HEADER");
+    const sourceBrand = sourceHeader?.querySelector('a[aria-label="Homepage"]');
+    if (!sourceHeader || !sourceBrand) return;
+
+    const header = document.createElement("header");
+    header.id = "fortune-responsive-header";
+    header.innerHTML = `
+      <div class="fortune-responsive-header__bar">
+        <a class="fortune-responsive-header__brand" href="${localUrl("")}" aria-label="Digital Equity home"></a>
+        <button class="fortune-responsive-header__toggle" type="button" aria-expanded="false" aria-controls="fortune-responsive-navigation">
+          <span>MENU</span><span class="fortune-responsive-header__toggle-icon" aria-hidden="true"></span>
+        </button>
+      </div>
+      <nav id="fortune-responsive-navigation" class="fortune-responsive-navigation" aria-label="Site menu">
+        <a href="${localUrl("")}">HOME</a>
+        <a href="${localUrl("about/")}">ABOUT</a>
+        ${responsiveNavigationGroups.map(group => `
+          <details>
+            <summary>${group.label}</summary>
+            <div>${group.links.map(([label, path]) => `<a href="${localUrl(path)}">${label}</a>`).join("")}</div>
+          </details>
+        `).join("")}
+        <a href="${localUrl("calendar/")}">CALENDAR</a>
+        <a href="${localUrl("contact/")}">CONTACT</a>
+      </nav>
+    `;
+
+    const brandClone = sourceBrand.cloneNode(true);
+    brandClone.removeAttribute("class");
+    brandClone.href = localUrl("");
+    brandClone.setAttribute("aria-label", "Digital Equity home");
+    brandClone.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+    header.querySelector(".fortune-responsive-header__brand").replaceWith(brandClone);
+    brandClone.className = "fortune-responsive-header__brand";
+
+    if ((new URL(sourceUrl || "https://www.fortunedigitalequity.org/")).pathname === "/") {
+      const actions = document.createElement("div");
+      actions.className = "fortune-responsive-actions";
+      actions.setAttribute("aria-label", "Page actions");
+      actions.innerHTML = `
+        <a href="#comp-mbzt50my">CHOOSE A SERVICE</a>
+        <a href="#comp-mscrj860">EXPLORE LEARNING PATHS</a>
+      `;
+      header.append(actions);
+    }
+
+    document.body.insertBefore(header, document.querySelector("#SITE_CONTAINER"));
+    const toggle = header.querySelector(".fortune-responsive-header__toggle");
+    const navigation = header.querySelector(".fortune-responsive-navigation");
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      navigation.dataset.open = String(open);
+    });
+    navigation.addEventListener("click", event => {
+      if (!event.target.closest("a")) return;
+      toggle.setAttribute("aria-expanded", "false");
+      navigation.dataset.open = "false";
+    });
+    header.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      toggle.setAttribute("aria-expanded", "false");
+      navigation.dataset.open = "false";
+      toggle.focus();
+    });
+  }
+
   function fitVisualMirrorToViewport() {
     const canvas = document.querySelector("#SITE_CONTAINER");
     if (!canvas || document.documentElement.dataset.fortuneVisualMirror !== "true") return;
@@ -43,6 +139,7 @@
     pendingViewportFit = window.requestAnimationFrame(fitVisualMirrorToViewport);
   }
 
+  buildResponsiveNavigation();
   fitVisualMirrorToViewport();
   window.addEventListener("resize", scheduleViewportFit, { passive: true });
   window.addEventListener("orientationchange", scheduleViewportFit, { passive: true });
@@ -127,7 +224,7 @@
     "allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
   );
   const frameUrl = new URL("sidecar.html", assetRoot);
-  frameUrl.searchParams.set("v", "20260922-ux-v36");
+  frameUrl.searchParams.set("v", "20260923-responsive-menu-v1");
   frameUrl.searchParams.set("embed", "1");
   frameUrl.searchParams.set("page", canonicalUrl(sourceUrl) || sourceUrl);
   if (new URLSearchParams(window.location.search).get("open") === "1") {

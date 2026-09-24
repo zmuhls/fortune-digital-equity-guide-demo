@@ -273,17 +273,17 @@ a:hover { text-decoration-thickness: 2px; }
 .guide :focus-visible { outline: 3px solid var(--guide-ink); outline-offset: 3px; }
 .guide-toggle {
   position: relative;
-  min-height: 44px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 15px;
-  border: 1px solid var(--guide-ink);
+  padding: 0 18px;
+  border: 2px solid var(--guide-ink);
   border-radius: 3px;
   color: var(--guide-paper);
   background: var(--guide-ink);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   transition: background .14s ease, color .14s ease;
 }
@@ -304,7 +304,7 @@ a:hover { text-decoration-thickness: 2px; }
   clip-path: polygon(0 38%, 100% 0, 94% 100%, 3% 68%);
   opacity: 0;
   transform: rotate(var(--ray-rotation)) scaleX(.05);
-  animation: guide-ray-burst 15s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) infinite both;
+  animation: guide-ray-intro .9s cubic-bezier(.22, .74, .28, 1) calc(5s + var(--ray-stagger)) 1 both;
 }
 .guide-rays > span:nth-child(1) { top: 18%; left: -24px; width: 16px; --ray-rotation: 8deg; --ray-stagger: 0s; }
 .guide-rays > span:nth-child(2) { top: 51%; left: -28px; width: 20px; --ray-rotation: -4deg; --ray-stagger: .16s; }
@@ -318,16 +318,24 @@ a:hover { text-decoration-thickness: 2px; }
 .guide-rays > span:nth-child(10) { bottom: -17px; left: 15%; width: 14px; --ray-rotation: 103deg; --ray-stagger: .31s; }
 .guide-rays > span:nth-child(11) { bottom: -21px; left: 48%; width: 20px; --ray-rotation: 87deg; --ray-stagger: .06s; }
 .guide-rays > span:nth-child(12) { right: 9%; bottom: -16px; width: 15px; --ray-rotation: 76deg; --ray-stagger: .43s; }
-@keyframes guide-ray-burst {
-  0%, 11%, 100% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(.05); }
-  1.5% { opacity: .5; transform: rotate(var(--ray-rotation)) scaleX(.3); }
-  4% { opacity: .92; transform: rotate(var(--ray-rotation)) scaleX(1); }
-  7% { opacity: .62; transform: rotate(var(--ray-rotation)) scaleX(.9); }
-  10% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(1.08); }
+@keyframes guide-ray-intro {
+  0%, 100% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(.05); }
+  30% { opacity: .92; transform: rotate(var(--ray-rotation)) scaleX(1); }
+  68% { opacity: .62; transform: rotate(var(--ray-rotation)) scaleX(.9); }
 }
-.guide-toggle:hover {
+@keyframes guide-ray-interaction {
+  0%, 100% { opacity: 0; transform: rotate(var(--ray-rotation)) scaleX(.05); }
+  35% { opacity: 1; transform: rotate(var(--ray-rotation)) scaleX(1); }
+  70% { opacity: .7; transform: rotate(var(--ray-rotation)) scaleX(.92); }
+}
+.guide-toggle:hover,
+.guide-toggle:focus-visible {
   color: var(--guide-ink);
   background: var(--guide-paper);
+}
+.guide-toggle:hover .guide-rays > span,
+.guide-toggle:focus-visible .guide-rays > span {
+  animation: guide-ray-interaction .72s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 1 both;
 }
 
 .guide-panel {

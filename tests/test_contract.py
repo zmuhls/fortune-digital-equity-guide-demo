@@ -2816,7 +2816,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn("eight recent exchanges (sixteen messages)", readme)
         self.assertEqual(server.MAX_HISTORY, 16)
 
-    def test_collapsed_launcher_uses_three_staggered_fifteen_second_ray_bursts(self):
+    def test_collapsed_launcher_waits_five_seconds_then_responds_to_hover_and_focus(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
         styles = (DEMO / "styles.css").read_text(encoding="utf-8")
         wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
@@ -2825,11 +2825,33 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
         for source in (styles, wix):
-            self.assertIn("@keyframes guide-ray-burst", source)
-            self.assertIn("guide-ray-burst 15s", source)
-            self.assertIn("var(--ray-stagger) infinite both", source)
+            self.assertIn("@keyframes guide-ray-intro", source)
+            self.assertIn("@keyframes guide-ray-interaction", source)
+            self.assertIn("calc(5s + var(--ray-stagger)) 1 both", source)
+            self.assertIn(":hover .guide-rays > span", source)
+            self.assertIn(":focus-visible .guide-rays > span", source)
             self.assertIn("clip-path: polygon", source)
             self.assertIn(".guide-rays > span { animation: none !important; opacity: 0 !important; }", source)
+
+    def test_responsive_replica_navigation_preserves_source_labels_and_full_size_actions(self):
+        shell = (DEMO / "replica-shell.js").read_text(encoding="utf-8")
+        styles = (DEMO / "replica-widget.css").read_text(encoding="utf-8")
+
+        for label in (
+            "HOME", "ABOUT", "SERVICES", "RESOURCES", "CALENDAR", "CONTACT",
+            "Regular Workshops", "Individual Support", "Special Events & Sessions",
+            "Professional Digital Foundations", "Microsoft Certifications", "Tech Fair",
+            "Practice Your Skills", "Device Distribution", "Find Opportunities",
+            "Other Digital Resources", "CHOOSE A SERVICE", "EXPLORE LEARNING PATHS",
+        ):
+            self.assertIn(label, shell)
+        self.assertIn('aria-controls="fortune-responsive-navigation"', shell)
+        self.assertIn('event.key !== "Escape"', shell)
+        self.assertIn('html[data-replica-viewport-fit="true"] #SITE_HEADER', styles)
+        self.assertIn(".fortune-responsive-navigation[data-open=\"true\"]", styles)
+        self.assertIn("min-height: 50px", styles)
+        self.assertIn("min-height: 52px", styles)
+        self.assertIn("@media (max-width: 560px)", styles)
 
     def test_conversation_persists_across_page_navigation_in_the_same_tab(self):
         html = (DEMO / "index.html").read_text(encoding="utf-8")
@@ -2842,7 +2864,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260922-ux-v36")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20260923-responsive-menu-v1")', replica_shell)
         self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
         self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)
