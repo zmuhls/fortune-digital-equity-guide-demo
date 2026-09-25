@@ -129,13 +129,14 @@ def bounded_env_int(name, default, minimum, maximum):
 
 MODEL_CALLS_PER_HOUR = bounded_env_int(
     "FORTUNE_MODEL_CALLS_PER_HOUR",
-    default=30,
+    # A 50-turn conversation should not hit this guard before its own turn limit.
+    default=60,
     minimum=1,
     maximum=500,
 )
 MODEL_CALLS_PER_DAY = bounded_env_int(
     "FORTUNE_MODEL_CALLS_PER_DAY",
-    default=300,
+    default=600,
     minimum=1,
     maximum=5000,
 )

@@ -2664,6 +2664,15 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('budget_identifier = f"conversation:{turn.conversation_id}"', handler_source)
         self.assertNotIn("retry_reason and MODEL_CALL_BUDGET.claim", handler_source)
 
+    def test_default_budget_allows_a_full_conversation_before_its_turn_limit(self):
+        self.assertGreaterEqual(server.MODEL_CALLS_PER_HOUR, 50)
+        budget = server.ModelCallBudget(
+            server.MODEL_CALLS_PER_HOUR,
+            server.MODEL_CALLS_PER_DAY,
+            clock=lambda: 1_000_000.0,
+        )
+        self.assertTrue(all(budget.claim("conversation:one") for _ in range(50)))
+
     def test_model_warmup_loads_once_per_cooldown(self):
         now = [100.0]
         warmer = server.ModelWarmup(60, clock=lambda: now[0])
