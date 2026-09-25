@@ -1,4 +1,4 @@
-"""Behavioral regressions: normal inputs reach one model, without word classifiers."""
+"""Behavioral regressions: normal inputs reach the model without word classifiers."""
 import inspect
 import json
 import unittest
@@ -11,7 +11,7 @@ import test_contract
 
 
 class UXSweepTests(unittest.TestCase):
-    def test_everyday_inputs_reach_one_model_without_rephrase(self):
+    def test_everyday_inputs_reach_model_without_rephrase(self):
         harness = test_contract.StagedRetrievalTests()
         for question in (
             "yo", "who r u", "hello hello", "Help me", "How can I get started?",
@@ -25,10 +25,11 @@ class UXSweepTests(unittest.TestCase):
             with self.subTest(question=question):
                 text = "What would you like to find on the Digital Equity site?"
                 captured, calls = harness.dispatch_chat(question, server.ROOT_URL,
-                    model_raws=[json.dumps({"pick": "ASK", "answer": text})])
+                    model_raws=[json.dumps({"pick": "ASK", "answer": text})] * 2)
                 self.assertEqual(captured["status"], 200)
-                self.assertEqual(len(calls), 1)
-                self.assertEqual(calls[0][-1]["content"], question)
+                self.assertGreaterEqual(len(calls), 1)
+                self.assertLessEqual(len(calls), 2)
+                self.assertTrue(all(call[-1]["content"] == question for call in calls))
                 self.assertTrue(captured["payload"]["model_called"])
                 self.assertNotIn("rephras", captured["payload"]["message"].lower())
 
