@@ -466,6 +466,7 @@ class StagedRetrievalTests(unittest.TestCase):
         model_answers=None,
         model_raws=None,
         model_enabled=True,
+        model_budget=None,
     ):
         model_calls = []
         answer_sequence = list(model_answers or [])
@@ -485,7 +486,10 @@ class StagedRetrievalTests(unittest.TestCase):
         def record_model_call(_handler, messages, **_kwargs):
             model_calls.append(messages)
             if raw_sequence:
-                return raw_sequence.pop(0)
+                raw = raw_sequence.pop(0)
+                if isinstance(raw, Exception):
+                    raise raw
+                return raw
             records = json.loads(messages[0]["content"].split("\nCANDIDATE RECORDS:\n", 1)[1])
             selected = next((row for row in records if row["id"] == model_source_id), records[0])
             answer = (answer_sequence.pop(0) if answer_sequence else model_answer) or next(
@@ -498,7 +502,7 @@ class StagedRetrievalTests(unittest.TestCase):
         original_key = server.KEY
         original_model_budget = server.MODEL_CALL_BUDGET
         server.KEY = "test-only-placeholder" if model_enabled else ""
-        server.MODEL_CALL_BUDGET = server.ModelCallBudget(10000, 10000)
+        server.MODEL_CALL_BUDGET = model_budget or server.ModelCallBudget(10000, 10000)
         try:
             handler.do_POST()
         finally:
@@ -511,6 +515,89 @@ class StagedRetrievalTests(unittest.TestCase):
         system_prompt = model_calls[0][0]["content"]
         marker = "\nCANDIDATE RECORDS:\n"
         return json.loads(system_prompt.split(marker, 1)[1])
+
+    def test_initial_bundle_is_smaller_than_the_approved_site_matches(self):
+        question = "What Excel classes are available?"
+        _, all_sources = server.retrieval_plan(question, {"url": server.ROOT_URL})
+        captured, model_calls = self.dispatch_chat(
+            question, server.ROOT_URL, model_source_id=all_sources[0]["id"],
+        )
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(len(model_calls), 1)
+        first_ids = [row["id"] for row in self.retrieval_records(model_calls)]
+        self.assertEqual(first_ids[:5], [source["id"] for source in all_sources[:5]])
+        self.assertEqual(first_ids[5:], ["calendar"])
+        self.assertLess(len(first_ids), len(all_sources))
+
+    def test_model_ask_can_expand_to_an_additional_approved_page(self):
+        question = "What Excel classes are available?"
+        _, all_sources = server.retrieval_plan(question, {"url": server.ROOT_URL})
+        later = all_sources[5]
+        answer = server.source_excerpt(later, question).splitlines()[0]
+        captured, model_calls = self.dispatch_chat(
+            question,
+            server.ROOT_URL,
+            model_raws=[
+                json.dumps({"pick": "ASK", "answer": "Which Excel topic do you mean?"}),
+                json.dumps({"pick": later["id"], "answer": answer}),
+            ],
+        )
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(captured["payload"]["kind"], "answer")
+        self.assertEqual(captured["payload"]["sources"][0]["id"], later["id"])
+        self.assertEqual(captured["payload"]["model_generations"], 2)
+        self.assertEqual(len(model_calls), 2)
+        self.assertNotIn(later["id"], [row["id"] for row in self.retrieval_records(model_calls)])
+        expanded_records = json.loads(model_calls[1][0]["content"].split("\nCANDIDATE RECORDS:\n", 1)[1])
+        self.assertEqual([row["id"] for row in expanded_records], [source["id"] for source in all_sources])
+
+    def test_failed_expansion_keeps_the_first_model_clarification(self):
+        captured, model_calls = self.dispatch_chat(
+            "What Excel classes are available?",
+            server.ROOT_URL,
+            model_raws=[
+                json.dumps({"pick": "ASK", "answer": "Which Excel topic do you mean?"}),
+                "{invalid",
+            ],
+        )
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(captured["payload"]["kind"], "clarify")
+        self.assertEqual(captured["payload"]["message"], "Which Excel topic do you mean?")
+        self.assertEqual(captured["payload"]["model_generations"], 2)
+        self.assertEqual(len(model_calls), 2)
+
+    def test_provider_failure_on_expansion_keeps_the_first_clarification(self):
+        captured, model_calls = self.dispatch_chat(
+            "What Excel classes are available?",
+            server.ROOT_URL,
+            model_raws=[
+                json.dumps({"pick": "ASK", "answer": "Which Excel topic do you mean?"}),
+                server.ModelProviderBusy("provider unavailable"),
+            ],
+        )
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(captured["payload"]["message"], "Which Excel topic do you mean?")
+        self.assertEqual(captured["payload"]["model_generations"], 2)
+        self.assertEqual(len(model_calls), 2)
+
+    def test_expansion_budget_exhaustion_keeps_the_first_clarification(self):
+        captured, model_calls = self.dispatch_chat(
+            "What Excel classes are available?",
+            server.ROOT_URL,
+            model_raws=[json.dumps({"pick": "ASK", "answer": "Which Excel topic do you mean?"})],
+            model_budget=server.ModelCallBudget(1, 1),
+        )
+        self.assertEqual(captured["status"], 200)
+        self.assertEqual(captured["payload"]["message"], "Which Excel topic do you mean?")
+        self.assertEqual(captured["payload"]["model_generations"], 1)
+        self.assertEqual(len(model_calls), 1)
+
+    def test_relevant_live_calendar_stays_in_first_bundle(self):
+        question = "Is Tech Time available tomorrow?"
+        _, sources = server.retrieval_plan(question, {"url": server.ROOT_URL})
+        self.assertGreater(next(i for i, source in enumerate(sources) if source["id"] == "calendar"), 4)
+        initial = server.initial_retrieval_sources(sources, question)
+        self.assertIn("calendar", [source["id"] for source in initial])
 
     def test_current_page_evidence_uses_the_fast_source_backed_path(self):
         captured, model_calls = self.dispatch_chat(
@@ -2207,7 +2294,7 @@ class ResponseContractTests(unittest.TestCase):
     def test_runtime_has_no_deterministic_factual_answer_builder(self):
         self.assertFalse(hasattr(server, "grounded_answer_message"))
         handler_source = inspect.getsource(server.Handler.do_POST)
-        self.assertIn("self._model_completion(messages)", handler_source)
+        self.assertIn("self._model_completion(messages_for(model_sources))", handler_source)
         self.assertIn("parse_model_selection", handler_source)
 
     def test_spanish_answer_uses_selected_source_content_not_fixed_navigation_copy(self):
@@ -2665,13 +2752,13 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertNotIn("retry_reason and MODEL_CALL_BUDGET.claim", handler_source)
 
     def test_default_budget_allows_a_full_conversation_before_its_turn_limit(self):
-        self.assertGreaterEqual(server.MODEL_CALLS_PER_HOUR, 50)
+        self.assertGreaterEqual(server.MODEL_CALLS_PER_HOUR, 100)
         budget = server.ModelCallBudget(
             server.MODEL_CALLS_PER_HOUR,
             server.MODEL_CALLS_PER_DAY,
             clock=lambda: 1_000_000.0,
         )
-        self.assertTrue(all(budget.claim("conversation:one") for _ in range(50)))
+        self.assertTrue(all(budget.claim("conversation:one") for _ in range(100)))
 
     def test_model_warmup_loads_once_per_cooldown(self):
         now = [100.0]

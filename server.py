@@ -87,6 +87,7 @@ MAX_BODY = 64 * 1024
 MAX_HISTORY = 16
 MAX_QUESTION_CHARS = 600
 MAX_RETRIEVED = 10
+MAX_INITIAL_RETRIEVED = 5
 MAX_MODEL_EXCERPT_CHARS = 1800
 MAX_MESSAGE_WORDS = 40
 MAX_REASON_WORDS = 18
@@ -129,14 +130,14 @@ def bounded_env_int(name, default, minimum, maximum):
 
 MODEL_CALLS_PER_HOUR = bounded_env_int(
     "FORTUNE_MODEL_CALLS_PER_HOUR",
-    # A 50-turn conversation should not hit this guard before its own turn limit.
-    default=60,
+    # A second, wider evidence pass may be needed for each of 50 turns.
+    default=120,
     minimum=1,
     maximum=500,
 )
 MODEL_CALLS_PER_DAY = bounded_env_int(
     "FORTUNE_MODEL_CALLS_PER_DAY",
-    default=600,
+    default=1200,
     minimum=1,
     maximum=5000,
 )
@@ -465,8 +466,9 @@ def cail_completion(messages):
 
 
 def model_completion(messages, *, prefer_fallback=False):
-    # One generation request per visitor message. A timeout does not prove
-    # that the primary failed to generate; do not silently generate twice.
+    # A timeout does not prove that the primary failed to generate. Never
+    # silently retry a provider failure; the caller may expand evidence only
+    # after a valid model-authored ASK response.
     attempted = []
     if CAIL_KEY:
         provider, completion = "cail", cail_completion
@@ -2459,6 +2461,20 @@ def retrieval_plan(question, page_context=None, history=None):
     return scope, sources
 
 
+def initial_retrieval_sources(sources, question):
+    """Keep the strongest records, without losing relevant live calendar evidence."""
+
+    selected = list(sources[:MAX_INITIAL_RETRIEVED])
+    calendar = next((source for source in sources if source.get("id") == "calendar"), None)
+    if (
+        calendar
+        and calendar not in selected
+        and source_evidence_score(question, calendar) > 0
+    ):
+        selected.append(calendar)
+    return selected
+
+
 def related_links(question, sources, limit=3):
     """Keep only actual page links; never guess a destination from query words."""
 
@@ -3422,7 +3438,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     "per_conversation_hour": MODEL_CALLS_PER_HOUR,
                     "shared_day": MODEL_CALLS_PER_DAY,
                     "max_output_tokens": max(4096, MODEL_NUM_PREDICT) if CAIL_KEY else MODEL_NUM_PREDICT,
-                    "max_generations_per_turn": 1,
+                    "max_generations_per_turn": 2,
                     "automatic_repair": False,
                     "repair_calls_counted_separately": False,
                 },
@@ -3683,32 +3699,38 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     headers={"Retry-After": "60"},
                 )
                 return
-            model_sources = [
+            all_model_sources = [
                 CALENDAR_CACHE.source(source)
                 if source.get("id") == "calendar"
                 else source
                 for source in retrieved
             ]
-            messages = [{"role": "system", "content": retrieval_prompt(
-                question,
-                model_sources,
-                page_context,
-                interaction,
-                previous_answer=prior_answer,
-                conversation_history=safe_history,
-                team_prompt=(active_prompt or {}).get("body", ""),
-            )}]
-            # Retrieval may normalize a query; the model must still see what
-            # the visitor actually asked, including slang and frustration.
-            messages.extend(safe_history)
-            model_question = question
-            messages.append({
-                "role": "user",
-                "content": model_question[:MAX_QUESTION_CHARS],
-            })
+            model_sources = (
+                all_model_sources if sensitive_request
+                else initial_retrieval_sources(all_model_sources, question)
+            )
+
+            def messages_for(sources):
+                messages = [{"role": "system", "content": retrieval_prompt(
+                    question,
+                    sources,
+                    page_context,
+                    interaction,
+                    previous_answer=prior_answer,
+                    conversation_history=safe_history,
+                    team_prompt=(active_prompt or {}).get("body", ""),
+                )}]
+                messages.extend(safe_history)
+                # Retrieval may normalize a query; the model must still see
+                # the visitor's original wording, including frustration.
+                messages.append({
+                    "role": "user", "content": question[:MAX_QUESTION_CHARS],
+                })
+                return messages
+
             model_attempted = True
             model_attempts = 1
-            raw = self._model_completion(messages)
+            raw = self._model_completion(messages_for(model_sources))
             retry_reason = model_selection_retry_reason(
                 raw,
                 model_sources,
@@ -3719,7 +3741,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 require_model_answer,
                 conversation_history=safe_history,
             )
-            # Validate the single result, never request a repair generation.
             final_validation_reason = retry_reason
             response = parse_model_selection(
                 raw,
@@ -3732,12 +3753,52 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 require_answer=require_model_answer,
                 conversation_history=safe_history,
             )
+            first_reason = retry_reason or ("ask" if response["kind"] == "clarify" else "accepted")
+            if (
+                response["kind"] == "clarify"
+                and not sensitive_request
+                and len(model_sources) < len(all_model_sources)
+            ):
+                # ASK is the model's own signal that the concise evidence was
+                # insufficient. Give it the wider approved set once, not an
+                # invented answer or an unbounded repair loop.
+                if MODEL_CALL_BUDGET.claim(budget_identifier):
+                    model_attempts = 2
+                    try:
+                        expanded_raw = self._model_completion(messages_for(all_model_sources))
+                        final_validation_reason = model_selection_retry_reason(
+                            expanded_raw,
+                            all_model_sources,
+                            interaction,
+                            prior_answer,
+                            question,
+                            evidence_query,
+                            require_model_answer,
+                            conversation_history=safe_history,
+                        )
+                        response = parse_model_selection(
+                            expanded_raw,
+                            question,
+                            all_model_sources,
+                            retrieval_scope,
+                            interaction,
+                            routing_question=evidence_query,
+                            prior_answer=prior_answer,
+                            require_answer=require_model_answer,
+                            conversation_history=safe_history,
+                        )
+                    except (ModelProviderBusy, ModelResponseRejected, RuntimeError, ValueError):
+                        # The first model-authored clarification is still valid.
+                        final_validation_reason = "expansion_failed"
+                else:
+                    final_validation_reason = "expansion_budget_exhausted"
             if sensitive_request:
                 response["kind"] = "handoff"
                 response["retrieval_scope"] = "staff"
+            response["model_generations"] = model_attempts
             self._log_model_validation(
                 attempts=model_attempts,
-                first_reason=retry_reason or "accepted",
+                first_reason=first_reason,
                 final_reason=final_validation_reason or "accepted",
                 response_kind=response.get("kind") or "unknown",
             )
@@ -4206,7 +4267,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         interaction = dict(interaction or {})
         response = dict(response)
         if response.get("model_called"):
-            response["model_generations"] = 1
+            response["model_generations"] = min(2, max(1, int(response.get("model_generations") or 1)))
             response["model"] = getattr(self, "_model_used", MODEL)
             response["model_provider"] = getattr(self, "_model_provider", "ollama")
         response.update({
