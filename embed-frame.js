@@ -17,6 +17,14 @@
     }, parentOrigin);
   }
 
+  function syncHostViewport() {
+    document.documentElement?.classList?.toggle(
+      "sidecar-compact-host",
+      window.parent !== window && window.parent.innerWidth <= 520
+    );
+    notifyState();
+  }
+
   function sourceDestination(anchor) {
     const declared = anchor.dataset.siteUrl || anchor.dataset.mockUrl || "";
     let linked;
@@ -46,15 +54,16 @@
 
   const observer = new MutationObserver(notifyState);
   if (panel) observer.observe(panel, { attributes: true, attributeFilter: ["class", "hidden"] });
-  window.addEventListener("load", notifyState);
-  window.addEventListener("resize", notifyState);
+  window.addEventListener("load", syncHostViewport);
+  window.addEventListener("resize", syncHostViewport);
+  window.parent.addEventListener?.("resize", syncHostViewport);
   document.fonts?.ready?.then(notifyState).catch(() => {});
   window.addEventListener("message", event => {
     if (event.source !== window.parent || event.origin !== parentOrigin) return;
     if (event.data?.type === "fortune-sidecar-open" && panel?.hidden) launcher?.click();
     if (event.data?.type === "fortune-sidecar-launcher-hover") launcher?.classList.toggle("is-proxy-hovered", Boolean(event.data.active));
   });
-  notifyState();
+  syncHostViewport();
 
   document.addEventListener("click", (event) => {
     const anchor = event.target.closest("a[href]");

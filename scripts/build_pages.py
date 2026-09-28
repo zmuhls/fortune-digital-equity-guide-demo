@@ -54,7 +54,7 @@ SIDECAR_OUTPUT = "sidecar.html"
 REPLICA_MARKER = 'data-fortune-replica="true"'
 REPLICA_SHELL_CSS_VERSION = "20260828-calendar-view-1"
 REPLICA_WIDGET_CSS_VERSION = "20260924-native-menu-launcher-v3"
-REPLICA_SHELL_JS_VERSION = "20260924-webkit-launcher-v4"
+REPLICA_SHELL_JS_VERSION = "20260928-mobile-guide-launcher-v1"
 REPLICA_CALENDAR_CSS_VERSION = "20260924-calendar-source-v1"
 REPLICA_NOTICE_CSS_VERSION = "20260924-pilot-viewport-v2"
 # Wix stores these public anchor destinations outside the rendered link href.
@@ -631,7 +631,18 @@ def load_calendar_source() -> dict[str, Any]:
     content_sha256 = str(download.get("sha256") or "")
     if not re.fullmatch(r"[a-f0-9]{64}", content_sha256):
         raise BuildError("current calendar source has an invalid document hash")
-    label = clean_link_label(download.get("label"))
+    raw_label = re.sub(r"\s+", " ", str(download.get("label") or "")).strip()
+    label = clean_link_label(raw_label)
+    # The live calendar captions this current PDF with a .png suffix. Keep the
+    # exact visible label only for this verified official PDF destination;
+    # elsewhere, image filenames remain filtered as visual scaffolding.
+    if (
+        not label
+        and document_parts.path.casefold().endswith(".pdf")
+        and raw_label.casefold().endswith(".png")
+        and len(raw_label) <= 240
+    ):
+        label = raw_label
     if not label:
         raise BuildError("current calendar source is missing its public download label")
 
@@ -2023,23 +2034,48 @@ def render_visual_snapshot_page(
                     1,
                 )
 
-        def restore_post_share_icon(match: re.Match[str]) -> str:
+        def set_anchor_attribute(opening: str, name: str, value: str) -> str:
+            attribute = f'{name}="{html.escape(value, quote=True)}"'
+            pattern = rf'\s+{re.escape(name)}=(?:"[^"]*"|\'[^\']*\')'
+            if re.search(pattern, opening, flags=re.IGNORECASE):
+                return re.sub(pattern, " " + attribute, opening, count=1, flags=re.IGNORECASE)
+            return opening[:-1] + " " + attribute + ">"
+
+        def restore_post_action_markers(match: re.Match[str]) -> str:
             opening = match.group("opening")
-            accessible = re.search(r'aria-label=["\']([^"\']+)["\']', opening)
+            accessible = re.search(r'aria-label=["\']([^"\']+)["\']', opening, re.IGNORECASE)
             if not accessible:
                 return match.group(0)
             label = html.unescape(accessible.group(1)).removesuffix(" on the live Digital Equity page")
-            icon = POST_CONTROL_ICONS.get(label)
-            if not icon:
+            if label not in POST_CONTROL_ICONS and label not in POST_GALLERY_CONTROLS:
                 return match.group(0)
-            return (
-                opening[:-1] + f' title="{html.escape(label, quote=True)} on Fortune’s site" data-replica-post-icon="true">'
-                + icon + "</a>"
+
+            title = (
+                "Print this post on Fortune’s site" if label == "Print Post"
+                else "View the live photo gallery on Fortune’s site" if label in POST_GALLERY_CONTROLS
+                else f"{label} on Fortune’s site"
             )
+            opening = set_anchor_attribute(opening, "title", title)
+            if label in POST_CONTROL_ICONS:
+                opening = set_anchor_attribute(opening, "data-replica-post-icon", "true")
+            if label == "Print Post" or label in POST_GALLERY_CONTROLS:
+                opening = set_anchor_attribute(opening, "data-replica-post-action", "true")
+            if label in POST_GALLERY_CONTROLS:
+                gallery_control = POST_GALLERY_CONTROLS[label]
+                opening = set_anchor_attribute(opening, "class", gallery_control["class"])
+                opening = set_anchor_attribute(opening, "data-hook", gallery_control["data_hook"])
+                opening = set_anchor_attribute(opening, "data-replica-gallery-action", "true")
+            content = match.group("content")
+            icon = POST_CONTROL_ICONS.get(label)
+            if icon and not re.search(r"<\w", content):
+                content = icon
+            return opening + content + "</a>"
+
         rendered = re.sub(
-            r'(?P<opening><a\b(?=[^>]*data-replica-live-action=["\']true["\'])[^>]*>)[^<]*</a>',
-            restore_post_share_icon,
+            r'(?P<opening><a\b(?=[^>]*data-replica-live-action=["\']true["\'])[^>]*>)(?P<content>[\s\S]*?)</a>',
+            restore_post_action_markers,
             rendered,
+            flags=re.IGNORECASE,
         )
 
         def restore_live_post_control(match: re.Match[str]) -> str:

@@ -3,6 +3,7 @@
 import importlib.util
 import gzip
 import json
+import re
 from pathlib import Path
 import unittest
 
@@ -91,6 +92,14 @@ class ServiceAssetTests(unittest.TestCase):
                     self.assertIn('data-replica-post-action="true"', rendered)
                     self.assertGreaterEqual(rendered.count('data-replica-post-icon="true"'), 5)
                     self.assertIn(builder.POST_CONTROL_ICONS["Print Post"], rendered)
+                    post_actions = re.findall(
+                        r'<a\b(?=[^>]*data-replica-post-action="true")[^>]*>', rendered
+                    )
+                    self.assertTrue(post_actions)
+                    for opening in post_actions:
+                        destination = re.search(r'href="([^"]+)"', opening)
+                        self.assertIsNotNone(destination)
+                        self.assertEqual(destination.group(1), page["url"])
                     self.assertNotIn('>Share via Facebook on the Digital Equity site</a>', rendered)
                     self.assertIn(f'href="{page["url"]}" target="_blank" rel="noopener noreferrer"', rendered)
                     if page["path"] in builder.POST_GALLERIES:

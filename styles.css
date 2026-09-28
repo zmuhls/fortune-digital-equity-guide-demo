@@ -723,6 +723,37 @@ a:hover { text-decoration-thickness: 2px; }
   .context-window summary { font-size: 12px; }
   .guide-footer { align-items: center; flex-wrap: nowrap; gap: 8px; }
   .guide-footer > a { font-size: 12px; }
+
+}
+
+/* The embed's iframe stays 360px wide on desktop too; use the host viewport. */
+html.sidecar-embed.sidecar-compact-host .guide:has(.guide-toggle:not([hidden])) {
+  inset: auto 8px 10px auto;
+  width: 44px;
+}
+html.sidecar-embed.sidecar-compact-host .guide-toggle {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 16px;
+}
+html.sidecar-embed.sidecar-compact-host .guide-toggle-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+html.sidecar-embed.sidecar-compact-host .guide-toggle::after {
+  position: relative;
+  z-index: 1;
+  content: "?";
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @media (max-width: 360px) {

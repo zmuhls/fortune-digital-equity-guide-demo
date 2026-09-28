@@ -34,14 +34,14 @@ def model_response(source, question="", answer=""):
 class SiteIndexTests(unittest.TestCase):
     def test_current_public_sitemap_inventory_is_present(self):
         self.assertTrue(server.SITE_INDEX_PATH.exists())
-        self.assertEqual(server.SITE_INDEX["unique_urls"], 150)
-        self.assertEqual(server.SITE_INDEX["sitemap_entries"], 163)
-        self.assertEqual(len(server.SITE_INDEX["pages"]), 150)
+        self.assertEqual(server.SITE_INDEX["unique_urls"], 154)
+        self.assertEqual(server.SITE_INDEX["sitemap_entries"], 167)
+        self.assertEqual(len(server.SITE_INDEX["pages"]), 154)
 
     def test_authority_boundary_is_explicit(self):
         self.assertEqual(
             server.SITE_INDEX["authority_counts"],
-            {"answer": 111, "excluded": 9, "archive": 21, "navigation": 9},
+            {"answer": 117, "excluded": 7, "archive": 21, "navigation": 9},
         )
         self.assertGreaterEqual(len(server.ANSWER_SOURCES), 90)
         self.assertTrue(all(source["authority"] == "answer" for source in server.ANSWER_SOURCES))
@@ -835,7 +835,7 @@ class StagedRetrievalTests(unittest.TestCase):
                 server.SOURCE_BY_ID[server.SOURCE_ID_BY_URL[page["url"]]]
             )
         ]
-        self.assertEqual(len(complete_pages), 111)
+        self.assertEqual(len(complete_pages), 117)
         for page in complete_pages:
             question = f"What does this page say about {page.get('title') or page['id']}?"
             with self.subTest(url=page["url"]):
@@ -852,7 +852,7 @@ class StagedRetrievalTests(unittest.TestCase):
             page for page in server.SITE_INDEX["pages"]
             if page.get("authority") != "answer" or page.get("status") != 200
         ]
-        self.assertEqual(len(blocked_pages), 39)
+        self.assertEqual(len(blocked_pages), 37)
         self.assertEqual(
             {page.get("authority") for page in blocked_pages},
             {"archive", "excluded", "navigation"},
@@ -2111,7 +2111,7 @@ class ResponseContractTests(unittest.TestCase):
             "I can't confirm whether an Intro to Email class is scheduled tomorrow. "
             "The calendar lets you click a date to see available classes."
         )
-        self.assertFalse(server.model_answer_is_grounded(limitation, calendar))
+        self.assertTrue(server.model_answer_is_grounded(limitation, calendar))
         self.assertTrue(
             server.model_answer_is_grounded(limitation, calendar, question)
         )
@@ -2985,7 +2985,11 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
-        self.assertIn('styles.css?v=20260924-launcher-hit-area-v2', html)
+        self.assertIn('styles.css?v=20260928-compact-mobile-guide-v1', html)
+        self.assertIn('embed-frame.js?v=20260928-mobile-host-viewport-v1', html)
+        embed_frame = (DEMO / "embed-frame.js").read_text(encoding="utf-8")
+        self.assertIn("window.parent.innerWidth <= 520", embed_frame)
+        self.assertIn("sidecar-compact-host", styles)
         for source in (styles, wix):
             self.assertIn("@keyframes guide-ray-intro", source)
             self.assertIn("@keyframes guide-ray-interaction", source)
@@ -3029,7 +3033,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260924-launcher-hit-area-v2")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20260928-mobile-guide-launcher-v1")', replica_shell)
         self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
         self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)

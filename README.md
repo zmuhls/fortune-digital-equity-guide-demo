@@ -1,6 +1,6 @@
 # Digital Equity page-aware Website Guide
 
-This repository publishes a visual mirror of the public Digital Equity site together with the sources used by its Website Guide. The September 21 inventory contains 150 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each route is rebuilt from a reviewed rendered capture so the public layout, imagery, navigation, FAQs, calendar, and page text remain faithful to the current Wix site while trackers and authenticated services remain excluded.
+This repository publishes a visual mirror of the public Digital Equity site together with the sources used by its Website Guide. The September 28 inventory contains 154 public HTML routes drawn from the Wix sitemaps, blog feed, pagination links, and public member links. Each route is rebuilt from a reviewed rendered capture so the public layout, imagery, navigation, FAQs, calendar, and page text remain faithful to the current Wix site while trackers and authenticated services remain excluded.
 
 The source text remains readable when the model service is unavailable. The published Pages configuration calls the canonical Railway backend at `https://guide-api-production-a1a1.up.railway.app`. That service holds credentials, accepts the `https://zmuhls.github.io` browser origin, and applies per-conversation and shared daily limits. With `CAIL_API_KEY` configured, each accepted message reaches GLM-5.3-Flash through the CAIL gateway. A valid model clarification may prompt one more generation with wider approved site evidence. A provider failure never starts a silent retry or switches providers. There are no automatic repair generations, canned answers, or classifier responses. Warm-up refreshes calendar evidence without generating a chat answer.
 
@@ -91,7 +91,7 @@ python3 scripts/build_pages.py
 python3 -m http.server 8791 --directory _site
 ```
 
-The build writes 150 reviewed visual `index.html` routes under `_site/`, including the root route, and copies the shared files that the mirror and sidecar require.
+The build writes 154 reviewed visual `index.html` routes under `_site/`, including the root route, and copies the shared files that the mirror and sidecar require.
 
 Refresh the reviewed current calendar before a calendar release:
 

@@ -109,12 +109,22 @@ test("uncaptured pagination hands off honestly and relative availability is time
   await page.close();
 });
 
-test("actual captured AI Safety markup closes the past September 22 session", async () => {
-  const compressed = await readFile(new URL("../replica-snapshots/service-service-page-ai-safety-in-2026-94d528fe.html.gz", import.meta.url));
-  const page = await pageFor(gunzipSync(compressed).toString(), { sourceUrl: "https://www.fortunedigitalequity.org/service-page/ai-safety-in-2026" });
-  assert.equal(await page.locator('[data-hook="daily-sessions"]:visible').count(), 0);
-  assert.equal(await page.locator('[data-replica-service-closed]').count(), 2);
-  assert.equal(await page.locator('[data-hook="book-button-wrapper"] a').count(), 0);
+test("current AI Safety class markup keeps the October session linked to its source", async () => {
+  const manifest = JSON.parse(await readFile(new URL("../replica-manifest.json", import.meta.url), "utf8"));
+  const service = manifest.pages.find(page => page.path === "/service-page/navigating-ai-safely");
+  assert.ok(service, "current public service page is present in the reviewed inventory");
+  const compressed = await readFile(new URL(`../${service.file}`, import.meta.url));
+  const page = await pageFor(gunzipSync(compressed).toString(), {
+    sourceUrl: service.url,
+    capturedAt: manifest.captured_at,
+    now: "2026-09-28T16:30:00Z",
+  });
+  assert.equal(await page.locator('[data-hook="daily-sessions"]:visible').count(), 1);
+  assert.match(await page.locator('[data-hook="daily-sessions"]:visible').innerText(), /Tuesday, Oct 27/);
+  assert.equal(await page.locator('[data-replica-service-closed]').count(), 0);
+  const registrationLinks = page.locator('[data-hook="book-button-wrapper"] a');
+  assert.equal(await registrationLinks.count(), 2);
+  assert.deepEqual(await registrationLinks.evaluateAll(links => links.map(link => link.href)), [service.url, service.url]);
   assert.deepEqual(await page.getByLabel('Location', { exact: true }).locator('option').allTextContents(), ["All Locations", "Main Office (LIC)", "SRP (Bronx)", "Fortune Academy (Harlem)"]);
   await page.close();
 });
@@ -122,7 +132,7 @@ test("actual captured AI Safety markup closes the past September 22 session", as
 test("every captured service page initializes without changing its description or inventing a booking route", async () => {
   const manifest = JSON.parse(await readFile(new URL("../replica-manifest.json", import.meta.url), "utf8"));
   const services = manifest.pages.filter(page => page.path.startsWith("/service-page/"));
-  assert.equal(services.length, 88);
+  assert.equal(services.length, 92);
   const page = await browser.newPage();
   await page.route("**/*", route => route.abort());
   await page.clock.install({ time: new Date("2026-09-24T04:30:00Z") });

@@ -54,6 +54,15 @@ def normalized_lines(value: str) -> list[str]:
 def calendar_pdf_schedule(source: dict[str, object]) -> dict[str, object]:
     """Pair class titles with the dates printed in the current public PDF."""
 
+    readings = source.get("calendar_pdf_readings")
+    if isinstance(readings, list):
+        for reading in readings:
+            if not isinstance(reading, dict) or reading.get("kind") != "linear":
+                continue
+            lines = normalized_lines(reading.get("text", ""))
+            if any("DIGITAL SKILLS ESSENTIALS CLASSES" in line.upper() for line in lines):
+                return _columnar_linear_calendar_schedule(lines)
+
     blocks = source.get("blocks")
     if not isinstance(blocks, list):
         raise ValueError("live calendar did not provide readable PDF source blocks")
@@ -178,6 +187,193 @@ def calendar_pdf_schedule(source: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _columnar_linear_calendar_schedule(lines: list[str]) -> dict[str, object]:
+    """Read the current Canva calendar's two text columns without inferring rows."""
+
+    month_index = next(
+        (index for index, line in enumerate(lines) if PDF_MONTH_PATTERN.fullmatch(line.upper())),
+        None,
+    )
+    if month_index is None:
+        raise ValueError("downloadable calendar has no readable month and year")
+    month_match = PDF_MONTH_PATTERN.fullmatch(lines[month_index].upper())
+    assert month_match is not None
+    month_name, year_text = month_match.groups()
+    year = int(year_text)
+    month_number = MONTH_NUMBERS[month_name[:3]]
+    time_indexes = [
+        index for index, line in enumerate(lines)
+        if line.upper().startswith("TIME:")
+    ]
+    if len(time_indexes) < 2:
+        raise ValueError("two-column calendar is missing its printed class hours")
+    first_time_index, second_time_index = time_indexes[:2]
+    location_lines = lines[month_index + 1:first_time_index]
+    if len(location_lines) < 2:
+        raise ValueError("downloadable calendar has no readable class location")
+
+    support_index = next(
+        (
+            index for index, line in enumerate(lines[second_time_index + 1:], start=second_time_index + 1)
+            if line.casefold().startswith("tech time")
+        ),
+        None,
+    )
+    if support_index is None:
+        raise ValueError("two-column calendar is missing its support-hours section")
+
+    def merge_continuations(values: list[str]) -> list[str]:
+        merged: list[str] = []
+        for value in values:
+            if value.casefold().startswith("feat."):
+                if not merged:
+                    raise ValueError("calendar feature note has no preceding class")
+                merged[-1] = f"{merged[-1]} ({value})"
+            elif value:
+                merged.append(value)
+        return merged
+
+    main_titles = merge_continuations(lines[second_time_index + 1:support_index])
+    weekday_labels = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+
+    def is_weekday_row(value: str) -> bool:
+        parts = value.upper().split("/")
+        return bool(parts) and all(part in weekday_labels for part in parts)
+
+    def date_row(value: str):
+        # pypdf can append the next visual text item to a date cell (for
+        # example, "| OCT 28Support Desk Kiosk"). Accept only the complete
+        # date/time prefix and ignore that attached neighboring text.
+        return re.match(
+            r"\|\s*([A-Z]{3})\s+(\d{1,2}(?:\s*/\s*\d{1,2})?)"
+            r"(?:\s*\|\s*(\d{1,2}(?::\d{2})?\s*[AP]M))?",
+            value.upper(),
+        )
+
+    right_weekday_start = next(
+        (index for index in range(support_index + 1, len(lines)) if is_weekday_row(lines[index])),
+        None,
+    )
+    if right_weekday_start is None:
+        raise ValueError("digital-skills column has no printed weekday rows")
+    right_weekdays = []
+    cursor = right_weekday_start
+    while cursor < len(lines) and is_weekday_row(lines[cursor]):
+        right_weekdays.append(lines[cursor].upper())
+        cursor += 1
+    right_date_start = next(
+        (index for index in range(cursor, len(lines)) if date_row(lines[index])),
+        None,
+    )
+    if right_date_start is None:
+        raise ValueError("digital-skills column has no printed date rows")
+    right_titles = lines[cursor:right_date_start]
+    right_dates = []
+    cursor = right_date_start
+    while cursor < len(lines) and date_row(lines[cursor]):
+        right_dates.append(lines[cursor])
+        cursor += 1
+    if not right_weekdays or len(right_weekdays) != len(right_titles) or len(right_titles) != len(right_dates):
+        raise ValueError("digital-skills title, weekday, and date columns do not align")
+
+    repeated_header = next(
+        (
+            index for index in range(cursor, len(lines))
+            if "DIGITAL EQUITY PROGRAM" in lines[index].upper()
+        ),
+        None,
+    )
+    if repeated_header is None:
+        raise ValueError("main class column has no printed date section")
+    main_weekday_start = next(
+        (index for index in range(repeated_header + 1, len(lines)) if is_weekday_row(lines[index])),
+        None,
+    )
+    if main_weekday_start is None:
+        raise ValueError("main class column has no printed weekday rows")
+    main_weekdays = []
+    cursor = main_weekday_start
+    while cursor < len(lines) and is_weekday_row(lines[cursor]):
+        main_weekdays.append(lines[cursor].upper())
+        cursor += 1
+    main_dates = []
+    while cursor < len(lines) and date_row(lines[cursor]):
+        main_dates.append(lines[cursor])
+        cursor += 1
+    if not main_titles or len(main_titles) != len(main_weekdays) or len(main_titles) != len(main_dates):
+        raise ValueError("main class title, weekday, and date columns do not align")
+
+    def expand_rows(titles: list[str], weekdays: list[str], dates: list[str]) -> list[dict[str, str]]:
+        expanded: list[dict[str, str]] = []
+        for title, weekday_row, date_text in zip(titles, weekdays, dates):
+            match = date_row(date_text)
+            if match is None:
+                raise ValueError("calendar date row is malformed")
+            month_abbr, day_text, special_time = match.groups()
+            if month_abbr not in MONTH_NUMBERS:
+                raise ValueError("calendar date row has an unknown month")
+            event_month = MONTH_NUMBERS[month_abbr]
+            event_year = year + (1 if event_month < month_number else 0)
+            days = [int(value.strip()) for value in day_text.split("/")]
+            weekdays_for_row = weekday_row.split("/")
+            if len(days) != len(weekdays_for_row):
+                raise ValueError("calendar date and weekday ranges do not align")
+            for day_number, weekday in zip(days, weekdays_for_row):
+                try:
+                    event_date = date(event_year, event_month, day_number)
+                except ValueError as error:
+                    raise ValueError("calendar contains an invalid date") from error
+                if event_date.weekday() != list(("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")).index(weekday):
+                    raise ValueError("calendar weekday does not match its printed date")
+                event_title = title
+                if special_time:
+                    time_match = re.fullmatch(r"(\d{1,2})(?::(\d{2}))?\s*([AP])M", special_time)
+                    if time_match is None:
+                        raise ValueError("calendar event time is malformed")
+                    hour, minute, meridiem = time_match.groups()
+                    event_title = f"{event_title} ({int(hour)}:{minute or '00'} {meridiem}M)"
+                expanded.append({
+                    "date": event_date.isoformat(),
+                    "date_label": f"{event_date.strftime('%a')} | {event_date.strftime('%b')} {event_date.day}",
+                    "title": event_title,
+                })
+        return expanded
+
+    events = expand_rows(main_titles, main_weekdays, main_dates)
+    events.extend(expand_rows(right_titles, right_weekdays, right_dates))
+    events.sort(key=lambda event: (event["date"], event["title"]))
+
+    support: list[str] = []
+    for line in lines:
+        kiosk = re.search(r"Support Desk Kiosk.*?(?=\s*Tues\s*&\s*Wed\s*\||$)", line, re.I)
+        if kiosk and kiosk.group(0) not in support:
+            support.append(kiosk.group(0).strip())
+        if re.match(r"^(?:Tech Time|Focused\s*\(|Foundations\s*\(|Support Desk Kiosk|Tues\s*&\s*Wed\s*\|)", line, re.I):
+            if line not in support:
+                support.append(line)
+    contact = next(
+        (
+            re.search(r"Visit\s+FortuneDigitalEquity\.org.*?(?=For more info or to register|$)", line, re.I)
+            for line in lines if "Visit FortuneDigitalEquity.org" in line
+        ),
+        None,
+    )
+    registration_note = "For more info or to register:"
+    if contact:
+        registration_note += " " + re.sub(r"\s+", " ", contact.group(0)).strip()
+    theme = location_lines[0] if len(location_lines) == 3 else ""
+    return {
+        "title": "LIC Training Schedule",
+        "month": f"{month_name.title()} {year}",
+        "theme": theme,
+        "location": {"name": location_lines[-2], "address": location_lines[-1]},
+        "default_hours": lines[first_time_index][len("TIME:"):].strip(),
+        "events": events,
+        "support": support,
+        "registration_note": registration_note,
+    }
+
+
 def _allowed_url(url: str, hosts: set[str], *, pdf: bool = False) -> bool:
     try:
         parsed = urllib.parse.urlsplit(str(url or ""))
@@ -294,37 +490,46 @@ def validate_pdf_response(pdf_bytes: bytes, content_type: str) -> None:
         raise CalendarRefreshError("downloadable calendar did not return PDF bytes")
 
 
-def extract_pdf_text(pdf_bytes: bytes) -> str:
-    """Extract bounded text from the public schedule PDF.
-
-    Canva calendars frequently place weekday/date labels in a separate PDF
-    column.  Layout extraction preserves readable class-title order but can
-    omit that column; ordinary extraction preserves the labels but can move
-    them later in the page.  Keep both source readings when they differ so a
-    consumer can retain the schedule's dates without guessing.
-    """
-
+def extract_pdf_readings(pdf_bytes: bytes) -> list[dict[str, str]]:
+    """Keep the bounded layout and linear readings of the public schedule."""
     try:
         from pypdf import PdfReader
 
         reader = PdfReader(io.BytesIO(pdf_bytes), strict=False)
-        pages = []
+        readings: list[dict[str, str]] = []
         for page in reader.pages[:MAX_PDF_PAGES]:
             layout = page.extract_text(extraction_mode="layout") or ""
             linear = page.extract_text() or ""
-            readings = []
-            for text in (layout, linear):
+            page_readings = []
+            for kind, text in (("layout", layout), ("linear", linear)):
                 text = re.sub(r"[\t\f\v ]+", " ", text)
                 text = re.sub(r"\n{3,}", "\n\n", text).strip()
-                if text and text not in readings:
-                    readings.append(text)
-            if readings:
-                pages.append("\n\n".join(readings))
-            if sum(len(value) for value in pages) >= MAX_EXTRACTED_CHARACTERS:
+                if text and all(text != item["text"] for item in page_readings):
+                    page_readings.append({"kind": kind, "text": text})
+            readings.extend(page_readings)
+            if sum(len(item["text"]) for item in readings) >= MAX_EXTRACTED_CHARACTERS:
                 break
     except Exception as error:
         raise CalendarRefreshError("downloadable calendar text could not be read") from error
-    result = "\n\n".join(pages)[:MAX_EXTRACTED_CHARACTERS].strip()
+    bounded = []
+    remaining = MAX_EXTRACTED_CHARACTERS
+    for item in readings:
+        text = item["text"][:remaining]
+        if text:
+            bounded.append({"kind": item["kind"], "text": text})
+            remaining -= len(text)
+        if remaining <= 0:
+            break
+    if sum(len(item["text"]) for item in bounded) < 80:
+        raise CalendarRefreshError("downloadable calendar contains too little readable text")
+    return bounded
+
+
+def extract_pdf_text(pdf_bytes: bytes) -> str:
+    """Return both bounded public-PDF text readings in their original order."""
+
+    readings = extract_pdf_readings(pdf_bytes)
+    result = "\n\n".join(item["text"] for item in readings)[:MAX_EXTRACTED_CHARACTERS].strip()
     if len(result) < 80:
         raise CalendarRefreshError("downloadable calendar contains too little readable text")
     return result
@@ -374,7 +579,9 @@ def fetch_live_calendar_source(base_source: dict, timeout: float = 8.0) -> dict:
     if not _allowed_calendar_pdf_result_url(final_pdf_url):
         raise CalendarRefreshError("downloadable calendar redirected to an invalid file")
     validate_pdf_response(pdf_bytes, pdf_content_type)
-    blocks = calendar_text_blocks(extract_pdf_text(pdf_bytes))
+    pdf_readings = extract_pdf_readings(pdf_bytes)
+    pdf_text = "\n\n".join(item["text"] for item in pdf_readings)
+    blocks = calendar_text_blocks(pdf_text)
     if not blocks:
         raise CalendarRefreshError("downloadable calendar contains no readable blocks")
 
@@ -390,7 +597,7 @@ def fetch_live_calendar_source(base_source: dict, timeout: float = 8.0) -> dict:
     source["calendar_extracted_characters"] = sum(len(block) for block in blocks)
     source["calendar_live_block_count"] = len(blocks)
     try:
-        schedule = calendar_pdf_schedule(source)
+        schedule = calendar_pdf_schedule({**source, "calendar_pdf_readings": pdf_readings})
     except ValueError:
         schedule = None
     if schedule:
