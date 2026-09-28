@@ -286,7 +286,9 @@ def calendar_record(agenda: dict[str, object]) -> dict[str, object]:
         raise ValueError(
             "the rendered calendar and freshly downloaded schedule point to different PDFs; capture again"
         )
-    schedule = calendar_pdf_schedule(source)
+    schedule = source.get("calendar_schedule")
+    if not isinstance(schedule, dict) or not schedule.get("events"):
+        schedule = calendar_pdf_schedule(source)
     return {
         "schema_version": SOURCE_SCHEMA_VERSION,
         "source_url": live_calendar.CALENDAR_URL,

@@ -99,7 +99,7 @@ class ReplicaContentCoverageTests(unittest.TestCase):
             },
         )
         self.assertGreater(progressive["after"]["visible_text_characters"], progressive["before"]["visible_text_characters"])
-        self.assertIn("September 21", self.visible_text_for("/calendar"))
+        self.assertIn("September 30", self.visible_text_for("/calendar"))
         self.assertIn("October 26", self.visible_text_for("/calendar"))
         self.assertNotIn("daily-agenda-load-more-button", html)
 

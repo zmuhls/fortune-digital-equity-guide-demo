@@ -589,24 +589,24 @@ test("canonical URLs stay on the approved public host", () => {
   assert.equal(Core.canonicalUrl("/about/partners"), "https://www.fortunedigitalequity.org/about");
 });
 
-test("all 150 routes receive one of the reviewed page families", () => {
+test("all 154 routes receive one of the reviewed page families", () => {
   const counts = {};
   for (const page of pages) {
     const family = Core.pageFamily(page);
     counts[family] = (counts[family] || 0) + 1;
   }
   assert.deepEqual(counts, {
-    program: 6,
-    excluded: 9,
+    program: 8,
+    excluded: 7,
     action: 3,
     directory: 6,
     support: 2,
     event: 6,
     archive: 21,
     news: 9,
-    service: 88,
+    service: 92,
   });
-  assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 150);
+  assert.equal(Object.values(counts).reduce((sum, value) => sum + value, 0), 154);
 });
 
 test("every page has a tailored heading, placeholder, and exactly two prompts", () => {

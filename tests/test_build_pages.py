@@ -7,6 +7,7 @@ import html
 import importlib.util
 import json
 import pathlib
+import re
 import tempfile
 import unittest
 from unittest import mock
@@ -109,12 +110,12 @@ def calendar_source_fixture(source_url="https://www.fortunedigitalequity.org/cal
 
 
 class IndexRouteTests(unittest.TestCase):
-    def test_real_index_loads_all_150_current_public_html_routes(self):
+    def test_real_index_loads_all_154_current_public_html_routes(self):
         routes = build_pages.load_routes()
 
-        self.assertEqual(len(routes), 150)
-        self.assertEqual(len({route["path"] for route in routes}), 150)
-        self.assertEqual(len({route["pageId"] for route in routes}), 150)
+        self.assertEqual(len(routes), 154)
+        self.assertEqual(len({route["path"] for route in routes}), 154)
+        self.assertEqual(len({route["pageId"] for route in routes}), 154)
         self.assertIn("/", {route["path"] for route in routes})
 
     def test_route_path_canonicalizes_trailing_slash(self):
@@ -693,7 +694,21 @@ class SnapshotRenderingTests(unittest.TestCase):
             '<li><a href="service-page/excel-formulas-functions/">Excel - Formulas &amp; Functions</a></li>',
             content,
         )
-        self.assertNotIn('href="https://www.fortunedigitalequity.org/service-page/', content)
+        current_route_paths = {route["path"] for route in routes}
+        external_service_destinations = {
+            href
+            for href in re.findall(r'href="(https://www\.fortunedigitalequity\.org/service-page/[^"?#]+)"', content)
+            if build_pages.route_path(href) not in current_route_paths
+        }
+        self.assertEqual(
+            external_service_destinations,
+            {
+                "https://www.fortunedigitalequity.org/service-page/movie-viewing-mercy",
+                "https://www.fortunedigitalequity.org/service-page/spotting-digital-scams",
+                "https://www.fortunedigitalequity.org/service-page/viewing-bridging-the-gap-webinar",
+            },
+        )
+        self.assertEqual(len(re.findall(r'<li><a href="service-page/', content)), 68)
 
     def test_current_service_snapshot_keeps_breadcrumb_and_visible_source_order(self):
         routes, route, snapshot_html = self._current_snapshot_route("/service-page/intro-to-email")
@@ -706,11 +721,12 @@ class SnapshotRenderingTests(unittest.TestCase):
         expected_order = (
             "Service Details",
             'class="source-breadcrumb"',
-            "This service is not available, please contact for more information.",
             "Intro to Email",
             "Main Office (LIC) | SRP (Bronx) | Fortune Academy (Harlem)",
             "Description",
             "Upcoming Sessions",
+            "Wednesday, Oct 14",
+            "2:00 PM",
         )
         position = -1
         for value in expected_order:
@@ -720,6 +736,7 @@ class SnapshotRenderingTests(unittest.TestCase):
         self.assertIn('href="../../catalog/">Service list</a>', content)
         self.assertNotIn("No sessions in the next", content)
         self.assertNotIn("Time Zone:", content)
+        self.assertIn("No email address required prior to class.", content)
 
     def test_invalid_or_active_snapshot_markup_is_rejected_before_build(self):
         fixtures = (

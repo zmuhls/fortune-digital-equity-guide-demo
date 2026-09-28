@@ -15,6 +15,94 @@ import live_calendar
 
 
 class LiveCalendarTests(unittest.TestCase):
+    def test_current_october_pdf_columnar_schedule_keeps_source_rows_aligned(self):
+        linear = """OCTOBER 2026
+CYBERSECURITY AWARENESS MONTH
+LIC: MAIN SERVICE CENTER
+29-76 NORTHERN BLVD, ROOM 133
+TIME: 2:00 PM - 3:30 PM (UNLESS NOTED)
+DIGITAL SKILLS ESSENTIALS CLASSES
+29-76 NORTHERN BLVD, ROOM 133
+TIME: 2:00 PM - 3:30 PM
+Viewing: Bridging The Gap Webinar
+No Class
+Recognizing Online Threats
+Spotting Digital Scams
+feat. the TSS Foundation
+Protecting Personal Privacy
+Securing Your Devices
+Navigating AI Safely
+feat. the AI Safety Awareness Project
+Movie Viewing: Mercy
+Tech Time Focused & Foundations (TTF) sessions available by Appointment ONLY
+Focused (1-on-1): Mon, Tue, & Wed | 10 AM - 11:30 AM
+Foundations (Practice): Mon & Fri | 1 - 2 PM | LIC Room 133
+WED
+WED
+WED
+WED
+Navigating Internet Browsers
+Intro to Email
+Navigating Windows Desktop
+Navigating the Cloud
+| OCT 7
+| OCT 14
+| OCT 21
+| OCT 28Support Desk Kiosk (SDK) available weekly
+Tues & Wed | LIC Cafeteria | 11:30 - 1:30 PM
+Visit FortuneDigitalEquity.org (QR Code) or email FSTrain@FortuneSociety.orgFor more info or to register:
+DIGITAL EQUITY PROGRAM LIC Training
+SchedulE
+MON
+TUE/THU
+TUE
+THU
+TUE
+THU
+TUE
+THU
+| OCT 5 | 1 PM
+| OCT 6/8
+| OCT 13
+| OCT 15
+| OCT 20
+| OCT 22
+| OCT 27
+| OCT 29"""
+        schedule = live_calendar.calendar_pdf_schedule({
+            "calendar_pdf_readings": [
+                {"kind": "layout", "text": "OCTOBER 2026"},
+                {"kind": "linear", "text": linear},
+            ]
+        })
+
+        self.assertEqual(schedule["month"], "October 2026")
+        self.assertEqual(schedule["theme"], "CYBERSECURITY AWARENESS MONTH")
+        self.assertEqual(len(schedule["events"]), 13)
+        self.assertEqual(
+            schedule["events"][0],
+            {
+                "date": "2026-10-05",
+                "date_label": "Mon | Oct 5",
+                "title": "Viewing: Bridging The Gap Webinar (1:00 PM)",
+            },
+        )
+        self.assertEqual(
+            [event["date"] for event in schedule["events"] if event["title"] == "No Class"],
+            ["2026-10-06", "2026-10-08"],
+        )
+        self.assertIn("Navigating AI Safely (feat. the AI Safety Awareness Project)", [
+            event["title"] for event in schedule["events"]
+        ])
+        self.assertEqual(schedule["events"][-1]["date"], "2026-10-29")
+        self.assertIn("Support Desk Kiosk", " ".join(schedule["support"]))
+        self.assertIn("FSTrain@FortuneSociety.org", schedule["registration_note"])
+        mismatched = linear.replace("| OCT 7\n", "| OCT 6\n", 1)
+        with self.assertRaisesRegex(ValueError, "weekday does not match"):
+            live_calendar.calendar_pdf_schedule({
+                "calendar_pdf_readings": [{"kind": "linear", "text": mismatched}]
+            })
+
     def test_calendar_pdf_link_must_stay_on_an_approved_public_host(self):
         page = '<a href="/_files/ugd/current_schedule.pdf?download=1">Schedule</a>'
         self.assertEqual(
@@ -110,7 +198,11 @@ Visit the Digital Equity site
 """
         with mock.patch.object(
             live_calendar, "fetch_public_bytes", side_effect=responses
-        ) as fetch, mock.patch.object(live_calendar, "extract_pdf_text", return_value=schedule):
+        ) as fetch, mock.patch.object(
+            live_calendar,
+            "extract_pdf_readings",
+            return_value=[{"kind": "linear", "text": schedule}],
+        ):
             source = live_calendar.fetch_live_calendar_source(base)
 
         self.assertEqual(source["calendar_source"], "live_downloadable_calendar")
@@ -153,7 +245,7 @@ Visit the Digital Equity site
             ),
         ]
         with mock.patch.object(live_calendar, "fetch_public_bytes", side_effect=responses), mock.patch.object(
-            live_calendar, "extract_pdf_text"
+            live_calendar, "extract_pdf_readings"
         ) as extract:
             with self.assertRaises(live_calendar.CalendarRefreshError):
                 live_calendar.fetch_live_calendar_source({"id": "calendar", "blocks": []})
@@ -173,7 +265,7 @@ Visit the Digital Equity site
             ),
         ]
         with mock.patch.object(live_calendar, "fetch_public_bytes", side_effect=responses), mock.patch.object(
-            live_calendar, "extract_pdf_text"
+            live_calendar, "extract_pdf_readings"
         ) as extract:
             with self.assertRaises(live_calendar.CalendarRefreshError):
                 live_calendar.fetch_live_calendar_source({"id": "calendar", "blocks": []})

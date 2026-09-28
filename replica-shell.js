@@ -710,7 +710,7 @@
     "allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
   );
   const frameUrl = new URL("sidecar.html", assetRoot);
-  frameUrl.searchParams.set("v", "20260924-launcher-hit-area-v2");
+  frameUrl.searchParams.set("v", "20260928-mobile-guide-launcher-v1");
   frameUrl.searchParams.set("embed", "1");
   frameUrl.searchParams.set("page", canonicalUrl(sourceUrl) || sourceUrl);
   if (new URLSearchParams(window.location.search).get("open") === "1") {
