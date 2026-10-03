@@ -120,11 +120,11 @@
       root.innerHTML = `
         <style>
           :host {
-            --guide-ink: #0b0b0b;
-            --guide-muted: #6b6b6b;
-            --guide-line: #dddddd;
-            --guide-pale: #f1f1f1;
-            --guide-paper: #ffffff;
+            --guide-ink: #f3faf8;
+            --guide-muted: #c8d9d6;
+            --guide-line: rgba(233, 250, 246, .23);
+            --guide-pale: rgba(233, 250, 246, .10);
+            --guide-paper: #173c40;
             --guide-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
             font-family: "Avenir Next", Avenir, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             position: fixed;
@@ -141,10 +141,11 @@
             min-width: 56px;
             min-height: 48px;
             padding: 0 18px;
-            border: 2px solid var(--guide-ink);
-            border-radius: 3px;
-            background: var(--guide-ink);
-            color: var(--guide-paper);
+            border: 1px solid rgba(218, 246, 237, .45);
+            border-radius: 6px;
+            background: linear-gradient(140deg, rgba(35, 72, 57, .96), rgba(24, 73, 70, .96) 54%, rgba(19, 53, 70, .97));
+            box-shadow: 0 8px 24px rgba(8, 30, 33, .24);
+            color: var(--guide-ink);
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
@@ -188,7 +189,7 @@
             70% { opacity: .7; transform: rotate(var(--ray-rotation)) scaleX(.92); }
           }
           .toggle:hover,
-          .toggle:focus-visible { color: var(--guide-ink); background: var(--guide-paper); }
+          .toggle:focus-visible { color: #153c3d; background: #e3f3ef; }
           .toggle:hover .guide-rays > span,
           .toggle:focus-visible .guide-rays > span {
             animation: guide-ray-interaction .72s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 1 both;
@@ -199,9 +200,11 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid var(--guide-ink);
-            border-radius: 3px;
-            background: var(--guide-paper);
+            border: 1px solid rgba(218, 246, 237, .42);
+            border-radius: 8px;
+            background: linear-gradient(145deg, rgba(35, 72, 57, .96) 0%, rgba(24, 73, 70, .95) 52%, rgba(19, 53, 70, .97) 100%);
+            box-shadow: 0 18px 48px rgba(8, 30, 33, .28);
+            backdrop-filter: blur(16px);
             color: var(--guide-ink);
             contain: layout paint;
             transition: height .16s ease, max-height .16s ease;
@@ -217,7 +220,7 @@
             gap: 16px;
             padding: 0 16px;
             border-bottom: 1px solid var(--guide-line);
-            background: var(--guide-paper);
+            background: transparent;
           }
           h2 { margin: 0; font-family: var(--guide-display); font-size: 19px; font-weight: 600; letter-spacing: -.012em; line-height: 1.2; }
           .close, .edit-question, .cancel-edit {
@@ -256,7 +259,7 @@
             border-radius: 2px;
             background: var(--guide-pale);
           }
-          .message.user.is-editing { border-color: var(--guide-ink); background: #fafafa; box-shadow: inset 3px 0 var(--guide-ink); }
+          .message.user.is-editing { border-color: var(--guide-ink); background: rgba(233, 250, 246, .16); box-shadow: inset 3px 0 var(--guide-ink); }
           .message-meta { min-height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
           .speaker {
             margin: 0;
@@ -333,7 +336,7 @@
             gap: 6px;
             padding: 12px 16px 9px;
             border-top: 1px solid var(--guide-line);
-            background: var(--guide-paper);
+            background: transparent;
           }
           .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 7px; }
           form.is-editing .row { grid-template-columns: minmax(0, 1fr) auto auto; }
@@ -348,10 +351,11 @@
             border: 1px solid var(--guide-muted);
             border-radius: 2px;
             color: var(--guide-ink);
-            background: var(--guide-paper);
+            background: rgba(9, 42, 48, .42);
             font-size: 16px;
             line-height: 1.42;
           }
+          textarea::placeholder { color: var(--guide-muted); opacity: 1; }
           textarea:hover { border-color: var(--guide-ink); }
           textarea:focus { border-color: var(--guide-ink); }
           .send {
@@ -383,7 +387,7 @@
             gap: 12px;
             padding: 0 16px;
             border-top: 1px solid var(--guide-line);
-            background: var(--guide-paper);
+            background: transparent;
           }
           .meta { position: relative; color: var(--guide-ink); }
           .meta summary { min-height: 44px; display: flex; align-items: center; padding: 0 6px; cursor: pointer; font-size: 12px; font-weight: 700; }
