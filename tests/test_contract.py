@@ -2985,7 +2985,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
-        self.assertIn('styles.css?v=20261003-kale-blue-guide-v1', html)
+        self.assertIn('styles.css?v=20261003-light-translucent-guide-v1', html)
         self.assertIn('embed-frame.js?v=20260928-mobile-host-viewport-v1', html)
         embed_frame = (DEMO / "embed-frame.js").read_text(encoding="utf-8")
         self.assertIn("window.parent.innerWidth <= 520", embed_frame)
@@ -3033,7 +3033,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20261003-kale-blue-guide-v1")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20261003-light-translucent-guide-v1")', replica_shell)
         self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
         self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)
@@ -3128,25 +3128,25 @@ class FrontendAndDeploymentTests(unittest.TestCase):
             self.assertIn(expected, styles)
         mobile = styles[styles.index("@media (max-width: 800px)") : styles.index("@media (max-width: 520px)")]
         self.assertIn(".guide,\n  html.sidecar-embed .guide { inset: auto 8px 8px; width: auto; }", mobile)
-        self.assertIn(".guide:has(.guide-panel.is-expanded)", mobile)
-        self.assertIn("html.sidecar-embed .guide:has(.guide-panel.is-expanded) { top: 8px; }", mobile)
-        self.assertIn(".guide-panel.is-expanded { height: 100%; max-height: 100%; }", mobile)
-        self.assertNotIn(".guide-panel.is-expanded { height: calc(100dvh", mobile)
-        self.assertIn("height: calc(100dvh - 16px)", wix)
+        self.assertNotIn(".guide:has(.guide-panel.is-expanded", mobile)
+        self.assertIn(".guide-panel.is-expanded { height: min(640px, 74dvh); max-height: min(640px, 74dvh); }", mobile)
+        self.assertIn("html.sidecar-embed .guide-panel.is-expanded { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }", mobile)
+        self.assertIn(".panel.expanded { height: min(640px, 74dvh); max-height: min(640px, 74dvh); }", wix)
         self.assertIn(":focus-visible", wix)
         self.assertIn(":focus-visible", dashboard)
 
-    def test_sidecar_and_wix_share_the_kale_blue_guide_palette(self):
+    def test_sidecar_and_wix_share_the_light_translucent_guide_palette(self):
         styles = (DEMO / "styles.css").read_text(encoding="utf-8")
         wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
         for source in (styles, wix):
             for token in (
-                "--guide-ink: #f3faf8",
-                "--guide-muted: #c8d9d6",
-                "--guide-line: rgba(233, 250, 246, .23)",
-                "--guide-pale: rgba(233, 250, 246, .10)",
-                "--guide-paper: #173c40",
-                "linear-gradient(145deg, rgba(35, 72, 57, .96)",
+                "--guide-ink: #17383d",
+                "--guide-muted: #405d61",
+                "--guide-line: rgba(23, 66, 69, .24)",
+                "--guide-pale: rgba(255, 255, 255, .42)",
+                "--guide-paper: #eef9f4",
+                "linear-gradient(145deg, rgba(215, 239, 224, .92)",
+                "background: linear-gradient(140deg, #3f765c, #387d7b 54%, #33637f)",
             ):
                 self.assertIn(token, source)
             self.assertNotIn("--guide-accent", source)

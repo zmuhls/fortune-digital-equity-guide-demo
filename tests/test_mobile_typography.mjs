@@ -177,6 +177,8 @@ for (const name of names) {
     const guide = page.frameLocator('#fortune-sidecar-frame');
     await launcher.click();
     await guide.locator('#guide-panel').waitFor({ state: 'visible', timeout: 2000 });
+    assert.ok((await page.locator('#fortune-sidecar-host').boundingBox()).y > 100,
+      'Open phone Guide stays bottom-anchored instead of covering the whole viewport');
     // Firefox places focus on the iframe body after it resizes; Chromium and
     // WebKit retain the Close button. Both must move keyboard focus into the
     // guide rather than leave it on the now-hidden proxy.
@@ -187,14 +189,55 @@ for (const name of names) {
     await page.locator('#fortune-pilot-notice a').focus();
     await page.mouse.move(0, 0);
     await frame.waitForFunction(() => !document.querySelector('#guide-toggle').classList.contains('is-proxy-hovered'), null, { timeout: 2000 });
+    const restingGradient = await frame.evaluate(() => getComputedStyle(document.querySelector('#guide-toggle')).backgroundImage);
     await launcher.hover();
     await frame.waitForFunction(() => document.querySelector('#guide-toggle').classList.contains('is-proxy-hovered'), null, { timeout: 2000 });
+    const hoverGradient = await frame.evaluate(() => getComputedStyle(document.querySelector('#guide-toggle')).backgroundImage);
+    assert.notEqual(hoverGradient, restingGradient, 'The mirror proxy changes the visible launcher gradient on hover');
     await page.getByRole('link', { name: 'CHOOSE A SERVICE', exact: true }).click();
     assert.equal(new URL(page.url()).hash, '#comp-mbzt50my');
     await launcher.click();
     await guide.locator('#guide-panel').waitFor({ state: 'visible', timeout: 2000 });
     assert.deepEqual(errors, []);
     assert.deepEqual(modelRequests, [], 'A local UI-only test never calls the provider or captures a conversation');
+    await context.close();
+  });
+
+  test(`${name}: hidden conversation stays anchored and light guide controls change on hover`, async () => {
+    const context = await browsers.get(name).newContext({ viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+    await page.goto(`${origin}/sidecar.html`);
+    const launcher = page.locator('#guide-toggle');
+    const panel = page.locator('#guide-panel');
+    await launcher.waitFor({ state: 'visible' });
+
+    // A retained conversation can mark the closed panel expanded; it must not move the launcher.
+    await panel.evaluate(node => node.classList.add('is-expanded'));
+    assert.equal(await panel.isVisible(), false);
+    assert.ok((await launcher.boundingBox()).y > 700, 'Closed launcher remains near the bottom of the phone');
+    await panel.evaluate(node => node.classList.remove('is-expanded'));
+
+    const launcherBefore = await launcher.evaluate(node => getComputedStyle(node).backgroundImage);
+    await launcher.hover();
+    const launcherAfter = await launcher.evaluate(node => getComputedStyle(node).backgroundImage);
+    assert.notEqual(launcherAfter, launcherBefore, 'Launcher hover changes the gradient');
+
+    await launcher.click();
+    await panel.waitFor({ state: 'visible' });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('#guide-panel')).opacity === '1');
+    await panel.evaluate(node => node.classList.add('is-expanded'));
+    assert.ok((await panel.boundingBox()).y > 150, 'Open direct sidecar remains bottom-anchored');
+    const panelBackground = await panel.evaluate(node => getComputedStyle(node).backgroundImage);
+    assert.match(panelBackground, /rgba\(215, 239, 224, 0\.92\)/, 'Open panel uses the light translucent gradient');
+    const send = page.locator('.chat-input-row button[type="submit"]');
+    const sendBefore = await send.evaluate(node => getComputedStyle(node).backgroundColor);
+    await send.hover();
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.chat-input-row button[type="submit"]')).backgroundColor === 'rgb(44, 111, 115)');
+    const sendAfter = await send.evaluate(node => getComputedStyle(node).backgroundColor);
+    assert.notEqual(sendAfter, sendBefore, 'Send hover changes color');
+    await page.locator('#guide-close').click();
+    assert.ok((await launcher.boundingBox()).y > 700, 'Closing restores the bottom-anchored launcher');
     await context.close();
   });
 }
