@@ -120,11 +120,11 @@
       root.innerHTML = `
         <style>
           :host {
-            --guide-ink: #f3faf8;
-            --guide-muted: #c8d9d6;
-            --guide-line: rgba(233, 250, 246, .23);
-            --guide-pale: rgba(233, 250, 246, .10);
-            --guide-paper: #173c40;
+            --guide-ink: #17383d;
+            --guide-muted: #405d61;
+            --guide-line: rgba(23, 66, 69, .24);
+            --guide-pale: rgba(255, 255, 255, .42);
+            --guide-paper: #eef9f4;
             --guide-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
             font-family: "Avenir Next", Avenir, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             position: fixed;
@@ -145,14 +145,14 @@
             border-radius: 6px;
             background: linear-gradient(140deg, rgba(35, 72, 57, .96), rgba(24, 73, 70, .96) 54%, rgba(19, 53, 70, .97));
             box-shadow: 0 8px 24px rgba(8, 30, 33, .24);
-            color: var(--guide-ink);
+            color: #f3faf8;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: background .14s ease, color .14s ease;
+            transition: box-shadow .14s ease, border-color .14s ease;
           }
           .toggle-label { position: relative; z-index: 1; }
-          .guide-rays { position: absolute; inset: 0; pointer-events: none; color: var(--guide-ink); }
+          .guide-rays { position: absolute; inset: 0; pointer-events: none; color: #f3faf8; }
           .processing-status { margin: 4px 0 0; color: var(--guide-muted); font: 12px/1.4 sans-serif; }
           .guide-rays > span {
             --ray-rotation: 0deg;
@@ -189,7 +189,12 @@
             70% { opacity: .7; transform: rotate(var(--ray-rotation)) scaleX(.92); }
           }
           .toggle:hover,
-          .toggle:focus-visible { color: #153c3d; background: #e3f3ef; }
+          .toggle:focus-visible {
+            color: #f3faf8;
+            border-color: rgba(239, 255, 250, .75);
+            background: linear-gradient(140deg, #3f765c, #387d7b 54%, #33637f);
+            box-shadow: 0 10px 28px rgba(10, 46, 56, .35);
+          }
           .toggle:hover .guide-rays > span,
           .toggle:focus-visible .guide-rays > span {
             animation: guide-ray-interaction .72s cubic-bezier(.22, .74, .28, 1) var(--ray-stagger) 1 both;
@@ -200,10 +205,10 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(218, 246, 237, .42);
+            border: 1px solid rgba(40, 91, 94, .26);
             border-radius: 8px;
-            background: linear-gradient(145deg, rgba(35, 72, 57, .96) 0%, rgba(24, 73, 70, .95) 52%, rgba(19, 53, 70, .97) 100%);
-            box-shadow: 0 18px 48px rgba(8, 30, 33, .28);
+            background: linear-gradient(145deg, rgba(215, 239, 224, .92) 0%, rgba(190, 229, 226, .90) 55%, rgba(182, 218, 232, .92) 100%);
+            box-shadow: 0 18px 48px rgba(8, 30, 33, .22);
             backdrop-filter: blur(16px);
             color: var(--guide-ink);
             contain: layout paint;
@@ -259,7 +264,7 @@
             border-radius: 2px;
             background: var(--guide-pale);
           }
-          .message.user.is-editing { border-color: var(--guide-ink); background: rgba(233, 250, 246, .16); box-shadow: inset 3px 0 var(--guide-ink); }
+          .message.user.is-editing { border-color: var(--guide-ink); background: rgba(255, 255, 255, .76); box-shadow: inset 3px 0 var(--guide-ink); }
           .message-meta { min-height: 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
           .speaker {
             margin: 0;
@@ -286,7 +291,7 @@
             text-align: left;
             cursor: pointer;
           }
-          .suggestion:hover { border-color: var(--guide-ink); color: var(--guide-paper); background: var(--guide-ink); }
+          .suggestion:hover { border-color: #2c6f73; color: #ffffff; background: #2c6f73; }
           .suggestion:disabled { opacity: .55; cursor: wait; }
           .choice-select {
             width: min(100%, 220px);
@@ -319,7 +324,7 @@
             text-decoration: none;
             transition: background .14s ease, color .14s ease;
           }
-          .destination:hover { color: var(--guide-ink); background: var(--guide-paper); }
+          .destination:hover { border-color: #2c6f73; color: #ffffff; background: #2c6f73; }
           .suggestions {
             flex: 0 0 auto;
             display: grid;
@@ -351,7 +356,7 @@
             border: 1px solid var(--guide-muted);
             border-radius: 2px;
             color: var(--guide-ink);
-            background: rgba(9, 42, 48, .42);
+            background: rgba(255, 255, 255, .68);
             font-size: 16px;
             line-height: 1.42;
           }
@@ -371,7 +376,7 @@
             cursor: pointer;
             transition: background .14s ease, color .14s ease;
           }
-          .send:hover { color: var(--guide-ink); background: var(--guide-paper); }
+          .send:hover { border-color: #2c6f73; color: #ffffff; background: #2c6f73; }
           .send:disabled { opacity: .65; cursor: wait; }
           .cancel-edit { min-width: 62px; min-height: 46px; color: var(--guide-ink); background: var(--guide-paper); }
           .edit-status { margin: 0; color: var(--guide-ink); font-size: 11px; font-weight: 700; line-height: 1.4; }
@@ -426,7 +431,7 @@
             :host { inset: auto max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
             :host(:not(.guide-open)) { inset: auto max(30px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
             .panel { width: 100%; max-height: calc(100dvh - 16px); }
-            .panel.expanded { height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
+            .panel.expanded { height: min(640px, 74dvh); max-height: min(640px, 74dvh); }
             .panel.expanded .transcript { padding: 14px; }
             form { padding: 10px 14px 8px; }
             .row { grid-template-columns: minmax(0, 1fr) 68px; }
