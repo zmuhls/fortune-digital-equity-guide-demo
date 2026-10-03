@@ -2985,7 +2985,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         wix_rays = wix[wix.index('class="guide-rays"') : wix.index('class="toggle-label"')]
         self.assertEqual(page_rays.count("<span></span>"), 12)
         self.assertEqual(wix_rays.count("<span></span>"), 12)
-        self.assertIn('styles.css?v=20260928-compact-mobile-guide-v1', html)
+        self.assertIn('styles.css?v=20261003-kale-blue-guide-v1', html)
         self.assertIn('embed-frame.js?v=20260928-mobile-host-viewport-v1', html)
         embed_frame = (DEMO / "embed-frame.js").read_text(encoding="utf-8")
         self.assertIn("window.parent.innerWidth <= 520", embed_frame)
@@ -3136,23 +3136,23 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn(":focus-visible", wix)
         self.assertIn(":focus-visible", dashboard)
 
-    def test_sidecar_and_wix_share_the_monochrome_minimal_tokens(self):
+    def test_sidecar_and_wix_share_the_kale_blue_guide_palette(self):
         styles = (DEMO / "styles.css").read_text(encoding="utf-8")
         wix = (DEMO / "wix-app" / "site" / "fortune-guide-element.js").read_text(encoding="utf-8")
         for source in (styles, wix):
             for token in (
-                "--guide-ink: #0b0b0b",
-                "--guide-muted: #6b6b6b",
-                "--guide-line: #dddddd",
-                "--guide-pale: #f1f1f1",
-                "--guide-paper: #ffffff",
+                "--guide-ink: #f3faf8",
+                "--guide-muted: #c8d9d6",
+                "--guide-line: rgba(233, 250, 246, .23)",
+                "--guide-pale: rgba(233, 250, 246, .10)",
+                "--guide-paper: #173c40",
+                "linear-gradient(145deg, rgba(35, 72, 57, .96)",
             ):
                 self.assertIn(token, source)
             self.assertNotIn("--guide-accent", source)
         panel = styles[styles.index(".guide-panel {") : styles.index("@keyframes reveal-up")]
-        self.assertIn("border: 1px solid var(--guide-ink)", panel)
-        self.assertIn("border-radius: 3px", panel)
-        self.assertNotIn("box-shadow", panel)
+        self.assertIn("border-radius: 8px", panel)
+        self.assertIn("backdrop-filter: blur(16px)", panel)
 
     def test_mobile_guide_prioritizes_model_text_over_composer_height(self):
         styles = (DEMO / "styles.css").read_text(encoding="utf-8")
