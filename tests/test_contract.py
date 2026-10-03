@@ -3033,7 +3033,7 @@ class FrontendAndDeploymentTests(unittest.TestCase):
         self.assertIn('window.sessionStorage', app)
         self.assertIn("return window.parent.sessionStorage", app)
         self.assertIn('"fortune-website-guide:replica:v20"', app)
-        self.assertIn('frameUrl.searchParams.set("v", "20260928-mobile-guide-launcher-v1")', replica_shell)
+        self.assertIn('frameUrl.searchParams.set("v", "20261003-kale-blue-guide-v1")', replica_shell)
         self.assertIn('document.querySelectorAll("a[data-anchor]")', replica_shell)
         self.assertIn('link.href = `#${target.id}`', replica_shell)
         self.assertIn("persistConversation();", app)
